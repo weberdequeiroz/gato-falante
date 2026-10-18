@@ -203,21 +203,24 @@
   }
 
   /* ações */
-  .acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .acoes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .acao {
-    min-height: 60px;
+    min-height: 64px;
     border-radius: 20px;
     border: 2px solid;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 8px 14px;
-    text-align: left;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 4px;
+    text-align: center;
     box-shadow: var(--sombra);
   }
-  .acao .simbolo { font-size: 30px; line-height: 1; }
-  .acao strong { display: block; font-size: 19px; font-weight: 900; line-height: 1.1; }
-  .acao small { display: block; font-size: 13px; font-weight: 700; opacity: .85; }
+  .acao .simbolo { font-size: 26px; line-height: 1; }
+  .acao strong { display: block; font-size: 17px; font-weight: 900; line-height: 1.1; }
+  .acao small { display: block; font-size: 12px; font-weight: 700; opacity: .85; }
+  .acao-jogos { background: #e3f6e8; border-color: #8fd3a1; color: #1e6b32; }
   .acao-oracao { background: var(--lilas-claro); border-color: #b9aef0; color: #3f2f9e; }
   .acao-dica { background: var(--amarelo-claro); border-color: #f0cf6a; color: #6b4700; }
   .acao:active, .botao-icone:active, .voz:active { transform: translateY(2px); }
@@ -448,12 +451,176 @@
   @keyframes chama-botao { 50% { transform: scale(1.07); } }
   .credito { position: relative; z-index: 1; font-size: 12px; font-weight: 800; letter-spacing: .12em; color: #fff; text-shadow: 0 1px 2px rgba(31,45,61,.4); }
 
+  /* tela de jogos */
+  #jogos {
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    background: linear-gradient(var(--ceu-claro), var(--ceu));
+    display: flex;
+    flex-direction: column;
+  }
+  #jogos[hidden] { display: none; }
+  .jogos-topo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 560px;
+    width: 100%;
+    margin: 0 auto;
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-bottom: 6px;
+  }
+  .jogos-topo h2 { margin: 0; font-size: 24px; font-weight: 900; }
+  #jogos-corpo {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    max-width: 560px;
+    width: 100%;
+    margin: 0 auto;
+    padding-block: 8px calc(16px + env(safe-area-inset-bottom, 0px));
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .menu-jogos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .cartao-tema {
+    min-height: 130px;
+    border: 3px solid var(--cor);
+    border-radius: 24px;
+    background: var(--cartao);
+    box-shadow: 0 6px 0 var(--cor);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 21px;
+    font-weight: 900;
+    color: var(--tinta);
+  }
+  .cartao-tema:last-child { grid-column: 1 / -1; min-height: 110px; }
+  .cartao-tema .simbolo { font-size: 52px; line-height: 1; }
+  .cartao-tema:active, .modo:active, .item:active, .opcao:active { transform: translateY(3px); }
+
+  .tema-escolha { display: flex; flex-direction: column; gap: 14px; align-items: stretch; }
+  .tema-escolha, .jogo, .vitoria { min-height: 100%; justify-content: center; }
+  .tema-heroi { text-align: center; font-size: 96px; line-height: 1.1; }
+  .modo {
+    min-height: 84px;
+    border: 3px solid var(--cor, var(--laranja));
+    border-radius: 22px;
+    background: var(--cartao);
+    box-shadow: 0 5px 0 var(--cor, var(--laranja));
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 18px;
+    text-align: left;
+  }
+  .modo .simbolo { font-size: 40px; }
+  .modo strong { display: block; font-size: 22px; font-weight: 900; }
+  .modo small { display: block; font-size: 14px; color: var(--tinta-suave); }
+
+  .bola-cor { display: block; width: 58px; height: 58px; border-radius: 50%; border: 3px solid rgba(31,45,61,.15); box-shadow: inset -6px -8px 0 rgba(0,0,0,.12), inset 6px 6px 0 rgba(255,255,255,.35); }
+  .numero { font-size: 46px; font-weight: 900; line-height: 1; color: var(--cor); }
+  .letra { font-size: 46px; font-weight: 900; line-height: 1; color: var(--cor); }
+  .letra small { font-size: .55em; margin-left: 4px; opacity: .8; }
+  .emoji-grande { font-size: 48px; line-height: 1.05; }
+  .exemplo { font-size: 44px; }
+  .contas { display: block; max-width: 260px; font-size: 30px; line-height: 1.2; text-align: center; overflow-wrap: anywhere; }
+
+  .conhecer { display: flex; flex-direction: column; gap: 12px; }
+  .destaque-item {
+    background: var(--cartao);
+    border-radius: 24px;
+    border: 3px solid var(--cor);
+    padding: 14px;
+    text-align: center;
+    box-shadow: var(--sombra);
+  }
+  .destaque-item .desenho { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; min-height: 96px; }
+  .destaque-item .bola-cor { width: 92px; height: 92px; }
+  .destaque-item .numero, .destaque-item .letra { font-size: 84px; }
+  .destaque-item .emoji-grande { font-size: 88px; }
+  .destaque-item p { margin: 8px 0 0; font-size: 20px; font-weight: 800; text-wrap: balance; }
+  .grade-itens { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+  .item {
+    min-height: 96px;
+    border: 2px solid var(--linha);
+    border-radius: 18px;
+    background: var(--cartao);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 4px;
+  }
+  .item .rotulo { font-size: 13px; color: var(--tinta-suave); }
+  .item .numero, .item .letra { font-size: 38px; }
+  .item .bola-cor { width: 46px; height: 46px; }
+  .item .emoji-grande { font-size: 40px; }
+  .item.ativo { border-color: var(--cor); background: color-mix(in srgb, var(--cor) 12%, #fff); }
+
+  .jogo { display: flex; flex-direction: column; gap: 14px; align-items: stretch; }
+  .estrelas { display: flex; justify-content: center; gap: 6px; font-size: 34px; color: #d7dee6; }
+  .estrelas .ganhou { color: #f5b301; text-shadow: 0 2px 0 #c98a00; }
+  .pergunta { display: flex; align-items: center; gap: 10px; }
+  .pergunta img { width: 64px; height: 64px; border-radius: 20px; box-shadow: var(--sombra); flex: none; }
+  .pergunta-balao {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--cartao);
+    border-radius: 20px;
+    padding: 10px 10px 10px 16px;
+    font-size: 22px;
+    font-weight: 900;
+    box-shadow: var(--sombra);
+  }
+  .pergunta-balao span { flex: 1; text-wrap: balance; }
+  #ouvir-de-novo { flex: none; width: 52px; height: 52px; border: 0; border-radius: 16px; background: var(--ceu-claro); font-size: 26px; }
+  .mostrar { text-align: center; font-size: 56px; line-height: 1.2; background: var(--cartao); border-radius: 22px; padding: 10px; box-shadow: var(--sombra); overflow-wrap: anywhere; }
+  .opcoes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .opcao {
+    min-height: 120px;
+    border: 3px solid var(--linha);
+    border-radius: 22px;
+    background: var(--cartao);
+    box-shadow: 0 5px 0 var(--linha);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: opacity .2s, border-color .2s, background .2s;
+  }
+  .opcao .bola-cor { width: 72px; height: 72px; }
+  .opcao .numero, .opcao .letra { font-size: 60px; }
+  .opcao .emoji-grande { font-size: 62px; }
+  .opcao.certo { border-color: #34b25a; background: #e3f6e8; box-shadow: 0 5px 0 #34b25a; }
+  .opcao.errado { opacity: .4; }
+  .festa { position: fixed; z-index: 50; font-size: 26px; pointer-events: none; }
+
+  .vitoria { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .vitoria .trofeu { font-size: 84px; line-height: 1; animation: chama-botao 1.2s ease-in-out infinite; }
+  .vitoria img { width: 170px; }
+  .vitoria h2 { margin: 0; font-size: 36px; font-weight: 900; color: var(--laranja); }
+  .vitoria p { margin: 0 0 8px; font-size: 20px; }
+  .vitoria-botoes { display: grid; gap: 10px; width: 100%; }
+
   /* modo calmo: sem movimentos extras */
   .calmo #corpo-todo, .calmo #rabo, .calmo #gato.falando #cabeca,
   .calmo #gato.ouvindo #orelha-e, .calmo #gato.ouvindo #orelha-d,
   .calmo #gato.cutucado #corpo-todo, .calmo .vozes.destaque .voz,
   .calmo .estado[data-estado="ouvindo"] .ponto { animation: none; }
   .calmo .nota { display: none; }
+  .calmo .vitoria .trofeu,
   .calmo .raios, .calmo .nuvem, .calmo .enfeite, .calmo .miguel-abertura, .calmo .titulo-abertura span, .calmo #jogar { animation-iteration-count: 1; }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -687,6 +854,10 @@
       <span class="simbolo" aria-hidden="true">💡</span>
       <span><strong>Dicas</strong><small>do Miguel</small></span>
     </button>
+    <button id="abrir-jogos" class="acao acao-jogos">
+      <span class="simbolo" aria-hidden="true">🎮</span>
+      <span><strong>Jogos</strong><small>para aprender</small></span>
+    </button>
   </div>
 
   <section class="painel-vozes" aria-labelledby="vozes-titulo">
@@ -710,6 +881,16 @@
   <button id="instalar-sim">Instalar</button>
   <button id="instalar-nao" aria-label="Agora não">✕</button>
   <p id="instalar-dica" hidden></p>
+</div>
+
+<div id="jogos" role="dialog" aria-labelledby="jogos-titulo" hidden>
+  <div class="jogos-topo">
+    <button id="jogos-voltar" class="botao-icone" aria-label="Voltar">
+      <span class="simbolo" aria-hidden="true">⬅️</span><span class="rotulo">Voltar</span>
+    </button>
+    <h2 id="jogos-titulo">Jogos do Miguel</h2>
+  </div>
+  <div id="jogos-corpo"></div>
 </div>
 
 <div id="abertura" role="dialog" aria-label="Miguel, o Gato Falante">
@@ -1351,6 +1532,7 @@
       { texto: 'Aqui embaixo você escolhe a minha voz. Tem tia Dani, Bob Esponja, pirata e muito mais! 👇', vozes: true },
       { texto: 'No botão Oração, eu rezo com você. 🙏' },
       { texto: 'No botão Dicas, eu te ensino coisas legais. 💡' },
+      { texto: 'E no botão Jogos, tem jogos de cores, números, letras, animais e alimentos! 🎮' },
       { texto: 'Vamos brincar? Toque em mim! 🐾' },
     ], VOZ_MIGUEL, 350);
   }
@@ -1493,6 +1675,310 @@
   document.getElementById('orar').addEventListener('click', () => { if (liberarParaNarrar()) orar(); });
   document.getElementById('dicas').addEventListener('click', () => { if (liberarParaNarrar()) darDica(); });
   document.getElementById('ajuda').addEventListener('click', () => { if (liberarParaNarrar()) apresentar(); });
+
+  // ---------- Jogos para aprender ----------
+  // Cada tema tem "Conhecer" (toca e ouve o nome) e "Jogar" (o Miguel pergunta, a criança toca na resposta)
+  const NOMES_LETRAS = { A: 'á', B: 'bê', C: 'cê', D: 'dê', E: 'é', F: 'éfe', G: 'gê', H: 'agá', I: 'i', J: 'jota', K: 'cá', L: 'éle', M: 'ême', N: 'ene', O: 'ó', P: 'pê', Q: 'quê', R: 'érre', S: 'ésse', T: 'tê', U: 'u', V: 'vê', W: 'dáblio', X: 'xis', Y: 'ípsilon', Z: 'zê' };
+  const NUMEROS = ['zero', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez'];
+  const sortear = (lista) => lista[Math.floor(Math.random() * lista.length)];
+  const embaralhar = (lista) => lista.map(v => [Math.random(), v]).sort((a, b) => a[0] - b[0]).map(p => p[1]);
+
+  const TEMAS = {
+    cores: {
+      nome: 'Cores', simbolo: '🎨', cor: '#ff4f8b',
+      itens: [
+        { nome: 'vermelho', cor: '#e53935', ex: '🍓', frase: 'Vermelho, como o morango!' },
+        { nome: 'azul', cor: '#1e88e5', ex: '🐳', frase: 'Azul, como o céu e o mar!' },
+        { nome: 'amarelo', cor: '#fdd835', ex: '🌻', frase: 'Amarelo, como o sol e o girassol!' },
+        { nome: 'verde', cor: '#43a047', ex: '🐸', frase: 'Verde, como o sapo e as folhas!' },
+        { nome: 'laranja', cor: '#fb8c00', ex: '🍊', frase: 'Laranja, como a fruta laranja!' },
+        { nome: 'roxo', cor: '#8e24aa', ex: '🍇', frase: 'Roxo, como a uva!' },
+        { nome: 'rosa', cor: '#f06292', ex: '🌸', frase: 'Rosa, como a flor!' },
+        { nome: 'marrom', cor: '#795548', ex: '🐻', frase: 'Marrom, como o ursinho e o chocolate!' },
+        { nome: 'preto', cor: '#212121', ex: '🐈‍⬛', frase: 'Preto, como a noite!' },
+        { nome: 'branco', cor: '#ffffff', ex: '☁️', frase: 'Branco, como a nuvem e o leite!' },
+      ],
+      desenho: (it, grande) => `<span class="bola-cor" style="background:${it.cor}"></span>${grande ? `<span class="exemplo">${it.ex}</span>` : ''}`,
+      rotulo: (it) => it.nome,
+      perguntas: [
+        (itens) => { const c = sortear(itens); return { certo: c, texto: `Toque no ${c.nome}!` }; },
+      ],
+      acerto: (it) => `Isso! É o ${it.nome}!`,
+      erro: (it) => `Esse é o ${it.nome}. Tente de novo!`,
+    },
+    numeros: {
+      nome: 'Números', simbolo: '🔢', cor: '#2f9be8',
+      itens: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => ({ n, nome: NUMEROS[n], ex: ['🍎', '⭐', '🐥', '🎈', '🐟', '🌸', '🍌', '🚗', '🦋', '🧸'][n - 1] })),
+      desenho: (it, grande) => `<span class="numero">${it.n}</span>${grande ? `<span class="contas">${it.ex.repeat(it.n)}</span>` : ''}`,
+      rotulo: (it) => it.nome,
+      frase: (it) => `${it.nome[0].toUpperCase() + it.nome.slice(1)}! Vamos contar: ${NUMEROS.slice(1, it.n + 1).join(', ')}!`,
+      perguntas: [
+        (itens) => { const c = sortear(itens); return { certo: c, texto: `Toque no número ${c.nome}!` }; },
+        (itens) => {
+          const c = sortear(itens.filter(i => i.n <= 6));
+          const bicho = sortear(['🐥', '🍎', '⭐', '🐟', '🎈']);
+          return { certo: c, texto: 'Quantos tem aqui? Conte comigo!', mostrar: bicho.repeat(c.n) };
+        },
+      ],
+      acerto: (it) => `Muito bem! É o ${it.nome}!`,
+      erro: (it) => `Esse é o ${it.nome}. Tente de novo!`,
+    },
+    letras: {
+      nome: 'Letras', simbolo: '🔤', cor: '#8b5cf6',
+      itens: [
+        ['A', 'Abelha', '🐝'], ['B', 'Bola', '⚽'], ['C', 'Casa', '🏠'], ['D', 'Dado', '🎲'], ['E', 'Elefante', '🐘'],
+        ['F', 'Foca', '🦭'], ['G', 'Gato', '🐱'], ['H', 'Hipopótamo', '🦛'], ['I', 'Ilha', '🏝️'], ['J', 'Jacaré', '🐊'],
+        ['K', 'Kiwi', '🥝'], ['L', 'Leão', '🦁'], ['M', 'Macaco', '🐒'], ['N', 'Navio', '🚢'], ['O', 'Ovo', '🥚'],
+        ['P', 'Pato', '🦆'], ['Q', 'Queijo', '🧀'], ['R', 'Rato', '🐭'], ['S', 'Sapo', '🐸'], ['T', 'Tartaruga', '🐢'],
+        ['U', 'Uva', '🍇'], ['V', 'Vaca', '🐄'], ['W', 'Waffle', '🧇'], ['X', 'Xícara', '☕'], ['Y', 'Yoga', '🧘'], ['Z', 'Zebra', '🦓'],
+      ].map(([letra, palavra, ex]) => ({ letra, palavra, ex, nome: NOMES_LETRAS[letra] })),
+      desenho: (it, grande) => `<span class="letra">${it.letra}<small>${it.letra.toLowerCase()}</small></span>${grande ? `<span class="exemplo">${it.ex}</span>` : ''}`,
+      rotulo: (it) => it.letra,
+      frase: (it) => `${it.letra} de ${it.palavra}!`,
+      falar: (it) => `${it.nome}! ${it.nome} de ${it.palavra}!`,
+      perguntas: [
+        (itens) => { const c = sortear(itens); return { certo: c, texto: `Toque na letra ${c.letra}!`, falado: `Toque na letra ${c.nome}!` }; },
+        (itens) => { const c = sortear(itens); return { certo: c, texto: `${c.palavra} começa com qual letra?`, mostrar: c.ex }; },
+      ],
+      acerto: (it) => `Isso! ${it.letra} de ${it.palavra}!`,
+      falarAcerto: (it) => `Isso! ${it.nome} de ${it.palavra}!`,
+      erro: (it) => `Essa é a letra ${it.letra}. Tente de novo!`,
+      falarErro: (it) => `Essa é a letra ${it.nome}. Tente de novo!`,
+    },
+    animais: {
+      nome: 'Animais', simbolo: '🐾', cor: '#34b25a',
+      itens: [
+        ['o', 'cachorro', '🐶', 'au au'], ['o', 'gato', '🐱', 'miau'], ['a', 'vaca', '🐮', 'muuu'], ['o', 'pato', '🦆', 'quá quá'],
+        ['o', 'porco', '🐷', 'óinc óinc'], ['a', 'galinha', '🐔', 'có có có'], ['o', 'cavalo', '🐴', 'iiirrí'], ['a', 'ovelha', '🐑', 'mééé'],
+        ['o', 'leão', '🦁', 'roarr'], ['o', 'sapo', '🐸', 'croac'], ['o', 'elefante', '🐘', 'fuuu'], ['o', 'macaco', '🐵', 'uh uh ah ah'],
+        ['a', 'coruja', '🦉', 'uhu uhu'], ['a', 'abelha', '🐝', 'zzzz'], ['o', 'passarinho', '🐦', 'piu piu'], ['o', 'coelho', '🐰', ''],
+        ['a', 'girafa', '🦒', ''], ['a', 'tartaruga', '🐢', ''], ['o', 'peixe', '🐟', ''], ['a', 'borboleta', '🦋', ''],
+      ].map(([art, nome, ex, som]) => ({ art, nome, ex, som })),
+      desenho: (it) => `<span class="emoji-grande">${it.ex}</span>`,
+      rotulo: (it) => it.nome,
+      frase: (it) => `${it.art === 'o' ? 'O' : 'A'} ${it.nome}!` + (it.som ? ` Faz ${it.som}!` : ''),
+      perguntas: [
+        (itens) => { const c = sortear(itens); return { certo: c, texto: `Onde está ${c.art} ${c.nome}?` }; },
+        (itens) => { const c = sortear(itens.filter(i => i.som)); return { certo: c, texto: `Quem faz ${c.som}?`, apenas: (i) => i === c || !i.som || i.som !== c.som }; },
+      ],
+      acerto: (it) => `Isso! ${it.art === 'o' ? 'O' : 'A'} ${it.nome}!` + (it.som ? ` ${it.som[0].toUpperCase() + it.som.slice(1)}!` : ''),
+      erro: (it) => `Esse é ${it.art} ${it.nome}. Tente de novo!`,
+    },
+    alimentos: {
+      nome: 'Alimentos', simbolo: '🍎', cor: '#ff7a1a',
+      itens: [
+        ['a', 'maçã', '🍎', 'fruta'], ['a', 'banana', '🍌', 'fruta'], ['a', 'uva', '🍇', 'fruta'], ['a', 'melancia', '🍉', 'fruta'],
+        ['o', 'morango', '🍓', 'fruta'], ['a', 'laranja', '🍊', 'fruta'], ['o', 'abacaxi', '🍍', 'fruta'], ['a', 'pera', '🍐', 'fruta'],
+        ['o', 'abacate', '🥑', 'fruta'], ['a', 'cereja', '🍒', 'fruta'], ['a', 'cenoura', '🥕', 'legume'], ['o', 'brócolis', '🥦', 'verdura'],
+        ['o', 'milho', '🌽', 'legume'], ['o', 'tomate', '🍅', 'legume'], ['a', 'batata', '🥔', 'legume'], ['o', 'pepino', '🥒', 'legume'],
+        ['o', 'pão', '🍞', 'outro'], ['o', 'queijo', '🧀', 'outro'], ['o', 'ovo', '🥚', 'outro'], ['o', 'leite', '🥛', 'outro'], ['o', 'arroz', '🍚', 'outro'],
+      ].map(([art, nome, ex, tipo]) => ({ art, nome, ex, tipo })),
+      desenho: (it) => `<span class="emoji-grande">${it.ex}</span>`,
+      rotulo: (it) => it.nome,
+      frase: (it) => `${it.art === 'o' ? 'O' : 'A'} ${it.nome}!` + ({ fruta: ' É uma fruta gostosa e saudável!', legume: ' É um legume que deixa a gente forte!', verdura: ' É uma verdura que faz muito bem!', outro: '' })[it.tipo],
+      perguntas: [
+        (itens) => { const c = sortear(itens); return { certo: c, texto: `Onde está ${c.art} ${c.nome}?` }; },
+        (itens) => {
+          const c = sortear(itens.filter(i => i.tipo === 'fruta'));
+          return { certo: c, texto: 'Qual destes é uma fruta?', apenas: (i) => i === c || i.tipo !== 'fruta' };
+        },
+      ],
+      acerto: (it) => `Isso! ${it.art === 'o' ? 'O' : 'A'} ${it.nome}!`,
+      erro: (it) => `Esse é ${it.art === 'o' ? 'o' : 'a'} ${it.nome}. Tente de novo!`,
+    },
+  };
+
+  const telaJogos = document.getElementById('jogos');
+  const corpoJogos = document.getElementById('jogos-corpo');
+  const tituloJogos = document.getElementById('jogos-titulo');
+  const ACERTOS_PARA_GANHAR = 5;
+  let telaAtual = 'menu', temaAtual = null, rodada = null;
+
+  function falarJogo(texto, falado) {
+    narrar(falado || texto, () => {}, VOZ_CRIANCA);
+  }
+  function somAcerto() { [[523, 0], [659, 0.08], [784, 0.16], [1047, 0.24]].forEach(([f, t]) => tocarNota(f, t, 0.2, 0.16)); }
+  function somErro() { tocarAviso('nada'); }
+
+  function festa(el, quantos) {
+    if (calmo) quantos = Math.min(quantos, 3);
+    const r = el.getBoundingClientRect();
+    for (let i = 0; i < quantos; i++) {
+      const s = document.createElement('span');
+      s.className = 'festa';
+      s.textContent = sortear(['⭐', '✨', '🎉', '💛', '🌟']);
+      s.style.left = (r.left + r.width / 2) + 'px';
+      s.style.top = (r.top + r.height / 2) + 'px';
+      document.body.appendChild(s);
+      const ang = Math.random() * Math.PI * 2, dist = 70 + Math.random() * 90;
+      s.animate([
+        { transform: 'translate(-50%, -50%) scale(.4)', opacity: 1 },
+        { transform: `translate(calc(-50% + ${Math.cos(ang) * dist}px), calc(-50% + ${Math.sin(ang) * dist}px)) scale(1.2)`, opacity: 0 },
+      ], { duration: 900, easing: 'ease-out' }).onfinish = () => s.remove();
+    }
+  }
+
+  function abrirJogos() {
+    if (estado === 'falando') return;
+    if (estado === 'ouvindo') setEstado('parado');
+    if (estado === 'narrando') pararNarracao();
+    obterContexto();
+    telaJogos.hidden = false;
+    mostrarMenuJogos();
+    falarJogo('Vamos jogar! Escolha um jogo!');
+  }
+
+  function voltarJogos() {
+    if (telaAtual === 'menu') {
+      telaJogos.hidden = true;
+      if ('speechSynthesis' in window) speechSynthesis.cancel();
+      clearInterval(mexendoBoca);
+      abrirBoca(0);
+    } else if (telaAtual === 'tema') mostrarMenuJogos();
+    else mostrarTema(temaAtual);
+  }
+
+  function mostrarMenuJogos() {
+    telaAtual = 'menu';
+    tituloJogos.textContent = 'Jogos do Miguel';
+    corpoJogos.innerHTML = '<div class="menu-jogos">' + Object.entries(TEMAS).map(([id, t]) =>
+      `<button class="cartao-tema" data-tema="${id}" style="--cor:${t.cor}"><span class="simbolo">${t.simbolo}</span><span>${t.nome}</span></button>`
+    ).join('') + '</div>';
+  }
+
+  function mostrarTema(id) {
+    telaAtual = 'tema';
+    temaAtual = id;
+    const t = TEMAS[id];
+    tituloJogos.textContent = t.nome;
+    corpoJogos.innerHTML = `
+      <div class="tema-escolha" style="--cor:${t.cor}">
+        <div class="tema-heroi">${t.simbolo}</div>
+        <button class="modo" data-modo="conhecer"><span class="simbolo">👀</span><span><strong>Conhecer</strong><small>toque e ouça o nome</small></span></button>
+        <button class="modo" data-modo="jogar"><span class="simbolo">🎯</span><span><strong>Jogar</strong><small>o Miguel pergunta, você responde</small></span></button>
+      </div>`;
+    falarJogo(t.nome + '! Você quer conhecer ou jogar?');
+  }
+
+  function fraseDoItem(t, it) {
+    return t.frase ? t.frase(it) : it.frase;
+  }
+
+  function mostrarConhecer() {
+    telaAtual = 'conhecer';
+    const t = TEMAS[temaAtual];
+    tituloJogos.textContent = t.nome;
+    corpoJogos.innerHTML = `
+      <div class="conhecer" style="--cor:${t.cor}">
+        <div class="destaque-item" id="destaque-item"><div class="desenho tipo-${temaAtual}">${t.desenho(t.itens[0], true)}</div><p>${fraseDoItem(t, t.itens[0])}</p></div>
+        <div class="grade-itens">${t.itens.map((it, i) =>
+          `<button class="item tipo-${temaAtual}" data-i="${i}" aria-label="${t.rotulo(it)}">${t.desenho(it, false)}<span class="rotulo">${t.rotulo(it)}</span></button>`).join('')}
+        </div>
+      </div>`;
+    falarJogo('Toque em cada um para ouvir!');
+  }
+
+  function escolherNoConhecer(i, botao) {
+    const t = TEMAS[temaAtual], it = t.itens[i];
+    const destaque = document.getElementById('destaque-item');
+    destaque.innerHTML = `<div class="desenho tipo-${temaAtual}">${t.desenho(it, true)}</div><p>${fraseDoItem(t, it)}</p>`;
+    destaque.animate([{ transform: 'scale(.9)' }, { transform: 'scale(1)' }], { duration: 250, easing: 'ease-out' });
+    for (const b of corpoJogos.querySelectorAll('.item')) b.classList.toggle('ativo', b === botao);
+    falarJogo(t.falar ? t.falar(it) : fraseDoItem(t, it));
+  }
+
+  function comecarJogo() {
+    telaAtual = 'jogar';
+    rodada = { acertos: 0, recentes: [] };
+    novaPergunta();
+  }
+
+  function novaPergunta() {
+    const t = TEMAS[temaAtual];
+    // não repete a mesma resposta das últimas perguntas
+    let p;
+    for (let tentativa = 0; tentativa < 12; tentativa++) {
+      p = sortear(t.perguntas)(t.itens);
+      if (!rodada.recentes.includes(p.certo)) break;
+    }
+    rodada.recentes = [p.certo, ...rodada.recentes].slice(0, 3);
+    const candidatos = embaralhar(t.itens.filter(i => i !== p.certo && (!p.apenas || p.apenas(i))));
+    rodada.pergunta = p;
+    rodada.opcoes = embaralhar([p.certo, ...candidatos.slice(0, 2)]);
+    rodada.travado = false;
+    const estrelas = Array.from({ length: ACERTOS_PARA_GANHAR }, (_, i) => `<span class="${i < rodada.acertos ? 'ganhou' : ''}">★</span>`).join('');
+    corpoJogos.innerHTML = `
+      <div class="jogo" style="--cor:${t.cor}">
+        <div class="estrelas" aria-label="${rodada.acertos} de ${ACERTOS_PARA_GANHAR} estrelas">${estrelas}</div>
+        <div class="pergunta">
+          <img src="icones/icone-192.png" alt="">
+          <div class="pergunta-balao"><span>${p.texto}</span><button id="ouvir-de-novo" aria-label="Ouvir a pergunta de novo">🔊</button></div>
+        </div>
+        ${p.mostrar ? `<div class="mostrar">${p.mostrar}</div>` : ''}
+        <div class="opcoes">${rodada.opcoes.map((it, i) =>
+          `<button class="opcao tipo-${temaAtual}" data-i="${i}" aria-label="${t.rotulo(it)}">${t.desenho(it, false)}</button>`).join('')}
+        </div>
+      </div>`;
+    falarJogo(p.texto, p.falado);
+  }
+
+  function responder(i, botao) {
+    if (rodada.travado) return;
+    const t = TEMAS[temaAtual], it = rodada.opcoes[i];
+    if (it === rodada.pergunta.certo) {
+      rodada.travado = true;
+      rodada.acertos++;
+      botao.classList.add('certo');
+      somAcerto();
+      festa(botao, 10);
+      falarJogo(t.acerto(it), t.falarAcerto && t.falarAcerto(it));
+      const estrela = corpoJogos.querySelectorAll('.estrelas span')[rodada.acertos - 1];
+      if (estrela) estrela.classList.add('ganhou');
+      setTimeout(() => {
+        if (telaAtual !== 'jogar') return;
+        if (rodada.acertos >= ACERTOS_PARA_GANHAR) mostrarVitoria();
+        else novaPergunta();
+      }, calmo ? 2600 : 2000);
+    } else {
+      botao.classList.add('errado');
+      botao.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-10px)' }, { transform: 'translateX(10px)' }, { transform: 'translateX(0)' }], { duration: 350 });
+      somErro();
+      falarJogo(t.erro(it), t.falarErro && t.falarErro(it));
+    }
+  }
+
+  function mostrarVitoria() {
+    telaAtual = 'vitoria';
+    corpoJogos.innerHTML = `
+      <div class="vitoria">
+        <div class="trofeu">🏆</div>
+        <img src="icones/miguel.png" alt="">
+        <h2>Parabéns!</h2>
+        <p>Você ganhou ${ACERTOS_PARA_GANHAR} estrelas!</p>
+        <div class="vitoria-botoes">
+          <button class="modo" data-acao="de-novo"><span class="simbolo">🔁</span><strong>Jogar de novo</strong></button>
+          <button class="modo" data-acao="outros"><span class="simbolo">🎮</span><strong>Outros jogos</strong></button>
+        </div>
+      </div>`;
+    tocarMusica();
+    festa(corpoJogos.querySelector('.trofeu'), 18);
+    falarJogo('Parabéns! Você ganhou cinco estrelas! Você é demais!');
+  }
+
+  corpoJogos.addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    if (b.dataset.tema) mostrarTema(b.dataset.tema);
+    else if (b.dataset.modo === 'conhecer') mostrarConhecer();
+    else if (b.dataset.modo === 'jogar') comecarJogo();
+    else if (b.id === 'ouvir-de-novo') falarJogo(rodada.pergunta.texto, rodada.pergunta.falado);
+    else if (b.classList.contains('item')) escolherNoConhecer(+b.dataset.i, b);
+    else if (b.classList.contains('opcao')) responder(+b.dataset.i, b);
+    else if (b.dataset.acao === 'de-novo') comecarJogo();
+    else if (b.dataset.acao === 'outros') mostrarMenuJogos();
+  });
+  document.getElementById('jogos-voltar').addEventListener('click', voltarJogos);
+  document.getElementById('abrir-jogos').addEventListener('click', abrirJogos);
 
   // ---------- Modo calmo ----------
   const botaoCalmo = document.getElementById('calmo');

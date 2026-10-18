@@ -4,6 +4,7 @@ Jogo infantil para o navegador: toque no Miguel, fale alguma coisa e ele repete 
 
 - Vozes: Fininha, Tia Dani, Bob Esponja, Pirata, Gatinho, Monstro e Robô
 - Botão **🙏 Oração**: orações infantis de acordo com o horário (manhã, refeições, noite) e outras para qualquer hora
+- Botão **🎮 Jogos**: cores, números, letras, animais e alimentos, cada um com "Conhecer" (toca e ouve) e "Jogar" (o Miguel pergunta e a criança responde, ganhando 5 estrelas)
 - Abertura animada ao entrar
 - Enquanto escuta, uma orelhona com ondas aparece e bolinhas coloridas voam até a orelha do Miguel, com um sinal sonoro no começo e no fim (dá para entender sem saber ler)
 - Botão **💡 Dicas**: 59 dicas sobre respeito, alimentação saudável, higiene, segurança, natureza, sentimentos e mais
