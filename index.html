@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap">
 <title>Miguel, o Gato Falante</title>
-<link rel="stylesheet" href="jogos/jogos.css?v=202610181802">
+<link rel="stylesheet" href="jogos/jogos.css?v=202610181810">
 <style>
   /* Uma tela só, de cima para baixo: topo com ajuda → aviso do que está acontecendo → Miguel → ações grandes → vozes.
      Cores calmas e sempre iguais, botões grandes com ícone + palavra, um estado de cada vez. */
@@ -113,15 +113,16 @@
     transition: background .2s, border-color .2s, color .2s;
   }
   .estado .ponto { width: 10px; height: 10px; border-radius: 50%; background: var(--verde); }
-  .estado[data-estado="ouvindo"] { background: var(--vermelho-claro); border-color: var(--vermelho); color: var(--vermelho); }
-  .estado[data-estado="ouvindo"] .ponto { background: var(--vermelho); animation: pisca 1s ease-in-out infinite; }
+  /* vermelho escuro no texto para ler bem; a bolinha pulsa devagar, sem piscar */
+  .estado[data-estado="ouvindo"] { background: var(--vermelho-claro); border-color: var(--vermelho); color: #a8232a; }
+  .estado[data-estado="ouvindo"] .ponto { background: var(--vermelho); animation: pulso-ponto 1.6s ease-in-out infinite; }
   .estado[data-estado="falando"] { background: var(--laranja-claro); border-color: var(--laranja); color: #9a4b07; }
   .estado[data-estado="falando"] .ponto { background: var(--laranja); }
   .estado[data-estado="oracao"] { background: var(--lilas-claro); border-color: var(--lilas); color: var(--lilas); }
   .estado[data-estado="oracao"] .ponto { background: var(--lilas); }
   .estado[data-estado="dica"] { background: var(--amarelo-claro); border-color: #e2b23a; color: var(--amarelo); }
   .estado[data-estado="dica"] .ponto { background: #e2b23a; }
-  @keyframes pisca { 50% { opacity: .3; } }
+  @keyframes pulso-ponto { 50% { transform: scale(1.15); } }
 
   .balao {
     position: relative;
@@ -530,8 +531,13 @@
   .calmo #gato.cutucado #corpo-todo, .calmo .vozes.destaque .voz,
   .calmo .estado[data-estado="ouvindo"] .ponto { animation: none; }
   .calmo .nota { display: none; }
-  .calmo .vitoria .trofeu, .calmo .lembrete-simbolo,
-  .calmo .raios, .calmo .nuvem, .calmo .enfeite, .calmo .miguel-abertura, .calmo .titulo-abertura span, .calmo #jogar { animation-iteration-count: 1; }
+  .calmo .vitoria .trofeu, .calmo .enfeite, .calmo .miguel-abertura, .calmo #jogar { animation-iteration-count: 1; }
+  /* no calmo, nada fica rodando em loop (só CSS, o desenho do Miguel não muda) */
+  .calmo .voz .icone-esponja, .calmo .area-gato.ouvindo-on #orelhao::before, .calmo .area-gato.ouvindo-on #orelhao::after,
+  .calmo #gato.ronronando #corpo-todo, .calmo .raios, .calmo .nuvem, .calmo .titulo-abertura span,
+  .calmo .estado .ponto, .calmo .lembrete-simbolo { animation: none; }
+  .calmo .anel { border-width: 2px; background: none; }
+  .calmo .area-gato.chamando .anel { animation: none; }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
     .nota { display: none; }
@@ -871,6 +877,10 @@
     <h2 id="ajustes-titulo">⚙️ Ajustes</h2>
     <p class="sub">Para os pais e responsáveis</p>
     <div class="linha-ajuste">
+      <div><strong>🌙 Modo calmo</strong><small>Menos movimento, sem ronrom e sem vibração, fala mais devagar e sons mais baixos.</small></div>
+      <button class="chave" id="aj-calmo" role="switch" aria-checked="false" aria-label="Modo calmo"></button>
+    </div>
+    <div class="linha-ajuste">
       <div><strong>🔊 Falas do Miguel</strong><small>Desligado, ele só mostra os textos, sem falar. A brincadeira de repetir continua.</small></div>
       <button class="chave" id="aj-falas" role="switch" aria-checked="true" aria-label="Falas do Miguel"></button>
     </div>
@@ -879,8 +889,8 @@
       <div class="voz-escolha"><select id="aj-voz" aria-label="Voz do Miguel"></select><button id="aj-testar">▶ Testar</button></div>
     </div>
     <div class="linha-ajuste">
-      <div><strong>🌙 Modo calmo</strong><small>Menos movimento, fala mais devagar e sons mais baixos.</small></div>
-      <button class="chave" id="aj-calmo" role="switch" aria-checked="false" aria-label="Modo calmo"></button>
+      <div><strong>📳 Vibrar quando o Miguel ronrona</strong><small>Quando a criança fica um tempo parada, o Miguel ronrona baixinho. Ligado, o celular vibra junto.</small></div>
+      <button class="chave" id="aj-vibrar" role="switch" aria-checked="false" aria-label="Vibrar quando o Miguel ronrona"></button>
     </div>
     <div class="linha-ajuste">
       <div><strong>⏰ Lembretes</strong><small>Beber água a cada 1 hora e se mexer a cada 30 minutos de jogo.</small></div>
@@ -2075,7 +2085,7 @@
     calmo = ligado;
     document.documentElement.classList.toggle('calmo', ligado);
     chaveCalmo.setAttribute('aria-checked', String(ligado));
-    guardar('miguel-calmo', ligado ? '1' : '0');
+    document.getElementById('abrir-ajustes').setAttribute('aria-label', ligado ? 'Ajustes (modo calmo ligado)' : 'Ajustes');
   }
   function setMudo(ligado) {
     mudo = ligado;
@@ -2114,7 +2124,13 @@
     setMudo(!mudo);
     if (!mudo) falarPartes('Falas ligadas!');
   });
-  chaveCalmo.addEventListener('click', () => setCalmo(!calmo));
+  // só grava quando os pais escolhem; sem escolha, segue o "reduzir movimento" do aparelho
+  chaveCalmo.addEventListener('click', () => { setCalmo(!calmo); guardar('miguel-calmo', calmo ? '1' : '0'); });
+  // vibrar junto com o ronrom: começa desligado
+  const chaveVibrar = document.getElementById('aj-vibrar');
+  const setVibrar = (ligado) => { chaveVibrar.setAttribute('aria-checked', String(ligado)); guardar('miguel-vibrar', ligado ? '1' : '0'); };
+  chaveVibrar.addEventListener('click', () => setVibrar(ler('miguel-vibrar') !== '1'));
+  setVibrar(ler('miguel-vibrar') === '1');
   chaveLembretes.addEventListener('click', () => setLembretes(!lembretesLigados));
   seletorVoz.addEventListener('change', () => {
     guardar('miguel-voz-aparelho', seletorVoz.value);
@@ -2132,7 +2148,10 @@
     telaAjustes.hidden = true;
     if (liberarParaNarrar()) apresentar();
   });
-  setCalmo(ler('miguel-calmo') === '1');
+  const prefereMenos = matchMedia('(prefers-reduced-motion: reduce)');
+  const calmoGuardado = ler('miguel-calmo');
+  setCalmo(calmoGuardado !== null ? calmoGuardado === '1' : prefereMenos.matches);
+  prefereMenos.addEventListener?.('change', e => { if (ler('miguel-calmo') === null) setCalmo(e.matches); });
   setMudo(ler('miguel-mudo') === '1');
   setLembretes(ler('miguel-lembretes') !== '0');
   setModoAuto(ler('miguel-auto') === '1');
@@ -2307,12 +2326,16 @@
   ]);
 
   // ---------- Ronronar: quando a criança fica um tempinho sem brincar, o Miguel ronrona baixinho ----------
-  // e o celular vibra junto com cada respiração do ronrom (onde o aparelho deixa vibrar)
-  let ultimoToque = Date.now(), ronronando = false;
-  ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => { ultimoToque = Date.now(); }, { capture: true, passive: true }));
+  // o celular só vibra junto se os pais ligarem nos Ajustes; no modo calmo não ronrona
+  // e ronrona no máximo 2 vezes seguidas sem a criança tocar em nada
+  let ultimoToque = Date.now(), ronronando = false, ronronsSeguidos = 0;
+  ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => { ultimoToque = Date.now(); ronronsSeguidos = 0; }, { capture: true, passive: true }));
   const telaPrincipalLivre = () => aberturaFechada && estado === 'parado' && document.visibilityState === 'visible' &&
     document.getElementById('jogos').hidden && telaAjustes.hidden && telaLembrete.hidden;
   function ronronar() {
+    if (calmo) return;
+    if (ronronsSeguidos >= 2) return;
+    ronronsSeguidos++;
     const ac = obterContexto();
     if (ac.state !== 'running') { ac.resume().catch(() => {}); return; }
     ronronando = true;
@@ -2348,7 +2371,7 @@
     fonte.start(t0);
     fonte.stop(t0 + dur);
     gato.classList.add('ronronando');
-    if (navigator.vibrate) {
+    if (navigator.vibrate && ler('miguel-vibrar') === '1') {
       // a cada respiração: vibra fraquinho ao puxar o ar, para, e vibra mais ao soltar
       const padrao = [];
       for (let k = 0; k < VEZES; k++) padrao.push(300, 350, 700, 250);
@@ -2358,14 +2381,14 @@
     fonte.onended = fim;
     setTimeout(fim, dur * 1000 + 200);
   }
-  // ronrona depois de 20 segundos sem a criança tocar em nada, e repete a cada 20 segundos enquanto ela não interagir
-  const ESPERA_RONROM = 20000;
+  // ronrona depois de 45 segundos sem a criança tocar em nada (no máximo 2 vezes seguidas)
+  const ESPERA_RONROM = 45000;
   setInterval(() => {
     if (ronronando) return;
     if (!telaPrincipalLivre()) { ultimoToque = Math.max(ultimoToque, Date.now() - ESPERA_RONROM + 3000); return; }
     if (Date.now() - ultimoToque >= ESPERA_RONROM) {
       ronronar();
-      ultimoToque = Date.now() + 5000; // conta os próximos 20 segundos a partir do fim deste ronrom (que dura uns 5)
+      ultimoToque = Date.now() + 5000; // conta os próximos 45 segundos a partir do fim deste ronrom (que dura uns 5)
     }
   }, 1000);
   document.addEventListener('pointerdown', () => {
@@ -2467,7 +2490,7 @@
 
   // ---------- Atualizações ----------
   // o app instalado fica aberto em segundo plano; ao voltar para ele, confere se tem versão nova
-  const VERSAO = '202610181802';
+  const VERSAO = '202610181810';
   const avisoAtualizar = document.getElementById('atualizar');
   let registro = null;
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
@@ -2504,22 +2527,22 @@
   }
 })();
 </script>
-<script src="jogos/roupas.js?v=202610181802" defer></script>
-<script src="jogos/nucleo.js?v=202610181802" defer></script>
-<script src="jogos/aprender.js?v=202610181802" defer></script>
-<script src="jogos/idiomas.js?v=202610181802" defer></script>
-<script src="jogos/musica.js?v=202610181802" defer></script>
-<script src="jogos/colorir.js?v=202610181802" defer></script>
-<script src="jogos/pontos.js?v=202610181802" defer></script>
-<script src="jogos/memoria.js?v=202610181802" defer></script>
-<script src="jogos/bolhas.js?v=202610181802" defer></script>
-<script src="jogos/sons.js?v=202610181802" defer></script>
-<script src="jogos/mercadinho.js?v=202610181802" defer></script>
-<script src="jogos/sombras.js?v=202610181802" defer></script>
-<script src="jogos/diferente.js?v=202610181802" defer></script>
-<script src="jogos/quebracabeca.js?v=202610181802" defer></script>
+<script src="jogos/roupas.js?v=202610181810" defer></script>
+<script src="jogos/nucleo.js?v=202610181810" defer></script>
+<script src="jogos/aprender.js?v=202610181810" defer></script>
+<script src="jogos/idiomas.js?v=202610181810" defer></script>
+<script src="jogos/musica.js?v=202610181810" defer></script>
+<script src="jogos/colorir.js?v=202610181810" defer></script>
+<script src="jogos/pontos.js?v=202610181810" defer></script>
+<script src="jogos/memoria.js?v=202610181810" defer></script>
+<script src="jogos/bolhas.js?v=202610181810" defer></script>
+<script src="jogos/sons.js?v=202610181810" defer></script>
+<script src="jogos/mercadinho.js?v=202610181810" defer></script>
+<script src="jogos/sombras.js?v=202610181810" defer></script>
+<script src="jogos/diferente.js?v=202610181810" defer></script>
+<script src="jogos/quebracabeca.js?v=202610181810" defer></script>
 <script src="jogos/penelope3d.js?v=202610181757" defer></script>
-<script src="jogos/corrida.js?v=202610181802" defer></script>
-<script src="jogos/mundo.js?v=202610181802" defer></script>
+<script src="jogos/corrida.js?v=202610181810" defer></script>
+<script src="jogos/mundo.js?v=202610181810" defer></script>
 </body>
 </html>
