@@ -341,5 +341,51 @@
     ...ESTAMPAS.map(e => 'Estampa ' + e.nome + '!'),
     ...Object.values(PECAS).flat().map(p => `${p.nome}!`),
   ]);
-  M.roupas = { abrir, vestir, imagemMiguel, atual: () => roupa, tom };
+  // o Miguel vestido, separado em partes (para animar como um bonequinho nos jogos)
+  // cada parte é uma imagem 400 x 500, no mesmo lugar do desenho inteiro
+  const GRUPO_DA_PARTE = {
+    'sombra-chao': null, 'mao-orelha': null, 'maos-orar': null, 'roupa-costas': 'costas', rabo: 'rabo',
+    'patas-tras': 'patas', 'patas-tras-dedos': 'patas', 'roupa-pes': 'patas',
+    'braco-e': 'bracoE', 'braco-d': 'bracoD', 'roupa-mangas': 'mangas', cabeca: 'cabeca',
+  };
+  const PARTES = {
+    costas: { grupos: ['costas'] }, rabo: { grupos: ['rabo'] }, corpo: { grupos: ['corpo'] },
+    pataE: { grupos: ['patas'], lado: 'e' }, pataD: { grupos: ['patas'], lado: 'd' },
+    bracoE: { grupos: ['bracoE', 'mangas'], lado: 'e' }, bracoD: { grupos: ['bracoD', 'mangas'], lado: 'd' },
+    cabeca: { grupos: ['cabeca'] }, piscando: { grupos: ['cabeca'], piscar: true },
+  };
+  function partesMiguel() {
+    const original = document.getElementById('gato');
+    const partes = {};
+    for (const [nome, cfg] of Object.entries(PARTES)) {
+      const copia = original.cloneNode(true);
+      copia.removeAttribute('class');
+      copia.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      copia.setAttribute('width', '400');
+      copia.setAttribute('height', '500');
+      copia.querySelector('#boca-aberta')?.remove();
+      copia.querySelector(cfg.piscar ? '.olho-aberto' : '.olho-fechado')?.remove();
+      vestir(copia);
+      const corpoTodo = copia.querySelector('#corpo-todo');
+      corpoTodo.removeAttribute('style');
+      for (const filho of [...corpoTodo.children]) {
+        const grupo = filho.id in GRUPO_DA_PARTE ? GRUPO_DA_PARTE[filho.id] : 'corpo';
+        if (!cfg.grupos.includes(grupo)) filho.remove();
+      }
+      if (cfg.lado) {
+        const ns = 'http://www.w3.org/2000/svg';
+        const clip = document.createElementNS(ns, 'clipPath');
+        clip.id = 'lado-' + cfg.lado;
+        clip.innerHTML = cfg.lado === 'e' ? '<rect x="0" y="0" width="200" height="500"/>' : '<rect x="200" y="0" width="200" height="500"/>';
+        copia.querySelector('defs').appendChild(clip);
+        corpoTodo.setAttribute('clip-path', `url(#lado-${cfg.lado})`);
+      }
+      const img = new Image();
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(copia));
+      partes[nome] = img;
+    }
+    return partes;
+  }
+
+  M.roupas = { abrir, vestir, imagemMiguel, partesMiguel, atual: () => roupa, tom };
 })();

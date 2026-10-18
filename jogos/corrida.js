@@ -159,6 +159,22 @@
       const dados = lerDados();
       const img = new Image();
       img.src = M.roupas ? M.roupas.imagemMiguel() : 'icones/miguel.png';
+      // partes do gatinho (cabeça, bracinhos, patinhas, rabo) desenhadas uma vez em telas pequenas
+      let partes = null;
+      if (M.roupas?.partesMiguel) {
+        const fontes = M.roupas.partesMiguel();
+        Promise.all(Object.values(fontes).map(im => im.decode ? im.decode().catch(() => {}) : new Promise(ok => { im.onload = im.onerror = ok; }))).then(() => {
+          const prontas = {};
+          for (const [nome, im] of Object.entries(fontes)) {
+            if (!im.naturalWidth) return;
+            const cv = document.createElement('canvas');
+            cv.width = 260; cv.height = 325;
+            cv.getContext('2d').drawImage(im, 0, 0, 260, 325);
+            prontas[nome] = cv;
+          }
+          partes = prontas;
+        });
+      }
       const imgHeroi = new Image();
       imgHeroi.src = 'icones/super-miguel.png';
       const gritoHeroi = new Audio('sons/super-miguel.mp3');
@@ -179,7 +195,7 @@
       window.addEventListener('resize', aoRedimensionar);
 
       // estado
-      const jogador = { x: 96, y: CHAO - 84, w: 68, h: 84, vy: 0, noChao: true, pulos: 0, invencivel: 0, escudo: false, turbo: 0, ima: 0, esmaga: 0 };
+      const jogador = { x: 96, y: CHAO - 84, w: 68, h: 84, vy: 0, noChao: true, pulos: 0, invencivel: 0, escudo: false, turbo: 0, ima: 0, esmaga: 0, passo: 0, giro: 0, piscar: 2.5 };
       let nivel = nivelInicial, tempoNivel = 0, velocidade = 0, distancia = 0, proximoSpawn = 500;
       let pontos = 0, peixes = 0, vidas = 3, rodando = true, pausado = false, acabou = false;
       let ultimoTempo = performance.now(), quadro = null, avisoTimer = null;
@@ -221,7 +237,7 @@
         if (pausado || acabou) return;
         M.obterContexto();
         if (jogador.noChao) { jogador.vy = PULO; jogador.noChao = false; jogador.pulos = 1; som('pulo'); poeira(jogador.x + 20, CHAO, 6); }
-        else if (jogador.pulos < 2) { jogador.vy = PULO_DUPLO; jogador.pulos = 2; som('pulo2'); brilho(jogador.x + 34, jogador.y + 70, '#ffffff', 8); }
+        else if (jogador.pulos < 2) { jogador.vy = PULO_DUPLO; jogador.pulos = 2; jogador.giro = 0.001; som('pulo2'); brilho(jogador.x + 34, jogador.y + 70, '#ffffff', 8); }
       }
       const aoTocar = (e) => {
         if (e.target.closest('button')) return;
@@ -285,7 +301,7 @@
       function pontinho(x, y, texto, cor = '#fff') { particulas.push({ x, y, vx: 0, vy: -70, vida: 0.9, texto, cor }); }
 
       function chamarHeroi() {
-        heroi = { t: M.calmo ? 13 : 11, x: -140, y: -60, anim: 0, recarga: 1.1, saindo: false };
+        heroi = { t: M.calmo ? 13 : 11, x: -140, y: -60, anim: 0, recarga: 1.1, saindo: false, tiro: 0 };
         presentesSemHeroi = 0;
         clarao = 0.7;
         som('nivel');
@@ -296,7 +312,8 @@
       // raio de estrelas: o obstáculo vira um peixinho no ar
       function transformar(o) {
         const cx = o.x + o.w / 2, cy = (o.voa ? o.yv : o.y) + o.h / 2;
-        raios.push({ x1: heroi.x + 36, y1: heroi.y - 34, x2: cx, y2: cy, vida: 0.35 });
+        raios.push({ x1: heroi.x + 40, y1: heroi.y - 34, x2: cx, y2: cy, vida: 0.35 });
+        heroi.tiro = 1;
         Object.assign(o, { tipo: 'peixe', fig: '🐟', voa: false, w: 34, h: 34, x: cx - 17, y: Math.min(cy, CHAO - 70) - 17 });
         brilho(cx, cy, '#ffd54f', 14); brilho(cx, cy, '#ff80ab', 8); brilho(cx, cy, '#80deea', 8);
         pontinho(cx, cy - 20, '✨ +5', '#ffe082');
@@ -388,6 +405,7 @@
         for (const p of ['invencivel', 'turbo', 'ima']) if (jogador[p] > 0) jogador[p] = Math.max(0, jogador[p] - dt);
         if (heroi) {
           heroi.anim += dt;
+          heroi.tiro = Math.max(0, heroi.tiro - dt * 4);
           heroi.t -= dt;
           if (heroi.t <= 0 && !heroi.saindo) { heroi.saindo = true; pontinho(heroi.x, heroi.y - 50, 'Tchau! 👋', '#fff'); }
           if (heroi.saindo) { heroi.x += 560 * dt; heroi.y -= 320 * dt; if (heroi.y < -Math.max(0, sobraTopo) - 200) heroi = null; }
@@ -424,6 +442,11 @@
           jogador.noChao = false; jogador.pulos = 1;
         }
         jogador.esmaga = Math.max(0, jogador.esmaga - dt);
+        // passos acompanham a velocidade; cambalhota no pulo duplo; piscadinha de vez em quando
+        if (jogador.noChao) jogador.passo += velocidade * dt / 34;
+        if (jogador.giro > 0) { jogador.giro += dt * 13; if (jogador.giro >= Math.PI * 2 || jogador.noChao) jogador.giro = 0; }
+        jogador.piscar -= dt;
+        if (jogador.piscar < -0.13) jogador.piscar = 2 + Math.random() * 3;
 
         // mundo
         if (distancia >= proximoSpawn) gerar();
@@ -528,10 +551,12 @@
           ctx.save();
           ctx.translate(j.x + j.w / 2, j.y + j.h);
           const esm = j.esmaga > 0 ? 1 + j.esmaga * 1.5 : 1;
-          ctx.rotate(j.noChao ? corre * 0.05 : Math.max(-0.25, Math.min(0.25, j.vy / 3000)));
+          ctx.rotate(partes ? (j.noChao ? 0.06 : Math.max(-0.2, Math.min(0.2, j.vy / 3500))) : j.noChao ? corre * 0.05 : Math.max(-0.25, Math.min(0.25, j.vy / 3000)));
           ctx.scale(esm, 1 / esm);
           if (j.turbo > 0) { ctx.shadowColor = '#ffd54f'; ctx.shadowBlur = 24; }
-          if (img.complete && img.naturalWidth) ctx.drawImage(img, -j.w / 2 - 6, -j.h - 6 + Math.abs(corre) * -4, j.w + 12, j.h + 12);
+          if (j.giro > 0) { ctx.translate(0, -j.h / 2); ctx.rotate(j.giro); ctx.translate(0, j.h / 2); }
+          if (partes) desenharGatinho(j);
+          else if (img.complete && img.naturalWidth) ctx.drawImage(img, -j.w / 2 - 6, -j.h - 6 + Math.abs(corre) * -4, j.w + 12, j.h + 12);
           else emoji('🐱', 0, -j.h / 2, 60);
           ctx.restore();
         }
@@ -560,11 +585,65 @@
         ctx.globalAlpha = 1;
         if (clarao > 0) { ctx.fillStyle = `rgba(255,243,190,${clarao * 0.7})`; ctx.fillRect(-20, -Math.max(0, sobraTopo) - 20, W + 40, ALTURA + Math.max(0, sobraTopo) + 100); }
       }
+      // o gatinho como um bonequinho: corpo que galopa, bracinhos e patinhas alternando, cabeça e rabo com balanço
+      function desenharGatinho(j) {
+        const agora = performance.now() / 1000;
+        const ph = j.passo, s1 = Math.sin(ph), c1 = Math.cos(ph);
+        const chao = j.noChao, subindo = !chao && j.vy < 0;
+        const machucado = j.invencivel > 1.2;
+        ctx.translate(-j.w / 2 - 6, -j.h - 6);
+        ctx.scale((j.w + 12) / 400, (j.h + 12) / 500);
+        const pulo = chao ? -Math.abs(s1) * 22 : 0;
+        ctx.translate(0, pulo);
+        const parte = (im, px, py, ang = 0, dx = 0, dy = 0) => {
+          ctx.save();
+          ctx.translate(px + dx, py + dy); ctx.rotate(ang); ctx.translate(-px, -py);
+          ctx.drawImage(im, 0, 0, 400, 500);
+          ctx.restore();
+        };
+        // rabo: abana sempre; no ar fica para cima
+        const rabo = Math.sin(agora * (chao ? 9 : 5)) * 0.2 + (chao ? 0 : subindo ? -0.35 : 0.15);
+        parte(partes.costas, 200, 360, 0, 0, chao ? 0 : 6);
+        parte(partes.rabo, 272, 440, rabo);
+        parte(partes.corpo, 200, 470, chao ? Math.sin(ph * 2) * 0.03 : 0);
+        // patinhas de trás: uma vai, a outra volta (no ar ficam encolhidas)
+        if (chao) {
+          parte(partes.pataE, 148, 470, 0, c1 * 16, -Math.max(0, s1) * 20);
+          parte(partes.pataD, 252, 470, 0, -c1 * 16, -Math.max(0, -s1) * 20);
+        } else {
+          parte(partes.pataE, 148, 470, -0.3, -10, subindo ? -26 : -10);
+          parte(partes.pataD, 252, 470, 0.3, 10, subindo ? -26 : -10);
+        }
+        // bracinhos: balançam correndo; sobem no pulo; abrem na queda
+        if (chao) {
+          // um bracinho sobe enquanto o outro desce, no ritmo das patinhas
+          parte(partes.bracoE, 150, 372, 0.25 + s1 * 0.25, 4, -Math.max(0, -s1) * 22);
+          parte(partes.bracoD, 250, 372, -0.25 + s1 * 0.25, -4, -Math.max(0, s1) * 22);
+        } else {
+          parte(partes.bracoE, 150, 372, subindo ? 1.9 : 0.8);
+          parte(partes.bracoD, 250, 372, subindo ? -1.9 : -0.8);
+        }
+        // cabeça: balança um pouquinho atrás do corpo; chacoalha quando bate
+        const cab = machucado ? Math.sin(agora * 40) * 0.12 : chao ? Math.sin(ph * 2 + 0.9) * 0.05 : subindo ? -0.1 : 0.08;
+        const olhosFechados = machucado || (j.piscar < 0);
+        parte(olhosFechados ? partes.piscando : partes.cabeca, 200, 330, cab, 0, chao ? Math.abs(Math.sin(ph + 0.5)) * 6 : 0);
+      }
+      // desenha uma imagem em pedacinhos, cada um deslocado por campo(u, v): dá movimento a uma figura parada
+      function desenharMalha(im, x, y, w, h, campo, nx = 9, ny = 13) {
+        const iw = im.naturalWidth, ih = im.naturalHeight, cw = w / nx, ch = h / ny;
+        for (let i = 0; i < nx; i++) for (let k = 0; k < ny; k++) {
+          const [dx, dy] = campo((i + 0.5) / nx, (k + 0.5) / ny);
+          ctx.drawImage(im, i * iw / nx, k * ih / ny, iw / nx, ih / ny, x + i * cw + dx - 0.4, y + k * ch + dy - 0.4, cw + 0.8, ch + 0.8);
+        }
+      }
       function desenharHeroi() {
         const H = 104, W = H * 0.756, t = heroi.anim;
         ctx.save();
         ctx.translate(heroi.x, heroi.y);
-        ctx.rotate(heroi.saindo ? -0.5 : -0.14 + Math.sin(t * 3) * 0.04);
+        // chega dando uma pirueta; sai voando inclinado; empurra o corpo para trás quando solta o raio
+        const pirueta = t < 0.7 ? (1 - t / 0.7) * Math.PI * 2 : 0;
+        ctx.rotate((heroi.saindo ? -0.5 : -0.14 + Math.sin(t * 3) * 0.05) - pirueta - heroi.tiro * 0.12);
+        ctx.translate(-heroi.tiro * 6, 0);
         // brilho dourado em volta
         const aura = ctx.createRadialGradient(0, 0, 10, 0, 0, H * 0.75);
         aura.addColorStop(0, 'rgba(255,236,130,.55)'); aura.addColorStop(1, 'rgba(255,236,130,0)');
@@ -585,11 +664,33 @@
         // o Miguel virado para a frente, com o dedo apontando o caminho
         if (imgHeroi.complete && imgHeroi.naturalWidth) {
           ctx.save(); ctx.scale(-1, 1);
-          ctx.drawImage(imgHeroi, -W / 2, -H / 2, W, H);
+          desenharMalha(imgHeroi, -W / 2, -H / 2, W, H, (u, v) => {
+            // (u, v) na imagem original: o braço esticado fica à esquerda (vira a frente no espelho)
+            let dx = 0, dy = 0;
+            // pernas batendo como quem nada no ar (uma para cada lado, sem rasgar no meio)
+            if (v > 0.6) {
+              const k = (v - 0.6) / 0.4, lado = Math.min(1, Math.max(0, (u - 0.38) / 0.24));
+              const a = t * 8;
+              dx += k * 9 * Math.sin(a) * (1 - 2 * lado);
+              dy += k * 5 * Math.cos(a) * (1 - 2 * lado);
+            }
+            // cabeça balançando de alegria
+            if (v < 0.45) { const k = (0.45 - v) / 0.45; dx += k * Math.sin(t * 4) * 2.5; dy += k * Math.sin(t * 6) * 1.5; }
+            // braço que aponta: estica para a frente quando solta o raio
+            if (u < 0.4 && v > 0.08 && v < 0.5) { const k = (0.4 - u) / 0.4 * (1 - Math.abs(v - 0.29) / 0.21); dx -= k * (heroi.tiro * 10 + Math.sin(t * 5) * 1.5); }
+            // o outro braço acena
+            if (u > 0.68 && v > 0.3 && v < 0.62) { const k = (u - 0.68) / 0.32 * (1 - Math.abs(v - 0.46) / 0.16); dy += k * Math.sin(t * 10) * 5; }
+            return [dx, dy];
+          });
           ctx.restore();
+          // brilho na ponta do dedo
+          const brilhoDedo = 0.4 + heroi.tiro * 0.6 + Math.sin(t * 12) * 0.15;
+          const gd = ctx.createRadialGradient(W * 0.46, -H * 0.32, 0, W * 0.46, -H * 0.32, 14 + heroi.tiro * 10);
+          gd.addColorStop(0, `rgba(255,255,255,${brilhoDedo})`); gd.addColorStop(1, 'rgba(255,236,130,0)');
+          ctx.fillStyle = gd; ctx.beginPath(); ctx.arc(W * 0.46, -H * 0.32, 24, 0, 7); ctx.fill();
         } else emoji('🦸', 0, 0, 70);
-        // broche de estrela da capa
-        emoji('⭐', -W * 0.02, -H * 0.12, 16);
+        // estrela de super-herói no peito
+        emoji('⭐', W * 0.02, H * 0.06, 13);
         ctx.restore();
       }
       function roundRect(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); ctx.fill(); }
