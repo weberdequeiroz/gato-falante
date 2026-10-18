@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#7cc6f2">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Miguel">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icones/icone-192.png">
+<link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
 <title>Miguel, o Gato Falante</title>
 <style>
   :root {
@@ -122,6 +128,8 @@
   .olho-fechado { display: none; }
   #gato.piscando .olho-aberto { display: none; }
   #gato.piscando .olho-fechado { display: inline; }
+  #gato.rezando .olho-aberto { display: none; }
+  #gato.rezando .olho-fechado { display: inline; }
 
   #orelha-e, #orelha-d { transition: transform .25s; }
   #orelha-e { transform-origin: 130px 120px; }
@@ -195,6 +203,55 @@
     z-index: 5;
   }
 
+  #orar {
+    position: absolute;
+    top: 12px;
+    left: 0;
+    height: 44px;
+    border: 0;
+    border-radius: 22px;
+    padding: 0 14px;
+    font: inherit;
+    font-size: 17px;
+    background: var(--botao);
+    color: var(--texto);
+    box-shadow: 0 3px 0 rgba(0,0,0,.18);
+    cursor: pointer;
+    z-index: 5;
+  }
+  #orar:active, #ajuda:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,.18); }
+
+  #instalar {
+    position: fixed;
+    top: calc(8px + env(safe-area-inset-top, 0px));
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(520px, calc(100% - 24px));
+    z-index: 30;
+    background: var(--balao);
+    color: #2a3a4a;
+    border-radius: 20px;
+    padding: 10px 12px;
+    box-shadow: 0 5px 0 rgba(0,0,0,.18);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 17px;
+  }
+  #instalar[hidden] { display: none; }
+  #instalar .texto { flex: 1 1 160px; min-width: 0; }
+  #instalar button {
+    font: inherit;
+    border: 0;
+    border-radius: 14px;
+    padding: 8px 14px;
+    cursor: pointer;
+  }
+  #instalar-sim { background: var(--botao-ativo); color: #3a2400; font-weight: bold; }
+  #instalar-nao { background: transparent; color: #2a3a4a; font-size: 20px; }
+  #instalar-dica { flex-basis: 100%; margin: 0; font-size: 15px; }
+
   #boas-vindas {
     position: fixed;
     inset: 0;
@@ -265,6 +322,7 @@
   <div class="balao" id="balao">Oi! Eu sou o Miguel. Toque em mim e fale!</div>
 
   <div id="palco">
+    <button id="orar" aria-label="Miguel faz uma oração">🙏 Oração</button>
     <button id="ajuda" aria-label="Miguel explica como brincar">?</button>
     <div class="anel" id="anel"></div>
     <svg id="gato" viewBox="0 0 400 500" role="button" aria-label="Miguel, o gato: toque para falar">
@@ -365,6 +423,13 @@
   <footer>DESENVOLVIDO POR VINI &amp; WEBER</footer>
 </main>
 
+<div id="instalar" role="dialog" aria-label="Instalar o jogo" hidden>
+  <span class="texto">📲 Instale o Miguel no celular!</span>
+  <button id="instalar-sim">Instalar</button>
+  <button id="instalar-nao" aria-label="Agora não">✕</button>
+  <p id="instalar-dica" hidden></p>
+</div>
+
 <div id="boas-vindas" hidden>
   <div class="cartao">
     <div class="patinha">🐾</div>
@@ -384,12 +449,14 @@
   const bracoEIn = document.querySelector('.braco-e-in');
 
   // Vozes: velocidade de reprodução (muda o tom) e efeitos opcionais
+  //   ritmo: velocidade final da fala; com ele o tom sobe sem a fala ficar corrida demais
   //   tremido: voz tremendo   nasal: voz pelo nariz   rouco: voz arranhada
-  //   eco: repete no fundo    brilho: mais agudos      robo: voz metálica
+  //   eco: repete no fundo    brilho: mais agudos      fina: corta os graves
+  //   robo: voz metálica
   const VOZES = {
     esquilo: { velocidade: 1.6 },
-    dani:    { velocidade: 2.0, brilho: true, frases: ['Hihihi! Oi, eu sou a tia Dani! 🐿️', 'Tia Dani na área! 🐿️'] },
-    bob:     { velocidade: 1.3, nasal: true, tremido: { hz: 7, forca: 0.05 }, frases: ['Estou pronto! Estou pronto! 🧽', 'Ahahahaha! 🧽'] },
+    dani:    { velocidade: 2.5, ritmo: 1.3, fina: true, brilho: true, frases: ['Hihihi! Oi, eu sou a tia Dani! 🐿️', 'Tia Dani na área! 🐿️'] },
+    bob:     { velocidade: 1.55, ritmo: 1.2, nasal: true, frases: ['Estou pronto! Estou pronto! 🧽', 'Ahahahaha! 🧽'] },
     pirata:  { velocidade: 0.82, rouco: true, eco: true, tremido: { hz: 3, forca: 0.03 }, frases: ['Arrr, marujo! 🏴‍☠️', 'Ahoy! Ao mar! ☠️'] },
     gatinho: { velocidade: 1.35 },
     monstro: { velocidade: 0.7 },
@@ -509,17 +576,19 @@
   }
 
   function repetir(lista) {
+    const voz = VOZES[vozAtual];
     const total = lista.reduce((n, p) => n + p.length, 0);
-    const buffer = ctx.createBuffer(1, total, ctx.sampleRate);
-    const canal = buffer.getChannelData(0);
+    let dados = new Float32Array(total);
     let pos = 0, pico = 0;
-    for (const p of lista) { canal.set(p, pos); pos += p.length; }
-    for (let i = 0; i < total; i++) pico = Math.max(pico, Math.abs(canal[i]));
+    for (const p of lista) { dados.set(p, pos); pos += p.length; }
+    for (let i = 0; i < total; i++) pico = Math.max(pico, Math.abs(dados[i]));
     // deixa a voz bem audível
     const ganho = pico > 0 ? Math.min(0.95 / pico, 8) : 1;
-    for (let i = 0; i < total; i++) canal[i] *= ganho;
+    for (let i = 0; i < total; i++) dados[i] *= ganho;
+    if (voz.ritmo) dados = esticar(dados, voz.velocidade / voz.ritmo);
 
-    const voz = VOZES[vozAtual];
+    const buffer = ctx.createBuffer(1, dados.length, ctx.sampleRate);
+    buffer.getChannelData(0).set(dados);
     const fonte = ctx.createBufferSource();
     fonte.buffer = buffer;
     fonte.playbackRate.value = voz.velocidade;
@@ -529,6 +598,14 @@
     let saida = fonte;
     const osciladores = [];
     const ligar = (no) => { saida.connect(no); saida = no; };
+    const filtro = (tipo, freq, q, ganhoDb) => {
+      const f = ctx.createBiquadFilter();
+      f.type = tipo;
+      f.frequency.value = freq;
+      if (q) f.Q.value = q;
+      if (ganhoDb) f.gain.value = ganhoDb;
+      ligar(f);
+    };
 
     if (voz.tremido) {
       const lfo = ctx.createOscillator();
@@ -550,24 +627,13 @@
       ligar(modulador);
     }
     if (voz.nasal) {
-      const grave = ctx.createBiquadFilter();
-      grave.type = 'highpass';
-      grave.frequency.value = 450;
-      ligar(grave);
-      const nariz = ctx.createBiquadFilter();
-      nariz.type = 'peaking';
-      nariz.frequency.value = 1500;
-      nariz.Q.value = 2;
-      nariz.gain.value = 14;
-      ligar(nariz);
+      filtro('highpass', 550, 0.8);
+      filtro('peaking', 1100, 1.2, 12);
+      filtro('peaking', 2700, 2, 7);
+      filtro('lowpass', 5000, 0.7);
     }
-    if (voz.brilho) {
-      const agudo = ctx.createBiquadFilter();
-      agudo.type = 'highshelf';
-      agudo.frequency.value = 3000;
-      agudo.gain.value = 6;
-      ligar(agudo);
-    }
+    if (voz.fina) filtro('highpass', 700, 0.7);
+    if (voz.brilho) filtro('highshelf', 3500, 0, 6);
     if (voz.rouco) {
       const arranhado = ctx.createWaveShaper();
       arranhado.curve = curvaRouca(25);
@@ -620,6 +686,41 @@
       falar('Fala mais comigo! Toque no Miguel! 😺');
     };
     fonte.start();
+  }
+
+  // Estica a fala sem mudar o tom (WSOLA): junta pedacinhos do som que se encaixam
+  function esticar(x, fator) {
+    const N = 1024, saidaPasso = N / 2, entradaPasso = saidaPasso / fator, busca = 256;
+    if (x.length < N * 2) return x;
+    const janela = new Float32Array(N);
+    for (let i = 0; i < N; i++) janela[i] = 0.5 - 0.5 * Math.cos((2 * Math.PI * i) / N);
+    const y = new Float32Array(Math.ceil(x.length * fator) + N);
+    const peso = new Float32Array(y.length);
+    let anterior = 0, fim = 0;
+    for (let k = 0; ; k++) {
+      const ideal = Math.round(k * entradaPasso);
+      if (ideal + N >= x.length || k * saidaPasso + N > y.length) break;
+      let escolhido = ideal;
+      if (k > 0) {
+        const natural = anterior + saidaPasso;
+        let melhor = -Infinity;
+        const de = Math.max(0, ideal - busca), ate = Math.min(x.length - N - 1, ideal + busca);
+        for (let p = de; p <= ate; p += 2) {
+          let c = 0;
+          for (let j = 0; j < saidaPasso; j += 4) c += x[p + j] * x[natural + j];
+          if (c > melhor) { melhor = c; escolhido = p; }
+        }
+      }
+      const o = k * saidaPasso;
+      for (let j = 0; j < N; j++) {
+        y[o + j] += x[escolhido + j] * janela[j];
+        peso[o + j] += janela[j];
+      }
+      anterior = escolhido;
+      fim = o + N;
+    }
+    for (let i = 0; i < fim; i++) if (peso[i] > 0.05) y[i] /= peso[i];
+    return y.subarray(0, fim);
   }
 
   function curvaRouca(k) {
@@ -682,6 +783,7 @@
     { texto: 'Toque em mim e fale alguma coisa. 👆' },
     { texto: 'Quando você parar de falar, eu repito com uma voz engraçada! 😹' },
     { texto: 'Aqui embaixo você escolhe a minha voz: tem tia Dani, Bob Esponja, pirata, monstro, robô e muito mais! 👇', vozes: true },
+    { texto: 'E se tocar em Oração, eu rezo com você! 🙏' },
     { texto: 'Vamos brincar? Toque em mim! 🐾' },
   ];
   const vozesBarra = document.getElementById('vozes');
@@ -694,7 +796,7 @@
     return lista.find(v => v.lang === 'pt-BR') || lista.find(v => v.lang.startsWith('pt')) || null;
   }
 
-  function narrar(texto, pronto) {
+  function narrar(texto, pronto, jeito = { tom: 1.9, ritmo: 1.05 }) {
     const inicio = performance.now();
     const minimo = 700 + texto.length * 40;
     let acabou = false;
@@ -714,8 +816,8 @@
     if ('speechSynthesis' in window) {
       const u = new SpeechSynthesisUtterance(texto.replace(/[^\p{L}\p{N}\s,.!?:]/gu, ''));
       u.lang = 'pt-BR';
-      u.pitch = 1.9;
-      u.rate = 1.05;
+      u.pitch = jeito.tom;
+      u.rate = jeito.ritmo;
       const voz = vozPortugues();
       if (voz) u.voice = voz;
       u.onend = fim;
@@ -728,33 +830,82 @@
     }
   }
 
-  function apresentar() {
+  // Fala uma lista de frases, uma de cada vez, mostrando cada uma no balão
+  function narrarSequencia(frases, jeito, pausa) {
     const id = ++apresentacaoId;
-    try { localStorage.setItem('miguel-apresentou', '1'); } catch (e) {}
     setEstado('apresentando');
     let i = 0;
     const proxima = () => {
       if (id !== apresentacaoId) return;
-      if (i >= APRESENTACAO.length) {
-        vozesBarra.classList.remove('destaque');
-        setEstado('parado');
+      if (i >= frases.length) {
+        terminarNarracao();
         return;
       }
-      const frase = APRESENTACAO[i++];
+      const frase = frases[i++];
       falar(frase.texto);
       vozesBarra.classList.toggle('destaque', !!frase.vozes);
-      narrar(frase.texto, () => setTimeout(proxima, 300));
+      narrar(frase.falado || frase.texto, () => setTimeout(proxima, pausa), jeito);
     };
     proxima();
+  }
+
+  function terminarNarracao() {
+    vozesBarra.classList.remove('destaque');
+    gato.classList.remove('rezando');
+    setEstado('parado');
+  }
+
+  function apresentar() {
+    try { localStorage.setItem('miguel-apresentou', '1'); } catch (e) {}
+    gato.classList.remove('rezando');
+    narrarSequencia(APRESENTACAO, undefined, 300);
   }
 
   function pararApresentacao() {
     apresentacaoId++;
     clearInterval(mexendoBoca);
     if ('speechSynthesis' in window) speechSynthesis.cancel();
-    vozesBarra.classList.remove('destaque');
-    setEstado('parado');
+    terminarNarracao();
   }
+
+  // Orações infantis: cada toque no botão faz uma oração diferente
+  const ORACOES = [
+    { titulo: 'Oração da manhã', frases: ['Bom dia, Papai do Céu!', 'Obrigado por este dia novinho.', 'Cuida de mim e da minha família.', 'Me ajuda a tratar todo mundo com carinho.', 'Amém!'] },
+    { titulo: 'Oração antes de dormir', frases: ['Papai do Céu, obrigado pelo meu dia.', 'Agora eu vou dormir em paz.', 'Guarda o meu sono e me dá sonhos bonitos.', 'Abençoa o papai, a mamãe e toda a minha família.', 'Amém!'] },
+    { titulo: 'Oração antes de comer', frases: ['Obrigado, Senhor, por esta comida gostosa.', 'Abençoa quem preparou com tanto carinho.', 'E dá comida para quem tem fome.', 'Amém!'] },
+    { titulo: 'Santo Anjo', frases: ['Santo Anjo do Senhor, meu zeloso guardador,', 'se a ti me confiou a piedade divina,', 'sempre me rege, me guarda, me governa e me ilumina.', 'Amém!'] },
+    { titulo: 'Pai Nosso', frases: ['Pai nosso, que estais nos céus, santificado seja o vosso nome.', 'Venha a nós o vosso reino, seja feita a vossa vontade, assim na terra como no céu.', 'O pão nosso de cada dia nos dai hoje.', 'Perdoai as nossas ofensas, assim como nós perdoamos a quem nos tem ofendido.', 'E não nos deixeis cair em tentação, mas livrai-nos do mal.', 'Amém!'] },
+    { titulo: 'Oração pela família', frases: ['Jesus, obrigado pela minha família.', 'Abençoa cada pessoa da minha casa.', 'Que a gente se ame e se ajude todos os dias.', 'Amém!'] },
+    { titulo: 'Oração pelos amigos', frases: ['Senhor Jesus, obrigado pelos meus amigos.', 'Me ajuda a dividir os brinquedos e a ser um bom amigo.', 'Protege todos eles onde estiverem.', 'Amém!'] },
+    { titulo: 'Oração pela escola', frases: ['Papai do Céu, abençoa a minha escola.', 'Me ajuda a aprender coisas novas e a prestar atenção.', 'Abençoa a minha professora e os meus colegas.', 'Amém!'] },
+    { titulo: 'Oração pelos bichinhos', frases: ['Deus, obrigado pelos bichinhos que o Senhor criou.', 'Pelos gatinhos, cachorrinhos, passarinhos e peixinhos.', 'Me ensina a cuidar bem de todos eles.', 'Amém!'] },
+    { titulo: 'Oração pela natureza', frases: ['Obrigado, Senhor, pelo sol, pela chuva e pelas flores.', 'Tudo o que o Senhor fez é muito bonito.', 'Me ajuda a cuidar da natureza.', 'Amém!'] },
+    { titulo: 'Oração pelos doentes', frases: ['Jesus, cuida das pessoas que estão dodóis.', 'Dá saúde para elas ficarem boas logo.', 'E obrigado pela minha saúde também.', 'Amém!'] },
+    { titulo: 'Oração do perdão', frases: ['Papai do Céu, me desculpa quando eu faço coisas erradas.', 'Me ajuda a pedir desculpas e a perdoar também.', 'Quero ter um coração bondoso como o de Jesus.', 'Amém!'] },
+    { titulo: 'Oração contra o medo', frases: ['Jesus, quando eu sentir medo, eu sei que o Senhor está comigo.', 'O Senhor é o meu pastor e nada vai me faltar.', 'Obrigado por me proteger sempre.', 'Amém!'] },
+    { titulo: 'Oração de gratidão', frases: ['Obrigado, Deus, pelo amor que o Senhor tem por mim.', 'Obrigado pela minha casa, pela minha cama e pelos meus brinquedos.', 'Eu também amo o Senhor!', 'Amém!'] },
+    { titulo: 'Oração pelas crianças do mundo', frases: ['Senhor, abençoa todas as crianças do mundo.', 'Que nenhuma criança fique triste ou sozinha.', 'Espalha a paz e o amor por todo lugar.', 'Amém!'] },
+    { titulo: 'Oração pelos avós', frases: ['Deus, abençoa os meus avós.', 'Obrigado pelos abraços e pelos carinhos deles.', 'Dá muita saúde e alegria para eles.', 'Amém!'] },
+  ];
+  const VOZ_CRIANCA = { tom: 1.7, ritmo: 0.92 };
+  let proximaOracao = 0;
+  try { proximaOracao = (parseInt(localStorage.getItem('miguel-oracao'), 10) || 0) % ORACOES.length; } catch (e) {}
+
+  function orar() {
+    const oracao = ORACOES[proximaOracao];
+    proximaOracao = (proximaOracao + 1) % ORACOES.length;
+    try { localStorage.setItem('miguel-oracao', String(proximaOracao)); } catch (e) {}
+    const frases = [{ texto: '🙏 ' + oracao.titulo, falado: oracao.titulo }]
+      .concat(oracao.frases.map(f => ({ texto: f })));
+    narrarSequencia(frases, VOZ_CRIANCA, 450);
+    gato.classList.add('rezando');
+  }
+
+  document.getElementById('orar').addEventListener('click', () => {
+    if (estado === 'falando') return;
+    if (estado === 'ouvindo') setEstado('parado');
+    orar();
+  });
 
   document.getElementById('comecar').addEventListener('click', () => {
     boasVindas.hidden = true;
@@ -768,6 +919,49 @@
   try { jaApresentou = localStorage.getItem('miguel-apresentou') === '1'; } catch (e) {}
   if (!jaApresentou) boasVindas.hidden = false;
   if ('speechSynthesis' in window) speechSynthesis.getVoices();
+
+  // Instalar no celular
+  const caixaInstalar = document.getElementById('instalar');
+  const dicaInstalar = document.getElementById('instalar-dica');
+  const jaInstalado = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const ehIphone = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  let pedidoInstalar = null;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    pedidoInstalar = e;
+    if (!jaInstalado) caixaInstalar.hidden = false;
+  });
+  window.addEventListener('appinstalled', () => { caixaInstalar.hidden = true; });
+  let fechouInstalar = false;
+  if (!jaInstalado && ehIphone) caixaInstalar.hidden = false;
+  // alguns navegadores Android não avisam que dá para instalar: mostra a dica mesmo assim
+  if (!jaInstalado && /android/i.test(navigator.userAgent)) {
+    setTimeout(() => { if (!fechouInstalar) caixaInstalar.hidden = false; }, 2500);
+  }
+
+  document.getElementById('instalar-sim').addEventListener('click', async () => {
+    if (pedidoInstalar) {
+      pedidoInstalar.prompt();
+      await pedidoInstalar.userChoice.catch(() => null);
+      pedidoInstalar = null;
+      caixaInstalar.hidden = true;
+      return;
+    }
+    dicaInstalar.textContent = ehIphone
+      ? 'No Safari, toque em Compartilhar (o quadrado com a setinha ⬆️) e depois em "Adicionar à Tela de Início".'
+      : 'Abra o menu do navegador (⋮) e toque em "Instalar app" ou "Adicionar à tela inicial".';
+    dicaInstalar.hidden = false;
+  });
+  document.getElementById('instalar-nao').addEventListener('click', () => {
+    fechouInstalar = true;
+    caixaInstalar.hidden = true;
+  });
+
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
 
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     falar('Abra este jogo em https (ou no navegador do celular) para usar o microfone.');
