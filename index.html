@@ -570,6 +570,7 @@
       <div class="anel" id="anel"></div>
       <div id="orelhao" aria-hidden="true">👂</div>
       <button id="abrir-roupas" class="botao-vestir" aria-label="Trocar a roupa do Miguel"><span aria-hidden="true">👕</span>Vestir</button>
+      <button id="modo-auto" class="botao-auto" aria-pressed="false" aria-label="Modo automático: a criança fala e o Miguel repete sozinho"><span aria-hidden="true">🔁</span>Auto</button>
       <svg id="gato" viewBox="0 0 400 500" role="button" tabindex="0" aria-label="Miguel, o gato: toque para falar">
         <defs>
           <radialGradient id="g-pelo" cx="38%" cy="28%" r="78%">
@@ -925,7 +926,7 @@
     dani:    { velocidade: 2.5, ritmo: 1.3, fina: true, brilho: true, frases: ['Hihihi! Oi, eu sou a tia Dani! 🐿️', 'Tia Dani na área! 🐿️'] },
     bob:     { velocidade: 1.45, ritmo: 1.22, tom: 1.3, nasal: true, forte: true, tremido: { hz: 6, forca: 0.035 }, frases: ['Estou pronto! Estou pronto! 🧽', 'Ahahahaha! 🧽'] },
     pirata:  { velocidade: 0.82, rouco: true, eco: true, tremido: { hz: 3, forca: 0.03 }, frases: ['Arrr, marujo! 🏴‍☠️', 'Ahoy! Ao mar! ☠️'] },
-    gatinho: { velocidade: 1.35 },
+    gatinho: { velocidade: 1.55, ritmo: 1.2, tom: 1.15, gato: true, tremido: { hz: 2.6, forca: 0.05 }, frases: ['Miau! Miau! 😺', 'Miaaau! 🐱', 'Miau, miau! 😸'] },
     monstro: { velocidade: 0.7 },
     robo:    { velocidade: 1.12, robo: true, forte: true },
   };
@@ -1064,6 +1065,7 @@
 
     if (comecouFalar && agora - ultimoSom > SILENCIO_FIM) pararDeOuvir();
     else if (!comecouFalar && agora - inicioGravacao > ESPERA_MAX) {
+      if (modoAuto) { pedacos = []; inicioGravacao = agora; return; }
       tocarAviso('nada');
       setEstado('parado');
       falar('Não ouvi nada... Toque em mim e fale mais alto!');
@@ -1084,15 +1086,49 @@
     inicioGravacao = performance.now();
     setEstado('ouvindo');
     posicionarOrelhao();
-    tocarAviso('ouvir');
-    falar('Estou ouvindo... 👂');
+    if (!modoAuto || !autoJaAvisou) tocarAviso('ouvir');
+    autoJaAvisou = modoAuto;
+    falar(modoAuto ? 'Pode falar que eu repito! 👂' : 'Estou ouvindo... 👂');
   }
+
+  // ---------- Modo automático: o Miguel fica ouvindo e repete sozinho, sem precisar tocar nele ----------
+  let modoAuto = false, autoJaAvisou = false;
+  const botaoAuto = document.getElementById('modo-auto');
+  const podeOuvirSozinho = () => modoAuto && estado === 'parado' && aberturaFechada && document.visibilityState === 'visible' &&
+    document.getElementById('jogos').hidden && telaAjustes.hidden && telaLembrete.hidden && !document.querySelector('#guarda-roupa:not([hidden])');
+  // confere de vez em quando se dá para voltar a ouvir (depois de repetir, ao fechar os jogos, etc.)
+  let autoEsperaDesde = 0;
+  setInterval(() => {
+    if (!podeOuvirSozinho()) { autoEsperaDesde = 0; return; }
+    if (!autoEsperaDesde) { autoEsperaDesde = performance.now(); return; }
+    if (performance.now() - autoEsperaDesde > 700) { autoEsperaDesde = 0; comecarAOuvir(); }
+  }, 250);
+  function setModoAuto(ligado) {
+    modoAuto = ligado;
+    autoJaAvisou = false;
+    botaoAuto.setAttribute('aria-pressed', String(ligado));
+    botaoAuto.classList.toggle('ligado', ligado);
+    guardar('miguel-auto', ligado ? '1' : '0');
+  }
+  botaoAuto.addEventListener('click', () => {
+    setModoAuto(!modoAuto);
+    if (modoAuto) {
+      if (estado === 'narrando') pararNarracao();
+      if (estado === 'parado') comecarAOuvir();
+    } else {
+      if (estado === 'ouvindo') setEstado('parado');
+      falar('Modo automático desligado. Toque em mim para eu ouvir! 😺');
+    }
+  });
+  // fora do app o microfone não fica ouvindo
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && estado === 'ouvindo') setEstado('parado'); });
 
   function pararDeOuvir() {
     if (estado !== 'ouvindo') return;
     if (!comecouFalar) {
-      tocarAviso('nada');
       setEstado('parado');
+      if (modoAuto) { falar('Fale comigo que eu repito! 😺'); return; }
+      tocarAviso('nada');
       falar('Não ouvi nada... Toque em mim e fale!');
       return;
     }
@@ -1186,6 +1222,19 @@
       saida = juntaFanho;
       filtro('lowpass', 5200, 0.7);
     }
+    if (voz.gato) {
+      // voz de gatinho: um tremidinho rápido de miado por cima da ondulação lenta (tremido),
+      // sem os graves do peito e com o brilho "miau" nos médios
+      const lfo = ctx.createOscillator(), forca = ctx.createGain();
+      lfo.frequency.value = 7.5;
+      forca.gain.value = voz.velocidade * 0.018;
+      lfo.connect(forca); forca.connect(fonte.playbackRate);
+      osciladores.push(lfo);
+      filtro('highpass', 360, 0.8);
+      filtro('peaking', 1700, 1.4, 7);
+      filtro('peaking', 3300, 2, 4);
+      filtro('lowpass', 7500, 0.7);
+    }
     if (voz.fina) filtro('highpass', 700, 0.7);
     if (voz.brilho) filtro('highshelf', 3500, 0, 6);
     if (voz.rouco) {
@@ -1242,8 +1291,22 @@
       setEstado('parado');
       falar('Fala mais comigo! Toque no Miguel! 😺');
     };
-    fonte.start(ctx.currentTime + 0.3);
+    // o gatinho dá um miado de verdade antes de repetir
+    let inicioFala = ctx.currentTime + 0.3;
+    if (voz.gato && somGato.miau) {
+      const m = ctx.createBufferSource();
+      m.buffer = somGato.miau;
+      m.playbackRate.value = 1.12;
+      m.connect(analisador);
+      m.start(ctx.currentTime + 0.1);
+      inicioFala = ctx.currentTime + 0.1 + somGato.miau.duration / 1.12 - 0.05;
+    }
+    fonte.start(inicioFala);
   }
+  const somGato = {};
+  fetch('sons/gato-miau.mp3').then(r => r.arrayBuffer())
+    .then(b => new Promise((ok, erro) => obterContexto().decodeAudioData(b, ok, erro)))
+    .then(b => { somGato.miau = b; }).catch(() => {});
 
   // ---------- Sinais para quem ainda não lê ----------
   // som curtinho subindo = "estou ouvindo"; descendo = "pronto, ouvi!"
@@ -1956,6 +2019,7 @@
   setCalmo(ler('miguel-calmo') === '1');
   setMudo(ler('miguel-mudo') === '1');
   setLembretes(ler('miguel-lembretes') !== '0');
+  setModoAuto(ler('miguel-auto') === '1');
 
   // ---------- Lembretes: água a cada 1 hora, movimento a cada 30 minutos ----------
   const MINUTO = 60;
@@ -2286,7 +2350,7 @@
 
   // ---------- Atualizações ----------
   // o app instalado fica aberto em segundo plano; ao voltar para ele, confere se tem versão nova
-  const VERSAO = '202610181332';
+  const VERSAO = '202610181337';
   const avisoAtualizar = document.getElementById('atualizar');
   let registro = null;
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
