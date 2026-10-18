@@ -451,6 +451,24 @@
   @keyframes chama-botao { 50% { transform: scale(1.07); } }
   .credito { position: relative; z-index: 1; font-size: 12px; font-weight: 800; letter-spacing: .12em; color: #fff; text-shadow: 0 1px 2px rgba(31,45,61,.4); }
 
+  #atualizar {
+    position: fixed;
+    z-index: 45;
+    left: 50%;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    width: min(520px, calc(100% - 24px));
+    min-height: 56px;
+    border: 3px solid #fff;
+    border-radius: 999px;
+    background: var(--lilas);
+    color: #fff;
+    font-size: 17px;
+    font-weight: 900;
+    box-shadow: 0 6px 18px rgba(31,45,61,.25);
+  }
+  #atualizar[hidden] { display: none; }
+
   /* tela de jogos */
   #jogos {
     position: fixed;
@@ -882,6 +900,8 @@
   <button id="instalar-nao" aria-label="Agora não">✕</button>
   <p id="instalar-dica" hidden></p>
 </div>
+
+<button id="atualizar" hidden>✨ O Miguel tem novidades! Toque para atualizar</button>
 
 <div id="jogos" role="dialog" aria-labelledby="jogos-titulo" hidden>
   <div class="jogos-topo">
@@ -2062,9 +2082,39 @@
     caixaInstalar.hidden = true;
   });
 
+  // ---------- Atualizações ----------
+  // o app instalado fica aberto em segundo plano; ao voltar para ele, confere se tem versão nova
+  const VERSAO = '202610180341';
+  const avisoAtualizar = document.getElementById('atualizar');
+  let registro = null;
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+    navigator.serviceWorker.register('sw.js').then((r) => { registro = r; }).catch(() => {});
   }
+  function atualizarAgora(versao) {
+    location.replace(location.pathname + '?v=' + encodeURIComponent(versao));
+  }
+  async function verificarAtualizacao() {
+    try {
+      const r = await fetch('versao.json?t=' + Date.now(), { cache: 'no-store' });
+      const { versao } = await r.json();
+      if (!versao || versao === VERSAO) return;
+      if (registro) registro.update().catch(() => {});
+      // ainda na abertura: atualiza direto (uma vez só por versão, para nunca ficar recarregando)
+      let jaTentou = false;
+      try { jaTentou = sessionStorage.getItem('miguel-atualizou') === versao; } catch (e) {}
+      if (!aberturaFechada && !jaTentou) {
+        try { sessionStorage.setItem('miguel-atualizou', versao); } catch (e) {}
+        atualizarAgora(versao);
+        return;
+      }
+      avisoAtualizar.dataset.versao = versao;
+      avisoAtualizar.hidden = false;
+    } catch (e) {}
+  }
+  avisoAtualizar.addEventListener('click', () => atualizarAgora(avisoAtualizar.dataset.versao || Date.now()));
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') verificarAtualizacao(); });
+  setTimeout(verificarAtualizacao, 800);
+  setInterval(verificarAtualizacao, 30 * 60 * 1000);
 
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     falar('Abra este jogo em https (ou no navegador do celular) para usar o microfone.');

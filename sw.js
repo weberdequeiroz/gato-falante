@@ -1,9 +1,9 @@
 // Guarda o jogo no celular para abrir rápido; sempre tenta buscar a versão nova primeiro
-const CACHE = 'miguel-v4';
+const CACHE = 'miguel-v5';
 const ARQUIVOS = ['./', 'index.html', 'manifest.webmanifest', 'icones/icone-192.png', 'icones/icone-512.png', 'icones/apple-touch-icon.png', 'icones/miguel.png'];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ARQUIVOS)));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ARQUIVOS.map((a) => new Request(a, { cache: 'reload' })))));
   self.skipWaiting();
 });
 
@@ -16,14 +16,23 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  if (e.request.method !== 'GET' || new URL(e.request.url).origin !== location.origin) return;
+  const url = new URL(e.request.url);
+  if (e.request.method !== 'GET' || url.origin !== location.origin) return;
+  // o número da versão nunca vem guardado
+  if (url.pathname.endsWith('/versao.json')) {
+    e.respondWith(fetch(e.request, { cache: 'no-store' }));
+    return;
+  }
+  // a página sempre confere no servidor se mudou (sem esperar o cache de 10 minutos)
+  const pagina = e.request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname.endsWith('/');
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request, pagina ? { cache: 'no-cache' } : undefined)
       .then((resposta) => {
         const copia = resposta.clone();
-        caches.open(CACHE).then((c) => c.put(e.request, copia));
+        const chave = pagina ? new Request(url.origin + url.pathname) : e.request;
+        caches.open(CACHE).then((c) => c.put(chave, copia));
         return resposta;
       })
-      .catch(() => caches.match(e.request))
+      .catch(() => caches.match(pagina ? new Request(url.origin + url.pathname) : e.request))
   );
 });
