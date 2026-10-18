@@ -178,8 +178,8 @@
   .olho-fechado { display: none; }
   #gato.piscando .olho-aberto, #gato.rezando .olho-aberto { display: none; }
   #gato.piscando .olho-fechado, #gato.rezando .olho-fechado { display: inline; }
-  #orelha-e { transform-origin: 130px 120px; }
-  #orelha-d { transform-origin: 270px 120px; }
+  #orelha-e { transform-origin: 140px 140px; }
+  #orelha-d { transform-origin: 260px 140px; }
   #gato.ouvindo #orelha-e { animation: orelha-e .6s ease-in-out infinite; }
   #gato.ouvindo #orelha-d { animation: orelha-d .6s ease-in-out infinite; }
   @keyframes orelha-e { 50% { transform: rotate(-8deg); } }
@@ -194,7 +194,7 @@
   #mao-orelha { display: none; }
   #gato.ouvindo #mao-orelha { display: inline; }
   #gato.ouvindo #braco-e, #gato.ouvindo .braco-e-in { display: none; }
-  #boca-aberta { transform-origin: 200px 262px; transform: scaleY(0); }
+  #boca-aberta { transform-origin: 200px 276px; transform: scaleY(0); }
 
   .nota { position: absolute; font-size: 28px; pointer-events: none; animation: sobe 1.6s ease-out forwards; }
   @keyframes sobe {
@@ -289,42 +289,164 @@
   #instalar-nao { background: transparent; font-size: 20px; min-width: 44px; }
   #instalar-dica { flex-basis: 100%; margin: 0; font-size: 15px; color: var(--tinta-suave); }
 
-  /* boas-vindas */
-  #boas-vindas {
-    position: fixed;
-    inset: 0;
-    z-index: 20;
+  /* ouvindo: orelhona com ondas + bolinhas de som voando para a orelha do Miguel */
+  #orelhao {
+    position: absolute;
+    z-index: 2;
+    width: 72px; height: 72px;
+    margin: -36px 0 0 -36px;
+    border-radius: 50%;
+    background: var(--cartao);
+    box-shadow: var(--sombra);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 16px;
-    background: rgba(31, 45, 61, .45);
+    font-size: 40px;
+    opacity: 0;
+    transform: scale(.4);
+    transition: opacity .25s, transform .12s;
+    pointer-events: none;
   }
-  #boas-vindas[hidden] { display: none; }
-  .cartao-boas-vindas {
-    width: min(420px, 100%);
-    background: var(--cartao);
-    border-radius: 28px;
-    padding: 22px 20px 20px;
-    text-align: center;
-    box-shadow: var(--sombra);
+  .area-gato.ouvindo-on #orelhao { opacity: 1; transform: scale(var(--vol, 1)); }
+  #orelhao::before, #orelhao::after {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 4px solid rgba(217,61,66,.55);
+    opacity: 0;
   }
-  .cartao-boas-vindas img { width: 84px; height: 84px; border-radius: 24px; }
-  .cartao-boas-vindas h2 { margin: 8px 0 14px; font-size: 24px; font-weight: 900; text-wrap: balance; }
-  .passos { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 8px; text-align: left; }
-  .passos li { display: flex; align-items: center; gap: 12px; background: var(--ceu-claro); border-radius: 16px; padding: 10px 12px; font-size: 17px; }
-  .passos .simbolo { font-size: 26px; width: 34px; text-align: center; }
-  #comecar {
-    width: 100%;
-    min-height: 60px;
-    border: 0;
-    border-radius: 18px;
+  .area-gato.ouvindo-on #orelhao::before { animation: onda 1.3s ease-out infinite; }
+  .area-gato.ouvindo-on #orelhao::after { animation: onda 1.3s ease-out .65s infinite; }
+  @keyframes onda { from { transform: scale(.9); opacity: 1; } to { transform: scale(1.7); opacity: 0; } }
+  .som {
+    position: absolute;
+    z-index: 2;
+    font-weight: 900;
+    line-height: 1;
+    pointer-events: none;
+    text-shadow: 0 2px 0 rgba(255,255,255,.9);
+  }
+
+  /* abertura */
+  #abertura {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(14px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(#6fbff0, #bfe6fb 60%, #e8f7ff);
+    cursor: pointer;
+  }
+  #abertura[hidden] { display: none; }
+  #abertura.saindo { animation: some .55s ease-in forwards; }
+  @keyframes some { to { opacity: 0; transform: scale(1.15); } }
+  .raios {
+    position: absolute;
+    left: 50%; top: 58%;
+    width: 170vmax; height: 170vmax;
+    transform: translate(-50%, -50%);
+    background: repeating-conic-gradient(rgba(255,255,255,.3) 0 9deg, rgba(255,255,255,0) 9deg 18deg);
+    -webkit-mask-image: radial-gradient(circle, #000 0, #000 18%, transparent 55%);
+    mask-image: radial-gradient(circle, #000 0, #000 18%, transparent 55%);
+    animation: gira 60s linear infinite;
+  }
+  @keyframes gira { to { transform: translate(-50%, -50%) rotate(360deg); } }
+  .sol {
+    position: absolute;
+    left: 50%; top: 58%;
+    width: 340px; height: 340px;
+    margin: -170px 0 0 -170px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff8d8 0, #ffe58a 35%, rgba(255,214,102,0) 70%);
+  }
+  .nuvem {
+    position: absolute;
+    width: 120px; height: 40px;
+    border-radius: 40px;
+    background: #fff;
+    opacity: .9;
+    animation: passa linear infinite;
+  }
+  .nuvem::before, .nuvem::after { content: ""; position: absolute; background: #fff; border-radius: 50%; }
+  .nuvem::before { width: 56px; height: 56px; left: 16px; top: -26px; }
+  .nuvem::after { width: 44px; height: 44px; left: 58px; top: -18px; }
+  @keyframes passa { from { transform: translateX(-160px); } to { transform: translateX(calc(100vw + 160px)); } }
+  .morro {
+    position: absolute;
+    left: -30%; right: -30%;
+    bottom: -22vh;
+    height: 46vh;
+    border-radius: 50%;
+    background: linear-gradient(#a6dc86, #7cc25c);
+  }
+  .enfeite { position: absolute; font-size: 28px; animation: flutua 3.5s ease-in-out infinite; }
+  @keyframes flutua { 50% { transform: translateY(-14px) rotate(8deg); } }
+
+  .abertura-conteudo { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%; flex: 1; justify-content: center; }
+  .titulo-abertura {
+    margin: 0;
+    font-size: clamp(64px, 19vw, 104px);
+    font-weight: 900;
+    line-height: .95;
+    letter-spacing: .01em;
+    white-space: nowrap;
+  }
+  .titulo-abertura span {
+    display: inline-block;
+    color: var(--c);
+    text-shadow: 0 5px 0 #fff, 0 -5px 0 #fff, 5px 0 0 #fff, -5px 0 0 #fff, 4px 4px 0 #fff, -4px 4px 0 #fff, 4px -4px 0 #fff, -4px -4px 0 #fff, 0 12px 0 rgba(31,45,61,.18);
+    animation: letra-cai .7s cubic-bezier(.3,1.6,.5,1) both, letra-onda 2.4s ease-in-out infinite;
+    animation-delay: calc(var(--i) * .09s), calc(1.2s + var(--i) * .12s);
+  }
+  @keyframes letra-cai { from { transform: translateY(-120vh) rotate(-20deg); } to { transform: none; } }
+  @keyframes letra-onda { 50% { transform: translateY(-8px); } }
+  .faixa {
     background: var(--laranja);
     color: #fff;
-    font-size: 22px;
+    font-size: clamp(22px, 6.5vw, 32px);
     font-weight: 900;
-    box-shadow: 0 4px 0 #b85a0c;
+    padding: 4px 22px 6px;
+    border-radius: 999px;
+    border: 4px solid #fff;
+    box-shadow: 0 6px 0 rgba(31,45,61,.15);
+    transform: rotate(-3deg);
+    animation: aparece .5s cubic-bezier(.3,1.6,.5,1) .7s both;
   }
+  @keyframes aparece { from { transform: scale(0) rotate(-20deg); } to { transform: scale(1) rotate(-3deg); } }
+  .miguel-abertura {
+    width: min(64vw, 300px);
+    max-height: 40vh;
+    object-fit: contain;
+    margin-top: 6px;
+    animation: pula-da-grama .9s cubic-bezier(.3,1.5,.5,1) .4s both, mexe 3s ease-in-out 1.5s infinite;
+    transform-origin: 50% 100%;
+    filter: drop-shadow(0 12px 10px rgba(31,45,61,.18));
+  }
+  @keyframes pula-da-grama { from { transform: translateY(70vh); } to { transform: none; } }
+  @keyframes mexe { 25% { transform: rotate(-3deg); } 75% { transform: rotate(3deg); } }
+  #jogar {
+    position: relative;
+    z-index: 1;
+    min-height: 68px;
+    padding: 0 36px;
+    border: 5px solid #fff;
+    border-radius: 999px;
+    background: linear-gradient(#ff9a3c, #e9781a);
+    color: #fff;
+    font-size: clamp(24px, 7vw, 30px);
+    font-weight: 900;
+    box-shadow: 0 7px 0 #b85a0c, 0 12px 24px rgba(31,45,61,.2);
+    animation: aparece-botao .5s cubic-bezier(.3,1.6,.5,1) 1.3s both, chama-botao 1.6s ease-in-out 2s infinite;
+  }
+  @keyframes aparece-botao { from { transform: scale(0); } to { transform: scale(1); } }
+  @keyframes chama-botao { 50% { transform: scale(1.07); } }
+  .credito { position: relative; z-index: 1; font-size: 12px; font-weight: 800; letter-spacing: .12em; color: #fff; text-shadow: 0 1px 2px rgba(31,45,61,.4); }
 
   /* modo calmo: sem movimentos extras */
   .calmo #corpo-todo, .calmo #rabo, .calmo #gato.falando #cabeca,
@@ -332,6 +454,7 @@
   .calmo #gato.cutucado #corpo-todo, .calmo .vozes.destaque .voz,
   .calmo .estado[data-estado="ouvindo"] .ponto { animation: none; }
   .calmo .nota { display: none; }
+  .calmo .raios, .calmo .nuvem, .calmo .enfeite, .calmo .miguel-abertura, .calmo .titulo-abertura span, .calmo #jogar { animation-iteration-count: 1; }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
     .nota { display: none; }
@@ -368,87 +491,187 @@
     <div class="balao" id="balao" aria-live="polite">Oi! Eu sou o Miguel. Toque em mim e fale!</div>
     <div class="area-gato" id="area-gato">
       <div class="anel" id="anel"></div>
+      <div id="orelhao" aria-hidden="true">👂</div>
       <svg id="gato" viewBox="0 0 400 500" role="button" tabindex="0" aria-label="Miguel, o gato: toque para falar">
+        <defs>
+          <radialGradient id="g-pelo" cx="38%" cy="28%" r="78%">
+            <stop offset="0" stop-color="#ffd59a"/>
+            <stop offset=".42" stop-color="#f8a54c"/>
+            <stop offset=".85" stop-color="#e07f22"/>
+            <stop offset="1" stop-color="#c2620f"/>
+          </radialGradient>
+          <radialGradient id="g-pelo-corpo" cx="42%" cy="20%" r="85%">
+            <stop offset="0" stop-color="#ffcf8c"/>
+            <stop offset=".5" stop-color="#f39a3b"/>
+            <stop offset="1" stop-color="#bd5e0e"/>
+          </radialGradient>
+          <radialGradient id="g-creme" cx="50%" cy="32%" r="72%">
+            <stop offset="0" stop-color="#fffdf8"/>
+            <stop offset=".65" stop-color="#fde8cc"/>
+            <stop offset="1" stop-color="#eec393"/>
+          </radialGradient>
+          <radialGradient id="g-orelha" cx="50%" cy="75%" r="75%">
+            <stop offset="0" stop-color="#ffd3de"/>
+            <stop offset="1" stop-color="#ea8099"/>
+          </radialGradient>
+          <radialGradient id="g-iris" cx="50%" cy="62%" r="62%">
+            <stop offset="0" stop-color="#d9f78f"/>
+            <stop offset=".5" stop-color="#7cc23e"/>
+            <stop offset="1" stop-color="#2d6a17"/>
+          </radialGradient>
+          <radialGradient id="g-pupila" cx="45%" cy="40%" r="65%">
+            <stop offset="0" stop-color="#2a2622"/>
+            <stop offset="1" stop-color="#050404"/>
+          </radialGradient>
+          <radialGradient id="g-nariz" cx="40%" cy="30%" r="75%">
+            <stop offset="0" stop-color="#ffc0cf"/>
+            <stop offset="1" stop-color="#dc4f75"/>
+          </radialGradient>
+          <radialGradient id="g-bochecha">
+            <stop offset="0" stop-color="#ff7f9c" stop-opacity=".6"/>
+            <stop offset="1" stop-color="#ff7f9c" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="g-brilho">
+            <stop offset="0" stop-color="#fff" stop-opacity=".6"/>
+            <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="g-sombra">
+            <stop offset="0" stop-color="#3a2410" stop-opacity=".35"/>
+            <stop offset="1" stop-color="#3a2410" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="g-boca" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#4a0f1a"/>
+            <stop offset="1" stop-color="#93303f"/>
+          </linearGradient>
+        </defs>
+
         <g id="corpo-todo">
-          <!-- sombra -->
-          <ellipse cx="200" cy="482" rx="130" ry="14" fill="rgba(0,0,0,.15)"/>
+          <!-- sombra no chão -->
+          <ellipse cx="200" cy="482" rx="150" ry="18" fill="url(#g-sombra)"/>
+
           <!-- rabo -->
-          <path id="rabo" d="M285 420 C 360 410, 380 330, 340 290 C 330 280, 318 292, 326 302 C 352 336, 336 390, 280 395 Z"
-                fill="var(--pelo)" stroke="var(--pelo-escuro)" stroke-width="4" stroke-linejoin="round"/>
+          <g id="rabo">
+            <path d="M268 458 C 345 470, 392 400, 364 326 C 355 302, 334 292, 320 302 C 307 312, 314 328, 324 336 C 346 362, 338 420, 266 424 Z"
+                  fill="url(#g-pelo-corpo)" stroke="#b85a0d" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M352 352 Q 362 360 360 372 M355 395 Q 345 402 340 414 M322 438 Q 312 432 306 444" fill="none" stroke="#c9671a" stroke-width="7" stroke-linecap="round" opacity=".55"/>
+          </g>
+
           <!-- corpo -->
-          <path d="M110 480 C 95 400, 120 330, 200 325 C 280 330, 305 400, 290 480 Z"
-                fill="var(--pelo)" stroke="var(--pelo-escuro)" stroke-width="4"/>
-          <path d="M150 478 C 145 420, 165 375, 200 372 C 235 375, 255 420, 250 478 Z" fill="var(--creme)"/>
-          <!-- patas -->
-          <ellipse cx="160" cy="476" rx="30" ry="16" fill="var(--creme)" stroke="var(--pelo-escuro)" stroke-width="4"/>
-          <ellipse cx="240" cy="476" rx="30" ry="16" fill="var(--creme)" stroke="var(--pelo-escuro)" stroke-width="4"/>
+          <path d="M118 470 C 102 408, 124 342, 200 335 C 276 342, 298 408, 282 470 C 262 490, 138 490, 118 470 Z"
+                fill="url(#g-pelo-corpo)" stroke="#b85a0d" stroke-width="2.5"/>
+          <ellipse cx="200" cy="428" rx="56" ry="58" fill="url(#g-creme)"/>
+          <ellipse cx="200" cy="346" rx="96" ry="22" fill="url(#g-sombra)"/>
+
+          <!-- patinhas de trás -->
+          <g fill="url(#g-creme)" stroke="#d6a26b" stroke-width="2">
+            <ellipse cx="148" cy="472" rx="36" ry="19"/>
+            <ellipse cx="252" cy="472" rx="36" ry="19"/>
+          </g>
+          <g fill="none" stroke="#d6a26b" stroke-width="2.5" stroke-linecap="round">
+            <path d="M136 466 L 136 476 M150 465 L 150 477 M164 466 L 164 476"/>
+            <path d="M236 466 L 236 476 M250 465 L 250 477 M264 466 L 264 476"/>
+          </g>
+
           <!-- braços -->
-          <path id="braco-e" d="M128 360 C 110 400, 120 440, 150 450" fill="none" stroke="var(--pelo-escuro)" stroke-width="26" stroke-linecap="round"/>
-          <path d="M128 360 C 110 400, 120 440, 150 450" fill="none" stroke="var(--pelo)" stroke-width="18" stroke-linecap="round" class="braco-e-in"/>
-          <path d="M272 360 C 290 400, 280 440, 250 450" fill="none" stroke="var(--pelo-escuro)" stroke-width="26" stroke-linecap="round"/>
-          <path d="M272 360 C 290 400, 280 440, 250 450" fill="none" stroke="var(--pelo)" stroke-width="18" stroke-linecap="round"/>
+          <g id="braco-e">
+            <path d="M136 368 C 116 400, 120 442, 150 454 C 168 460, 182 450, 178 434 C 172 410, 162 392, 160 372 Z"
+                  fill="url(#g-pelo-corpo)" stroke="#b85a0d" stroke-width="2.5"/>
+            <ellipse cx="163" cy="447" rx="21" ry="14" fill="url(#g-creme)" stroke="#d6a26b" stroke-width="2"/>
+          </g>
+          <g>
+            <path d="M264 368 C 284 400, 280 442, 250 454 C 232 460, 218 450, 222 434 C 228 410, 238 392, 240 372 Z"
+                  fill="url(#g-pelo-corpo)" stroke="#b85a0d" stroke-width="2.5"/>
+            <ellipse cx="237" cy="447" rx="21" ry="14" fill="url(#g-creme)" stroke="#d6a26b" stroke-width="2"/>
+          </g>
 
           <g id="cabeca">
             <!-- orelhas -->
             <g id="orelha-e">
-              <path d="M95 175 L 105 55 L 190 120 Z" fill="var(--pelo)" stroke="var(--pelo-escuro)" stroke-width="5" stroke-linejoin="round"/>
-              <path d="M115 150 L 120 85 L 168 122 Z" fill="#ffb3c1"/>
+              <path d="M86 196 C 70 140, 78 84, 100 50 C 108 38, 124 38, 134 50 C 158 78, 182 106, 192 128 Z"
+                    fill="url(#g-pelo)" stroke="#b85a0d" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="M100 160 C 94 124, 100 90, 114 70 C 136 92, 154 112, 166 130 Z" fill="url(#g-orelha)"/>
+              <path d="M108 128 Q 116 108 128 102 M112 142 Q 124 126 138 120" fill="none" stroke="#fff6ea" stroke-width="2.5" stroke-linecap="round" opacity=".9"/>
             </g>
             <g id="orelha-d">
-              <path d="M305 175 L 295 55 L 210 120 Z" fill="var(--pelo)" stroke="var(--pelo-escuro)" stroke-width="5" stroke-linejoin="round"/>
-              <path d="M285 150 L 280 85 L 232 122 Z" fill="#ffb3c1"/>
+              <path d="M314 196 C 330 140, 322 84, 300 50 C 292 38, 276 38, 266 50 C 242 78, 218 106, 208 128 Z"
+                    fill="url(#g-pelo)" stroke="#b85a0d" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="M300 160 C 306 124, 300 90, 286 70 C 264 92, 246 112, 234 130 Z" fill="url(#g-orelha)"/>
+              <path d="M292 128 Q 284 108 272 102 M288 142 Q 276 126 262 120" fill="none" stroke="#fff6ea" stroke-width="2.5" stroke-linecap="round" opacity=".9"/>
             </g>
-            <!-- cabeça -->
-            <ellipse cx="200" cy="215" rx="125" ry="105" fill="var(--pelo)" stroke="var(--pelo-escuro)" stroke-width="5"/>
-            <!-- listras -->
-            <path d="M200 112 L 200 150 M178 115 L 182 145 M222 115 L 218 145" stroke="var(--pelo-escuro)" stroke-width="7" stroke-linecap="round"/>
+
+            <!-- cabeça fofinha com tufos nas bochechas -->
+            <path d="M200 98 C 292 98, 342 152, 338 218 C 336 246, 330 262, 346 274 C 330 278, 324 284, 318 290 C 292 322, 246 334, 200 334 C 154 334, 108 322, 82 290 C 76 284, 70 278, 54 274 C 70 262, 64 246, 62 218 C 58 152, 108 98, 200 98 Z"
+                  fill="url(#g-pelo)" stroke="#b85a0d" stroke-width="2.5" stroke-linejoin="round"/>
+            <!-- topete -->
+            <path d="M186 102 Q 192 80 202 98 Q 208 82 216 102" fill="url(#g-pelo)" stroke="#b85a0d" stroke-width="2.5" stroke-linejoin="round"/>
+            <!-- listrinhas -->
+            <g fill="none" stroke="#cf6e18" stroke-width="7" stroke-linecap="round" opacity=".6">
+              <path d="M200 108 L 200 138"/>
+              <path d="M176 112 Q 178 126 182 136"/>
+              <path d="M224 112 Q 222 126 218 136"/>
+              <path d="M70 230 Q 84 228 92 234"/>
+              <path d="M330 230 Q 316 228 308 234"/>
+            </g>
+            <!-- brilho da luz na cabeça -->
+            <ellipse cx="160" cy="142" rx="62" ry="30" fill="url(#g-brilho)"/>
+
             <!-- focinho -->
-            <ellipse cx="200" cy="255" rx="62" ry="45" fill="var(--creme)"/>
-            <!-- bochechas -->
-            <ellipse cx="118" cy="250" rx="18" ry="11" fill="#ff9aae" opacity=".6"/>
-            <ellipse cx="282" cy="250" rx="18" ry="11" fill="#ff9aae" opacity=".6"/>
+            <ellipse cx="200" cy="270" rx="60" ry="42" fill="url(#g-creme)"/>
+            <ellipse cx="160" cy="276" rx="34" ry="26" fill="url(#g-creme)"/>
+            <ellipse cx="240" cy="276" rx="34" ry="26" fill="url(#g-creme)"/>
+            <!-- bochechas rosadas -->
+            <ellipse cx="116" cy="262" rx="28" ry="18" fill="url(#g-bochecha)"/>
+            <ellipse cx="284" cy="262" rx="28" ry="18" fill="url(#g-bochecha)"/>
 
             <!-- olhos abertos -->
             <g class="olho-aberto">
-              <ellipse cx="155" cy="200" rx="26" ry="32" fill="#fff" stroke="#3a2a1a" stroke-width="4"/>
-              <ellipse cx="245" cy="200" rx="26" ry="32" fill="#fff" stroke="#3a2a1a" stroke-width="4"/>
+              <ellipse cx="150" cy="214" rx="37" ry="41" fill="#1f1610"/>
+              <ellipse cx="250" cy="214" rx="37" ry="41" fill="#1f1610"/>
+              <ellipse cx="150" cy="215" rx="33" ry="37" fill="url(#g-iris)"/>
+              <ellipse cx="250" cy="215" rx="33" ry="37" fill="url(#g-iris)"/>
               <g id="pupilas">
-                <ellipse cx="160" cy="205" rx="14" ry="19" fill="#4a8c2a"/>
-                <ellipse cx="240" cy="205" rx="14" ry="19" fill="#4a8c2a"/>
-                <ellipse cx="160" cy="207" rx="7" ry="13" fill="#1a1a1a"/>
-                <ellipse cx="240" cy="207" rx="7" ry="13" fill="#1a1a1a"/>
-                <circle cx="164" cy="197" r="5" fill="#fff"/>
-                <circle cx="244" cy="197" r="5" fill="#fff"/>
+                <ellipse cx="152" cy="220" rx="19" ry="25" fill="url(#g-pupila)"/>
+                <ellipse cx="248" cy="220" rx="19" ry="25" fill="url(#g-pupila)"/>
+                <ellipse cx="163" cy="200" rx="10" ry="11" fill="#fff"/>
+                <ellipse cx="259" cy="200" rx="10" ry="11" fill="#fff"/>
+                <circle cx="141" cy="234" r="4.5" fill="#fff" opacity=".9"/>
+                <circle cx="237" cy="234" r="4.5" fill="#fff" opacity=".9"/>
               </g>
+              <!-- reflexo da luz no olho -->
+              <path d="M126 196 Q 136 180 154 178" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".45"/>
+              <path d="M226 196 Q 236 180 254 178" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".45"/>
             </g>
-            <!-- olhos fechados (piscar) -->
-            <g class="olho-fechado" fill="none" stroke="#3a2a1a" stroke-width="5" stroke-linecap="round">
-              <path d="M132 205 Q 155 222 178 205"/>
-              <path d="M222 205 Q 245 222 268 205"/>
+            <!-- olhos fechados (piscar e rezar) -->
+            <g class="olho-fechado" fill="none" stroke="#2a1a10" stroke-width="6" stroke-linecap="round">
+              <path d="M116 220 Q 150 246 184 220"/>
+              <path d="M216 220 Q 250 246 284 220"/>
+              <path d="M120 222 L 110 230 M184 220 L 192 228 M216 220 L 208 228 M280 222 L 290 230" stroke-width="4"/>
             </g>
 
             <!-- nariz -->
-            <path d="M188 236 L 212 236 L 200 250 Z" fill="#ff6b8b" stroke="#c94a68" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M184 250 Q 200 242 216 250 Q 214 263 200 268 Q 186 263 184 250 Z" fill="url(#g-nariz)" stroke="#b83d5e" stroke-width="1.5"/>
+            <ellipse cx="195" cy="251" rx="6" ry="2.6" fill="#fff" opacity=".8"/>
             <!-- boca fechada -->
-            <path id="boca-fechada" d="M200 250 L 200 262 M200 262 Q 188 276 176 264 M200 262 Q 212 276 224 264"
-                  fill="none" stroke="#3a2a1a" stroke-width="4" stroke-linecap="round"/>
+            <path id="boca-fechada" d="M200 268 L 200 276 M200 276 Q 190 288 177 280 M200 276 Q 210 288 223 280"
+                  fill="none" stroke="#4a2a1e" stroke-width="4" stroke-linecap="round"/>
             <!-- boca aberta -->
             <g id="boca-aberta">
-              <ellipse cx="200" cy="278" rx="26" ry="22" fill="#7a1f2b" stroke="#3a2a1a" stroke-width="4"/>
-              <ellipse cx="200" cy="290" rx="15" ry="8" fill="#ff7b93"/>
+              <path d="M176 280 Q 200 272 224 280 Q 226 312 200 318 Q 174 312 176 280 Z" fill="url(#g-boca)" stroke="#4a2a1e" stroke-width="3"/>
+              <ellipse cx="200" cy="306" rx="14" ry="8" fill="#ff7d96"/>
             </g>
             <!-- bigodes -->
-            <g stroke="#3a2a1a" stroke-width="3" stroke-linecap="round">
-              <path d="M140 255 L 70 240"/><path d="M140 265 L 68 268"/><path d="M142 275 L 76 295"/>
-              <path d="M260 255 L 330 240"/><path d="M260 265 L 332 268"/><path d="M258 275 L 324 295"/>
+            <g fill="none" stroke="#fffaf2" stroke-width="2.6" stroke-linecap="round" opacity=".95">
+              <path d="M132 268 Q 96 256 58 254"/><path d="M132 278 Q 94 278 56 284"/><path d="M134 288 Q 100 298 66 312"/>
+              <path d="M268 268 Q 304 256 342 254"/><path d="M268 278 Q 306 278 344 284"/><path d="M266 288 Q 300 298 334 312"/>
             </g>
           </g>
 
           <!-- mão na orelha (quando está ouvindo) -->
           <g id="mao-orelha">
-            <path d="M128 360 C 70 320, 70 230, 92 175" fill="none" stroke="var(--pelo-escuro)" stroke-width="26" stroke-linecap="round"/>
-            <path d="M128 360 C 70 320, 70 230, 92 175" fill="none" stroke="var(--pelo)" stroke-width="18" stroke-linecap="round"/>
-            <ellipse cx="92" cy="172" rx="20" ry="17" fill="var(--creme)" stroke="var(--pelo-escuro)" stroke-width="4"/>
+            <path d="M136 374 C 80 346, 38 272, 50 200 C 54 180, 80 176, 86 194 C 80 262, 110 330, 162 362 Z"
+                  fill="url(#g-pelo-corpo)" stroke="#b85a0d" stroke-width="2.5"/>
+            <ellipse cx="68" cy="186" rx="23" ry="19" fill="url(#g-creme)" stroke="#d6a26b" stroke-width="2"/>
+            <path d="M58 176 L 56 166 M68 174 L 68 164 M78 176 L 80 166" stroke="#d6a26b" stroke-width="2.5" stroke-linecap="round"/>
           </g>
         </g>
       </svg>
@@ -489,17 +712,27 @@
   <p id="instalar-dica" hidden></p>
 </div>
 
-<div id="boas-vindas" hidden>
-  <div class="cartao-boas-vindas" role="dialog" aria-labelledby="boas-vindas-titulo">
-    <img src="icones/icone-192.png" alt="">
-    <h2 id="boas-vindas-titulo">O Miguel quer te conhecer!</h2>
-    <ol class="passos">
-      <li><span class="simbolo" aria-hidden="true">👆</span>Toque no Miguel</li>
-      <li><span class="simbolo" aria-hidden="true">🗣️</span>Fale alguma coisa</li>
-      <li><span class="simbolo" aria-hidden="true">😹</span>Ele repete com voz engraçada</li>
-    </ol>
-    <button id="comecar">▶ Começar</button>
+<div id="abertura" role="dialog" aria-label="Miguel, o Gato Falante">
+  <div class="raios" aria-hidden="true"></div>
+  <div class="sol" aria-hidden="true"></div>
+  <div class="nuvem" style="top: 9%; animation-duration: 38s; animation-delay: -10s" aria-hidden="true"></div>
+  <div class="nuvem" style="top: 22%; animation-duration: 52s; animation-delay: -34s; transform: scale(.7)" aria-hidden="true"></div>
+  <div class="nuvem" style="top: 4%; animation-duration: 64s; animation-delay: -50s" aria-hidden="true"></div>
+  <div class="morro" aria-hidden="true"></div>
+  <span class="enfeite" style="left: 8%; top: 30%" aria-hidden="true">⭐</span>
+  <span class="enfeite" style="right: 9%; top: 34%; animation-delay: -1s" aria-hidden="true">🎵</span>
+  <span class="enfeite" style="left: 14%; top: 55%; animation-delay: -2s" aria-hidden="true">💛</span>
+  <span class="enfeite" style="right: 12%; top: 58%; animation-delay: -1.5s" aria-hidden="true">✨</span>
+  <span class="enfeite" style="left: 46%; top: 3%; animation-delay: -.5s" aria-hidden="true">🌟</span>
+  <div class="abertura-conteudo">
+    <h1 class="titulo-abertura" aria-label="Miguel">
+      <span style="--i:0; --c:#ff7a1a">M</span><span style="--i:1; --c:#ff4f8b">i</span><span style="--i:2; --c:#8b5cf6">g</span><span style="--i:3; --c:#2f9be8">u</span><span style="--i:4; --c:#34b25a">e</span><span style="--i:5; --c:#f5b301">l</span>
+    </h1>
+    <div class="faixa">o gato falante</div>
+    <img class="miguel-abertura" src="icones/miguel.png" alt="">
   </div>
+  <button id="jogar">▶ Vamos brincar!</button>
+  <div class="credito">DESENVOLVIDO POR VINI &amp; WEBER</div>
 </div>
 
 <script>
@@ -513,7 +746,8 @@
   const bocaAberta = document.getElementById('boca-aberta');
   const bocaFechada = document.getElementById('boca-fechada');
   const vozesBarra = document.getElementById('vozes');
-  const boasVindas = document.getElementById('boas-vindas');
+  const abertura = document.getElementById('abertura');
+  const orelhao = document.getElementById('orelhao');
 
   const guardar = (chave, valor) => { try { localStorage.setItem(chave, valor); } catch (e) {} };
   const ler = (chave) => { try { return localStorage.getItem(chave); } catch (e) { return null; } };
@@ -578,13 +812,18 @@
     bocaFechada.style.opacity = n > 0.15 ? 0 : 1;
   }
 
-  async function prepararAudio() {
-    if (ctx) {
-      if (ctx.state === 'suspended') await ctx.resume();
-      return;
+  function obterContexto() {
+    if (!ctx) {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      ctx = new Ctx();
     }
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    ctx = new Ctx();
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  }
+
+  async function prepararAudio() {
+    obterContexto();
+    if (microfone) return;
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
     });
@@ -607,6 +846,7 @@
     for (let i = 0; i < dados.length; i++) soma += dados[i] * dados[i];
     const volume = Math.sqrt(soma / dados.length);
     anel.style.transform = `scale(${1 + Math.min(volume * 6, 0.35)})`;
+    mostrarSomChegando(volume);
 
     const agora = performance.now();
     if (volume > LIMIAR_FALA) {
@@ -620,6 +860,7 @@
 
     if (comecouFalar && agora - ultimoSom > SILENCIO_FIM) pararDeOuvir();
     else if (!comecouFalar && agora - inicioGravacao > ESPERA_MAX) {
+      tocarAviso('nada');
       setEstado('parado');
       falar('Não ouvi nada... Toque em mim e fale mais alto!');
     } else if (agora - inicioGravacao > GRAVACAO_MAX) pararDeOuvir();
@@ -631,7 +872,6 @@
     } catch (err) {
       console.error(err);
       falar('Preciso do microfone! Permita o acesso e toque de novo.');
-      ctx = null;
       return;
     }
     pedacos = [];
@@ -639,16 +879,20 @@
     indiceInicioFala = 0;
     inicioGravacao = performance.now();
     setEstado('ouvindo');
+    posicionarOrelhao();
+    tocarAviso('ouvir');
     falar('Estou ouvindo... 👂');
   }
 
   function pararDeOuvir() {
     if (estado !== 'ouvindo') return;
     if (!comecouFalar) {
+      tocarAviso('nada');
       setEstado('parado');
       falar('Não ouvi nada... Toque em mim e fale!');
       return;
     }
+    tocarAviso('fim');
     // corta o silêncio do fim (mantém ~0,25 s)
     const tamPedaco = pedacos[0].length;
     const sobraFinal = Math.ceil((SILENCIO_FIM / 1000) * ctx.sampleRate / tamPedaco) - 3;
@@ -773,7 +1017,83 @@
       setEstado('parado');
       falar('Fala mais comigo! Toque no Miguel! 😺');
     };
-    fonte.start();
+    fonte.start(ctx.currentTime + 0.3);
+  }
+
+  // ---------- Sinais para quem ainda não lê ----------
+  // som curtinho subindo = "estou ouvindo"; descendo = "pronto, ouvi!"
+  function tocarNota(freq, inicio, duracao, volume, tipo = 'triangle') {
+    const ac = obterContexto();
+    const osc = ac.createOscillator();
+    const g = ac.createGain();
+    osc.type = tipo;
+    osc.frequency.value = freq;
+    const t = ac.currentTime + inicio;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(volume * (calmo ? 0.5 : 1), t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + duracao);
+    osc.connect(g);
+    g.connect(ac.destination);
+    osc.start(t);
+    osc.stop(t + duracao + 0.05);
+    return osc;
+  }
+  function tocarAviso(tipo) {
+    const notas = {
+      ouvir: [[659, 0], [988, 0.11]],
+      fim: [[988, 0], [784, 0.1], [659, 0.2]],
+      nada: [[392, 0], [330, 0.16]],
+    }[tipo];
+    for (const [f, t] of notas) tocarNota(f, t, 0.16, 0.18);
+  }
+  function tocarMusica() {
+    const melodia = [[523, 0], [659, 0.12], [784, 0.24], [1047, 0.36], [784, 0.56], [1047, 0.68]];
+    for (const [f, t] of melodia) tocarNota(f, t, 0.22, 0.16);
+    // "miau!"
+    const osc = tocarNota(700, 0.95, 0.55, 0.12, 'sawtooth');
+    const t = obterContexto().currentTime + 0.95;
+    osc.frequency.setValueAtTime(650, t);
+    osc.frequency.linearRampToValueAtTime(1050, t + 0.18);
+    osc.frequency.linearRampToValueAtTime(620, t + 0.5);
+  }
+
+  // posição da orelha do Miguel na tela (o desenho tem 400 x 500)
+  function pontoDoGato(x, y) {
+    const r = gato.getBoundingClientRect(), a = areaGato.getBoundingClientRect();
+    const escala = Math.min(r.width / 400, r.height / 500);
+    const sobraX = (r.width - 400 * escala) / 2, sobraY = (r.height - 500 * escala) / 2;
+    return { x: r.left - a.left + sobraX + x * escala, y: r.top - a.top + sobraY + y * escala };
+  }
+  function posicionarOrelhao() {
+    const p = pontoDoGato(10, 90);
+    orelhao.style.left = Math.max(40, p.x) + 'px';
+    orelhao.style.top = Math.max(40, p.y) + 'px';
+  }
+
+  let ultimoSomVisto = 0;
+  const CORES_SOM = ['#ff7a1a', '#ff4f8b', '#8b5cf6', '#2f9be8', '#34b25a', '#f5b301'];
+  function mostrarSomChegando(volume) {
+    orelhao.style.setProperty('--vol', (1 + Math.min(volume * 5, 0.35)).toFixed(2));
+    const agora = performance.now();
+    if (volume < LIMIAR_FALA || agora - ultimoSomVisto < (calmo ? 240 : 70)) return;
+    ultimoSomVisto = agora;
+    const a = areaGato.getBoundingClientRect();
+    const alvo = pontoDoGato(110, 110);
+    const ini = { x: a.width * (0.2 + Math.random() * 0.6), y: a.height + 10 };
+    const el = document.createElement('span');
+    el.className = 'som';
+    el.textContent = ['♪', '♫', '●', '★'][Math.floor(Math.random() * 4)];
+    el.style.color = CORES_SOM[Math.floor(Math.random() * CORES_SOM.length)];
+    el.style.fontSize = Math.round(16 + Math.min(volume * 160, 22)) + 'px';
+    el.style.left = ini.x + 'px';
+    el.style.top = ini.y + 'px';
+    areaGato.appendChild(el);
+    const dx = alvo.x - ini.x, dy = alvo.y - ini.y, curva = (Math.random() - 0.5) * 120;
+    el.animate([
+      { transform: 'translate(0, 0) scale(.6)', opacity: 0 },
+      { transform: `translate(${dx * 0.5 + curva}px, ${dy * 0.5}px) scale(1.1)`, opacity: 1, offset: 0.45 },
+      { transform: `translate(${dx}px, ${dy}px) scale(.3)`, opacity: 0.2 },
+    ], { duration: calmo ? 1300 : 900, easing: 'ease-in' }).onfinish = () => el.remove();
   }
 
   // Estica a fala sem mudar o tom (WSOLA): junta pedacinhos do som que se encaixam
@@ -1026,6 +1346,7 @@
     narrarSequencia('ajuda', [
       { texto: SAUDACAO[periodoDoDia()] + '! Eu sou o Miguel, o gato falante! 😺' },
       { texto: 'Toque em mim e fale alguma coisa. 👆' },
+      { texto: 'Quando eu estiver ouvindo, bolinhas coloridas voam para a minha orelha! 👂' },
       { texto: 'Quando você parar de falar, eu repito com uma voz engraçada! 😹' },
       { texto: 'Aqui embaixo você escolhe a minha voz. Tem tia Dani, Bob Esponja, pirata e muito mais! 👇', vozes: true },
       { texto: 'No botão Oração, eu rezo com você. 🙏' },
@@ -1095,30 +1416,64 @@
   // ---------- Dicas para crianças ----------
   const DICAS = [
     { simbolo: '🙋', titulo: 'Respeito', frases: ['Todas as pessoas merecem respeito.', 'Trate os outros como você gostaria de ser tratado.'] },
+    { simbolo: '🍎', titulo: 'Frutas todo dia', frases: ['Coma frutas todos os dias.', 'Banana, maçã, mamão, laranja... qual é a sua preferida?'] },
+    { simbolo: '🧼', titulo: 'Mãos limpinhas', frases: ['Lave as mãos antes de comer e depois de ir ao banheiro.', 'Com água e sabão, esfregando bem entre os dedinhos!'] },
     { simbolo: '👩‍🏫', titulo: 'Professores', frases: ['Escute a professora com atenção.', 'Quando quiser falar, levante a mão e espere a sua vez.'] },
+    { simbolo: '🍬', titulo: 'Pouco doce', frases: ['Doce é gostoso, mas só de vez em quando.', 'Muito açúcar faz mal para os dentes e para a barriga.'] },
+    { simbolo: '🛁', titulo: 'Hora do banho', frases: ['Tome banho todos os dias.', 'Lave atrás das orelhas, o pescoço e os pezinhos!'] },
     { simbolo: '🤝', titulo: 'Amigos', frases: ['Bons amigos dividem e brincam juntos.', 'Se alguém estiver sozinho, chame para brincar!'] },
+    { simbolo: '💧', titulo: 'Beber água', frases: ['Quando der sede, beba água!', 'Refrigerante e suco de caixinha têm muito açúcar.'] },
+    { simbolo: '🦷', titulo: 'Dentes', frases: ['Escove os dentes depois de comer e antes de dormir.', 'Não esqueça de escovar a língua também!'] },
     { simbolo: '🌳', titulo: 'Natureza', frases: ['Jogue o lixo sempre no lixo.', 'Não arranque as flores nem as folhas das árvores.'] },
-    { simbolo: '💧', titulo: 'Água', frases: ['Feche a torneira enquanto escova os dentes.', 'Assim a gente economiza água para todo mundo.'] },
-    { simbolo: '🐶', titulo: 'Animais', frases: ['Trate os bichinhos com carinho.', 'Nunca puxe o rabo nem as orelhas de um animal.'] },
+    { simbolo: '🥕', titulo: 'Prato colorido', frases: ['Um prato colorido é um prato saudável.', 'Arroz, feijão, legumes, verduras e uma carninha ou ovo!'] },
+    { simbolo: '🤧', titulo: 'Espirro e tosse', frases: ['Espirrou ou tossiu? Cubra a boca com o braço.', 'Assim os germes não passam para os amigos.'] },
     { simbolo: '✨', titulo: 'Palavras mágicas', frases: ['Use as palavras mágicas: por favor, obrigado e com licença.', 'Elas deixam todo mundo mais feliz!'] },
-    { simbolo: '🙏', titulo: 'Pedir desculpas', frases: ['Quando a gente erra, pede desculpas.', 'Todo mundo erra, e tudo bem aprender com isso.'] },
-    { simbolo: '👵', titulo: 'Os mais velhos', frases: ['Respeite os vovôs e as vovós.', 'Ofereça ajuda e o seu lugar para sentar.'] },
+    { simbolo: '🍟', titulo: 'Salgadinho e fritura', frases: ['Salgadinho, bolacha recheada e fritura são só de vez em quando.', 'No lanche, prefira uma fruta ou um sanduíche natural.'] },
+    { simbolo: '💅', titulo: 'Unhas', frases: ['Deixe as unhas curtinhas e limpas.', 'Peça para um adulto cortar com cuidado.'] },
+    { simbolo: '🐶', titulo: 'Animais', frases: ['Trate os bichinhos com carinho.', 'Nunca puxe o rabo nem as orelhas de um animal.'] },
+    { simbolo: '🥛', titulo: 'Café da manhã', frases: ['Tome café da manhã antes de sair de casa.', 'Ele dá energia para começar o dia!'] },
+    { simbolo: '👃', titulo: 'Nariz limpinho', frases: ['Nariz escorrendo? Use um lencinho.', 'Depois jogue no lixo e lave as mãos.'] },
     { simbolo: '🌈', titulo: 'Somos diferentes', frases: ['Cada pessoa é de um jeito, e isso é bonito.', 'Alguns amigos aprendem, falam ou brincam de um jeito diferente. Respeite sempre!'] },
+    { simbolo: '🍽️', titulo: 'Comer com calma', frases: ['Coma devagar e mastigue bem.', 'Na hora de comer, deixe a televisão e o celular de lado.'] },
+    { simbolo: '🚽', titulo: 'Depois do banheiro', frases: ['Depois de usar o banheiro, dê descarga.', 'E lave as mãos com sabão!'] },
     { simbolo: '👂', titulo: 'Saber ouvir', frases: ['Quando alguém está falando, a gente escuta.', 'Espere a pessoa terminar para falar.'] },
+    { simbolo: '🥦', titulo: 'Experimentar comidas', frases: ['Experimente comidas novas!', 'Às vezes a gente descobre que gosta muito.'] },
+    { simbolo: '👕', titulo: 'Roupa limpa', frases: ['Use roupa limpa todos os dias.', 'Roupa suja vai para o cesto!'] },
+    { simbolo: '👵', titulo: 'Os mais velhos', frases: ['Respeite os vovôs e as vovós.', 'Ofereça ajuda e o seu lugar para sentar.'] },
+    { simbolo: '🏃', titulo: 'Mexer o corpo', frases: ['Corra, pule e brinque todos os dias.', 'Mexer o corpo deixa a gente forte e feliz!'] },
+    { simbolo: '🪥', titulo: 'Coisas só suas', frases: ['Escova de dente, copo e toalha são só seus.', 'Não empreste e não pegue emprestado.'] },
     { simbolo: '⏳', titulo: 'Esperar a vez', frases: ['Na fila e na brincadeira, cada um tem a sua vez.', 'Esperar também é um jeito de respeitar.'] },
+    { simbolo: '🍭', titulo: 'Doce depois da comida', frases: ['Se for comer um docinho, coma depois do almoço, e só um pouquinho.', 'Depois, escove os dentes!'] },
+    { simbolo: '💇', titulo: 'Cabelo', frases: ['Lave e penteie o cabelo.', 'Cabelo limpinho e cheiroso!'] },
     { simbolo: '✋', titulo: 'Sem machucar', frases: ['Não bata, não empurre e não morda.', 'Se ficar bravo, respire fundo e peça ajuda a um adulto.'] },
+    { simbolo: '☀️', titulo: 'Sol', frases: ['No sol, use protetor solar e boné.', 'E beba bastante água!'] },
     { simbolo: '🌬️', titulo: 'Respirar com calma', frases: ['Quando ficar nervoso, faça assim:', 'Cheire a flor... e assopre a vela.', 'Repita três vezes, bem devagar.'] },
+    { simbolo: '🥗', titulo: 'Verduras e legumes', frases: ['Verduras e legumes deixam o corpo forte.', 'Cenoura, brócolis, alface e tomate são super poderes!'] },
+    { simbolo: '📱', titulo: 'Celular e TV', frases: ['Celular e televisão, só um pouquinho por dia.', 'Brincar de verdade é muito mais legal!'] },
+    { simbolo: '🙏', titulo: 'Pedir desculpas', frases: ['Quando a gente erra, pede desculpas.', 'Todo mundo erra, e tudo bem aprender com isso.'] },
     { simbolo: '😊', titulo: 'Sentimentos', frases: ['Tudo bem ficar triste ou bravo às vezes.', 'Conte para um adulto como você está se sentindo.'] },
-    { simbolo: '🧼', titulo: 'Mãos limpinhas', frases: ['Lave as mãos antes de comer e depois de ir ao banheiro.', 'Com água e sabão, esfregando bem!'] },
-    { simbolo: '🦷', titulo: 'Dentes', frases: ['Escove os dentes depois de comer e antes de dormir.', 'Dentes limpinhos, sorriso bonito!'] },
-    { simbolo: '🧸', titulo: 'Guardar os brinquedos', frases: ['Depois de brincar, guarde os brinquedos.', 'Assim nada se perde e ninguém tropeça.'] },
-    { simbolo: '🏠', titulo: 'Ajudar em casa', frases: ['Ajude em casa: guarde as suas coisas e arrume a sua cama.', 'A família é um time!'] },
-    { simbolo: '🥦', titulo: 'Comer bem', frases: ['Coma frutas e verduras todos os dias.', 'Elas dão energia para brincar!'] },
-    { simbolo: '🚸', titulo: 'Atravessar a rua', frases: ['Atravesse a rua sempre de mão dada com um adulto.', 'E olhe para os dois lados!'] },
-    { simbolo: '🙅', titulo: 'Pessoas desconhecidas', frases: ['Não aceite nada de quem você não conhece.', 'Sempre avise um adulto de confiança.'] },
+    { simbolo: '🍞', titulo: 'Lanche saudável', frases: ['Um lanche gostoso e saudável: fruta, pão, queijo ou iogurte.', 'Leve na lancheira e coma com calma.'] },
     { simbolo: '😴', titulo: 'Dormir bem', frases: ['Dormir bem deixa o corpo e a cabeça descansados.', 'Na hora de dormir, desligue o celular e a televisão.'] },
     { simbolo: '💬', titulo: 'Elogiar', frases: ['Diga coisas bonitas para as pessoas.', 'Um elogio deixa o dia de alguém mais feliz!'] },
+    { simbolo: '🚸', titulo: 'Atravessar a rua', frases: ['Atravesse a rua sempre de mão dada com um adulto.', 'E olhe para os dois lados!'] },
+    { simbolo: '🧸', titulo: 'Guardar os brinquedos', frases: ['Depois de brincar, guarde os brinquedos.', 'Assim nada se perde e ninguém tropeça.'] },
+    { simbolo: '🔌', titulo: 'Tomada', frases: ['Nunca coloque o dedo nem objetos na tomada.', 'Choque machuca muito!'] },
+    { simbolo: '🏠', titulo: 'Ajudar em casa', frases: ['Ajude em casa: guarde as suas coisas e arrume a sua cama.', 'A família é um time!'] },
+    { simbolo: '💊', titulo: 'Remédio não é bala', frases: ['Remédio só se toma quando um adulto der.', 'Nunca pegue remédio sozinho.'] },
+    { simbolo: '🗣️', titulo: 'Falar a verdade', frases: ['Fale sempre a verdade.', 'Mesmo quando errar, a verdade é o melhor caminho.'] },
+    { simbolo: '🔥', titulo: 'Fogão e panela quente', frases: ['Não mexa no fogão nem em panela quente.', 'Se precisar, peça ajuda a um adulto.'] },
+    { simbolo: '🫂', titulo: 'Ninguém merece zombaria', frases: ['Não zombe de ninguém.', 'Se alguém zombar de você, conte para um adulto.'] },
+    { simbolo: '🚗', titulo: 'No carro', frases: ['No carro, use sempre a cadeirinha e o cinto.', 'Assim a viagem fica segura.'] },
+    { simbolo: '🧩', titulo: 'Não desistir', frases: ['Algo ficou difícil? Tente de novo!', 'Cada tentativa deixa você mais esperto.'] },
+    { simbolo: '🏊', titulo: 'Piscina e mar', frases: ['Na piscina ou no mar, só com um adulto olhando.', 'Segurança em primeiro lugar!'] },
+    { simbolo: '🙅', titulo: 'Pessoas desconhecidas', frases: ['Não aceite nada de quem você não conhece.', 'Sempre avise um adulto de confiança.'] },
+    { simbolo: '♻️', titulo: 'Reciclar', frases: ['Separe o lixo: papel, plástico, vidro e metal.', 'Reciclar ajuda o planeta!'] },
+    { simbolo: '💡', titulo: 'Apagar a luz', frases: ['Saiu do quarto? Apague a luz.', 'Economizar energia também é cuidar do planeta.'] },
+    { simbolo: '🌱', titulo: 'Plantinhas', frases: ['Regue as plantinhas com carinho.', 'E veja como elas crescem bonitas!'] },
     { simbolo: '🎒', titulo: 'Cuidar das coisas', frases: ['Cuide do seu material e do material dos colegas.', 'Pegou emprestado? Devolva com cuidado.'] },
+    { simbolo: '💉', titulo: 'Médico e vacina', frases: ['Ir ao médico e tomar vacina protege a gente.', 'É rapidinho e deixa o corpo forte!'] },
+    { simbolo: '🫶', titulo: 'Ajudar quem precisa', frases: ['Viu alguém precisando de ajuda? Ajude!', 'Um gesto pequeno faz uma grande diferença.'] },
+    { simbolo: '😄', titulo: 'Sorrir', frases: ['Um sorriso deixa o dia mais bonito.', 'Sorria e veja como todo mundo sorri de volta!'] },
   ];
 
   function darDica() {
@@ -1158,11 +1513,24 @@
   if (vozGuardada && VOZES[vozGuardada]) vozesBarra.querySelector(`[data-voz="${vozGuardada}"]`).click();
   falar(SAUDACAO[periodoDoDia()] + '! Eu sou o Miguel. Toque em mim e fale!');
 
-  document.getElementById('comecar').addEventListener('click', () => {
-    boasVindas.hidden = true;
-    apresentar();
-  });
-  if (ler('miguel-apresentou') !== '1') boasVindas.hidden = false;
+  // ---------- Abertura ----------
+  let aberturaFechada = false, instalarPendente = false;
+  function entrarNoJogo() {
+    if (aberturaFechada) return;
+    aberturaFechada = true;
+    tocarMusica();
+    abertura.classList.add('saindo');
+    setTimeout(() => {
+      abertura.hidden = true;
+      gato.classList.remove('cutucado');
+      void gato.getBoundingClientRect();
+      gato.classList.add('cutucado');
+      if (instalarPendente) mostrarInstalar();
+      if (ler('miguel-apresentou') !== '1') apresentar();
+      else narrarSequencia('ajuda', [{ texto: SAUDACAO[periodoDoDia()] + '! Que bom te ver de novo! Toque em mim e fale! 😺' }], VOZ_MIGUEL, 300);
+    }, 550);
+  }
+  abertura.addEventListener('click', entrarNoJogo);
   if ('speechSynthesis' in window) speechSynthesis.getVoices();
 
   // ---------- Instalar no celular ----------
@@ -1176,13 +1544,18 @@
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     pedidoInstalar = e;
-    if (!jaInstalado && !fechouInstalar) caixaInstalar.hidden = false;
+    mostrarInstalar();
   });
   window.addEventListener('appinstalled', () => { caixaInstalar.hidden = true; });
-  if (!jaInstalado && ehIphone) caixaInstalar.hidden = false;
+  function mostrarInstalar() {
+    if (jaInstalado || fechouInstalar) return;
+    if (!aberturaFechada) { instalarPendente = true; return; }
+    caixaInstalar.hidden = false;
+  }
+  if (ehIphone) mostrarInstalar();
   // alguns navegadores Android não avisam que dá para instalar: mostra a dica mesmo assim
   if (!jaInstalado && /android/i.test(navigator.userAgent)) {
-    setTimeout(() => { if (!fechouInstalar) caixaInstalar.hidden = false; }, 2500);
+    setTimeout(mostrarInstalar, 2500);
   }
 
   document.getElementById('instalar-sim').addEventListener('click', async () => {
