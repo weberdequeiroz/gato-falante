@@ -260,6 +260,9 @@
   function desenharPainel() {
     const escolha = roupa[categoria];
     const pecas = PECAS[categoria];
+    // guarda a rolagem para a lista não pular para o começo a cada toque
+    const rolagemAntes = painel.querySelector('.gr-rolagem');
+    const posicao = rolagemAntes && rolagemAntes.dataset.cat === categoria ? rolagemAntes.scrollTop : 0;
     painel.innerHTML = `
       <div class="gr-topo">
         <strong>👕 Roupas</strong>
@@ -271,18 +274,15 @@
       </div>
       <div class="gr-abas">${CATEGORIAS.map(([id, ic, nome]) =>
         `<button data-cat="${id}" aria-selected="${id === categoria}" aria-label="${nome}"><span>${ic}</span><small>${nome}</small>${roupa[id] ? '<i class="gr-ponto"></i>' : ''}</button>`).join('')}</div>
-      <div class="gr-rolagem">
-        <p class="gr-titulo">Modelo</p>
+      ${escolha ? `<div class="gr-cores" aria-label="Cor">${CORES.map(([c, n]) => `<button data-cor="${c}" style="background:${c}" aria-label="${n}" aria-pressed="${escolha.cor === c}"></button>`).join('')}</div>
+        ${categoria === 'blusa' ? `<div class="gr-estampas" aria-label="Estampa">${ESTAMPAS.map(e => `<button data-estampa="${e.id}" aria-pressed="${(escolha.estampa || 'lisa') === e.id}" aria-label="Estampa ${e.nome}"><span>${e.icone}</span><small>${e.nome}</small></button>`).join('')}</div>` : ''}` : ''}
+      <div class="gr-rolagem" data-cat="${categoria}">
         <div class="gr-pecas">
           <button data-peca="" aria-pressed="${!escolha}"><span>🚫</span><small>Nenhum</small></button>
           ${pecas.map(p => `<button data-peca="${p.id}" aria-pressed="${escolha?.id === p.id}"><span>${p.icone}</span><small>${p.nome}</small></button>`).join('')}
         </div>
-        ${escolha ? `
-          <p class="gr-titulo">Cor</p>
-          <div class="gr-cores">${CORES.map(([c, n]) => `<button data-cor="${c}" style="background:${c}" aria-label="${n}" aria-pressed="${escolha.cor === c}"></button>`).join('')}</div>
-          ${categoria === 'blusa' ? `<p class="gr-titulo">Estampa</p>
-          <div class="gr-pecas">${ESTAMPAS.map(e => `<button data-estampa="${e.id}" aria-pressed="${(escolha.estampa || 'lisa') === e.id}"><span>${e.icone}</span><small>${e.nome}</small></button>`).join('')}</div>` : ''}` : ''}
       </div>`;
+    painel.querySelector('.gr-rolagem').scrollTop = posicao;
   }
   function aplicar(falarTexto) {
     salvar();
@@ -387,5 +387,10 @@
     return partes;
   }
 
-  M.roupas = { abrir, vestir, imagemMiguel, partesMiguel, atual: () => roupa, tom };
+  // para testar peças novas sem salvar (usado pelos testes automáticos)
+  const _teste = { PECAS, tom, contorno, espelhar, provar(cat, id, cor, est) {
+    const antes = roupa[cat]; roupa[cat] = id ? { id, cor, estampa: est } : null; vestir(document.getElementById('gato')); roupa[cat] = antes;
+  } };
+
+  M.roupas = { abrir, vestir, imagemMiguel, partesMiguel, atual: () => roupa, tom, _teste };
 })();
