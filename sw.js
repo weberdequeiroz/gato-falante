@@ -1,6 +1,7 @@
 // Guarda o jogo no celular para abrir rápido; sempre tenta buscar a versão nova primeiro
-const CACHE = 'miguel-v5';
-const ARQUIVOS = ['./', 'index.html', 'manifest.webmanifest', 'icones/icone-192.png', 'icones/icone-512.png', 'icones/apple-touch-icon.png', 'icones/miguel.png'];
+const CACHE = 'miguel-v6';
+const ARQUIVOS = ['./', 'index.html', 'manifest.webmanifest', 'icones/icone-192.png', 'icones/icone-512.png', 'icones/apple-touch-icon.png', 'icones/miguel.png',
+  'jogos/jogos.css', 'jogos/nucleo.js', 'jogos/aprender.js', 'jogos/idiomas.js', 'jogos/musica.js', 'jogos/colorir.js', 'jogos/pontos.js', 'jogos/memoria.js', 'jogos/bolhas.js'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ARQUIVOS.map((a) => new Request(a, { cache: 'reload' })))));

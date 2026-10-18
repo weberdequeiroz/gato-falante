@@ -14,6 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap">
 <title>Miguel, o Gato Falante</title>
+<link rel="stylesheet" href="jogos/jogos.css">
 <style>
   /* Uma tela só, de cima para baixo: topo com ajuda → aviso do que está acontecendo → Miguel → ações grandes → vozes.
      Cores calmas e sempre iguais, botões grandes com ícone + palavra, um estado de cada vez. */
@@ -469,168 +470,51 @@
   }
   #atualizar[hidden] { display: none; }
 
-  /* tela de jogos */
-  #jogos {
+  /* ajustes e lembretes */
+  .camada {
     position: fixed;
     inset: 0;
-    z-index: 35;
-    background: linear-gradient(var(--ceu-claro), var(--ceu));
-    display: flex;
-    flex-direction: column;
-  }
-  #jogos[hidden] { display: none; }
-  .jogos-topo {
+    z-index: 55;
     display: flex;
     align-items: center;
-    gap: 12px;
-    max-width: 560px;
-    width: 100%;
-    margin: 0 auto;
-    padding-top: calc(10px + env(safe-area-inset-top, 0px));
-    padding-left: max(16px, env(safe-area-inset-left, 0px));
-    padding-right: max(16px, env(safe-area-inset-right, 0px));
-    padding-bottom: 6px;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(31, 45, 61, .45);
   }
-  .jogos-topo h2 { margin: 0; font-size: 24px; font-weight: 900; }
-  #jogos-corpo {
-    flex: 1;
-    min-height: 0;
+  .camada[hidden] { display: none; }
+  .cartao-camada {
+    width: min(460px, 100%);
+    max-height: 100%;
     overflow-y: auto;
-    max-width: 560px;
-    width: 100%;
-    margin: 0 auto;
-    padding-block: 8px calc(16px + env(safe-area-inset-bottom, 0px));
-    padding-left: max(16px, env(safe-area-inset-left, 0px));
-    padding-right: max(16px, env(safe-area-inset-right, 0px));
-  }
-  .menu-jogos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .cartao-tema {
-    min-height: 130px;
-    border: 3px solid var(--cor);
-    border-radius: 24px;
     background: var(--cartao);
-    box-shadow: 0 6px 0 var(--cor);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    font-size: 21px;
-    font-weight: 900;
-    color: var(--tinta);
-  }
-  .cartao-tema:last-child { grid-column: 1 / -1; min-height: 110px; }
-  .cartao-tema .simbolo { font-size: 52px; line-height: 1; }
-  .cartao-tema:active, .modo:active, .item:active, .opcao:active { transform: translateY(3px); }
-
-  .tema-escolha { display: flex; flex-direction: column; gap: 14px; align-items: stretch; }
-  .tema-escolha, .jogo, .vitoria { min-height: 100%; justify-content: center; }
-  .tema-heroi { text-align: center; font-size: 96px; line-height: 1.1; }
-  .modo {
-    min-height: 84px;
-    border: 3px solid var(--cor, var(--laranja));
-    border-radius: 22px;
-    background: var(--cartao);
-    box-shadow: 0 5px 0 var(--cor, var(--laranja));
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 10px 18px;
-    text-align: left;
-  }
-  .modo .simbolo { font-size: 40px; }
-  .modo strong { display: block; font-size: 22px; font-weight: 900; }
-  .modo small { display: block; font-size: 14px; color: var(--tinta-suave); }
-
-  .bola-cor { display: block; width: 58px; height: 58px; border-radius: 50%; border: 3px solid rgba(31,45,61,.15); box-shadow: inset -6px -8px 0 rgba(0,0,0,.12), inset 6px 6px 0 rgba(255,255,255,.35); }
-  .numero { font-size: 46px; font-weight: 900; line-height: 1; color: var(--cor); }
-  .letra { font-size: 46px; font-weight: 900; line-height: 1; color: var(--cor); }
-  .letra small { font-size: .55em; margin-left: 4px; opacity: .8; }
-  .emoji-grande { font-size: 48px; line-height: 1.05; }
-  .exemplo { font-size: 44px; }
-  .contas { display: block; max-width: 260px; font-size: 30px; line-height: 1.2; text-align: center; overflow-wrap: anywhere; }
-
-  .conhecer { display: flex; flex-direction: column; gap: 12px; }
-  .destaque-item {
-    background: var(--cartao);
-    border-radius: 24px;
-    border: 3px solid var(--cor);
-    padding: 14px;
-    text-align: center;
+    border-radius: 26px;
+    padding: 20px;
     box-shadow: var(--sombra);
   }
-  .destaque-item .desenho { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; min-height: 96px; }
-  .destaque-item .bola-cor { width: 92px; height: 92px; }
-  .destaque-item .numero, .destaque-item .letra { font-size: 84px; }
-  .destaque-item .emoji-grande { font-size: 88px; }
-  .destaque-item p { margin: 8px 0 0; font-size: 20px; font-weight: 800; text-wrap: balance; }
-  .grade-itens { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
-  .item {
-    min-height: 96px;
-    border: 2px solid var(--linha);
-    border-radius: 18px;
-    background: var(--cartao);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    padding: 6px 4px;
-  }
-  .item .rotulo { font-size: 13px; color: var(--tinta-suave); }
-  .item .numero, .item .letra { font-size: 38px; }
-  .item .bola-cor { width: 46px; height: 46px; }
-  .item .emoji-grande { font-size: 40px; }
-  .item.ativo { border-color: var(--cor); background: color-mix(in srgb, var(--cor) 12%, #fff); }
-
-  .jogo { display: flex; flex-direction: column; gap: 14px; align-items: stretch; }
-  .estrelas { display: flex; justify-content: center; gap: 6px; font-size: 34px; color: #d7dee6; }
-  .estrelas .ganhou { color: #f5b301; text-shadow: 0 2px 0 #c98a00; }
-  .pergunta { display: flex; align-items: center; gap: 10px; }
-  .pergunta img { width: 64px; height: 64px; border-radius: 20px; box-shadow: var(--sombra); flex: none; }
-  .pergunta-balao {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--cartao);
-    border-radius: 20px;
-    padding: 10px 10px 10px 16px;
-    font-size: 22px;
-    font-weight: 900;
-    box-shadow: var(--sombra);
-  }
-  .pergunta-balao span { flex: 1; text-wrap: balance; }
-  #ouvir-de-novo { flex: none; width: 52px; height: 52px; border: 0; border-radius: 16px; background: var(--ceu-claro); font-size: 26px; }
-  .mostrar { text-align: center; font-size: 56px; line-height: 1.2; background: var(--cartao); border-radius: 22px; padding: 10px; box-shadow: var(--sombra); overflow-wrap: anywhere; }
-  .opcoes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .opcao {
-    min-height: 120px;
-    border: 3px solid var(--linha);
-    border-radius: 22px;
-    background: var(--cartao);
-    box-shadow: 0 5px 0 var(--linha);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    transition: opacity .2s, border-color .2s, background .2s;
-  }
-  .opcao .bola-cor { width: 72px; height: 72px; }
-  .opcao .numero, .opcao .letra { font-size: 60px; }
-  .opcao .emoji-grande { font-size: 62px; }
-  .opcao.certo { border-color: #34b25a; background: #e3f6e8; box-shadow: 0 5px 0 #34b25a; }
-  .opcao.errado { opacity: .4; }
-  .festa { position: fixed; z-index: 50; font-size: 26px; pointer-events: none; }
-
-  .vitoria { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-  .vitoria .trofeu { font-size: 84px; line-height: 1; animation: chama-botao 1.2s ease-in-out infinite; }
-  .vitoria img { width: 170px; }
-  .vitoria h2 { margin: 0; font-size: 36px; font-weight: 900; color: var(--laranja); }
-  .vitoria p { margin: 0 0 8px; font-size: 20px; }
-  .vitoria-botoes { display: grid; gap: 10px; width: 100%; }
+  .cartao-camada h2 { margin: 0; font-size: 24px; font-weight: 900; }
+  .cartao-camada .sub { margin: 2px 0 12px; color: var(--tinta-suave); font-size: 14px; }
+  .linha-ajuste { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 2px solid var(--linha); }
+  .linha-ajuste > div { flex: 1; min-width: 0; }
+  .linha-ajuste strong { display: block; font-size: 17px; }
+  .linha-ajuste small { display: block; font-size: 13px; color: var(--tinta-suave); font-weight: 600; }
+  .linha-ajuste.coluna { flex-direction: column; align-items: stretch; }
+  .voz-escolha { display: flex; gap: 8px; margin-top: 8px; }
+  .voz-escolha select { flex: 1; min-width: 0; min-height: 44px; border-radius: 12px; border: 2px solid var(--linha); font: inherit; font-size: 14px; padding: 0 8px; background: #fff; color: var(--tinta); }
+  .voz-escolha button { min-height: 44px; border: 0; border-radius: 12px; padding: 0 14px; background: var(--ceu-claro); font-weight: 800; }
+  .chave { flex: none; width: 60px; height: 34px; border-radius: 999px; border: 0; background: #c9d3dd; position: relative; transition: background .2s; }
+  .chave::after { content: ""; position: absolute; top: 4px; left: 4px; width: 26px; height: 26px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .2s; }
+  .chave[aria-checked="true"] { background: var(--verde); }
+  .chave[aria-checked="true"]::after { transform: translateX(26px); }
+  .botao-largo { width: 100%; min-height: 50px; margin-top: 6px; border: 2px solid var(--linha); border-radius: 16px; background: var(--ceu-claro); font-weight: 800; font-size: 16px; }
+  .nota-ajuste { margin: 12px 0 0; font-size: 13px; line-height: 1.4; color: var(--tinta-suave); font-weight: 600; background: var(--amarelo-claro); border-radius: 14px; padding: 10px 12px; }
+  .botao-pronto { width: 100%; min-height: 56px; margin-top: 14px; border: 0; border-radius: 18px; background: var(--laranja); color: #fff; font-size: 20px; font-weight: 900; box-shadow: 0 4px 0 #b85a0c; }
+  #lembrete { z-index: 60; }
+  .cartao-lembrete { text-align: center; }
+  .lembrete-simbolo { font-size: 96px; line-height: 1.1; animation: chama-botao 1.4s ease-in-out infinite; }
+  #lembrete-texto { font-size: 20px; font-weight: 800; line-height: 1.35; min-height: 3em; margin: 10px 0 0; text-wrap: balance; }
+  .lembrete-passos { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+  .lembrete-passos span { width: 12px; height: 12px; border-radius: 50%; background: var(--linha); }
+  .lembrete-passos span.feito { background: var(--verde); }
 
   /* modo calmo: sem movimentos extras */
   .calmo #corpo-todo, .calmo #rabo, .calmo #gato.falando #cabeca,
@@ -638,7 +522,7 @@
   .calmo #gato.cutucado #corpo-todo, .calmo .vozes.destaque .voz,
   .calmo .estado[data-estado="ouvindo"] .ponto { animation: none; }
   .calmo .nota { display: none; }
-  .calmo .vitoria .trofeu,
+  .calmo .vitoria .trofeu, .calmo .lembrete-simbolo,
   .calmo .raios, .calmo .nuvem, .calmo .enfeite, .calmo .miguel-abertura, .calmo .titulo-abertura span, .calmo #jogar { animation-iteration-count: 1; }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -662,11 +546,11 @@
       <div><strong>Miguel</strong><span>o gato falante</span></div>
     </div>
     <div class="topo-botoes">
-      <button id="calmo" class="botao-icone" aria-pressed="false" aria-label="Modo calmo: menos movimento e fala mais devagar">
-        <span class="simbolo" aria-hidden="true">🌙</span><span class="rotulo">Calmo</span>
+      <button id="som" class="botao-icone" aria-pressed="true" aria-label="Falas do Miguel ligadas">
+        <span class="simbolo" id="som-simbolo" aria-hidden="true">🔊</span><span class="rotulo" id="som-rotulo">Falas</span>
       </button>
-      <button id="ajuda" class="botao-icone" aria-label="Miguel explica como brincar">
-        <span class="simbolo" aria-hidden="true">❓</span><span class="rotulo">Ajuda</span>
+      <button id="abrir-ajustes" class="botao-icone" aria-label="Ajustes">
+        <span class="simbolo" aria-hidden="true">⚙️</span><span class="rotulo">Ajustes</span>
       </button>
     </div>
   </header>
@@ -911,6 +795,42 @@
     <h2 id="jogos-titulo">Jogos do Miguel</h2>
   </div>
   <div id="jogos-corpo"></div>
+</div>
+
+<div id="ajustes" class="camada" role="dialog" aria-labelledby="ajustes-titulo" hidden>
+  <div class="cartao-camada">
+    <h2 id="ajustes-titulo">⚙️ Ajustes</h2>
+    <p class="sub">Para os pais e responsáveis</p>
+    <div class="linha-ajuste">
+      <div><strong>🔊 Falas do Miguel</strong><small>Desligado, ele só mostra os textos, sem falar. A brincadeira de repetir continua.</small></div>
+      <button class="chave" id="aj-falas" role="switch" aria-checked="true" aria-label="Falas do Miguel"></button>
+    </div>
+    <div class="linha-ajuste coluna">
+      <div><strong>🗣️ Voz do Miguel</strong><small>Escolha a voz mais natural do seu aparelho.</small></div>
+      <div class="voz-escolha"><select id="aj-voz" aria-label="Voz do Miguel"></select><button id="aj-testar">▶ Testar</button></div>
+    </div>
+    <div class="linha-ajuste">
+      <div><strong>🌙 Modo calmo</strong><small>Menos movimento, fala mais devagar e sons mais baixos.</small></div>
+      <button class="chave" id="aj-calmo" role="switch" aria-checked="false" aria-label="Modo calmo"></button>
+    </div>
+    <div class="linha-ajuste">
+      <div><strong>⏰ Lembretes</strong><small>Beber água a cada 1 hora e se mexer a cada 30 minutos de jogo.</small></div>
+      <button class="chave" id="aj-lembretes" role="switch" aria-checked="true" aria-label="Lembretes"></button>
+    </div>
+    <button class="botao-largo" id="aj-ajuda">❓ Ver a explicação do Miguel de novo</button>
+    <p class="nota-ajuste">💡 Para a voz ficar ainda mais natural: no Android, instale a voz "Português (Brasil)" em Configurações › Idioma › Saída de texto para voz. No iPhone, baixe a voz "Luciana (Melhorada)" em Ajustes › Acessibilidade › Conteúdo Falado › Vozes. Depois escolha ela aqui em cima.</p>
+    <button class="botao-pronto" id="aj-fechar">Pronto</button>
+  </div>
+</div>
+
+<div id="lembrete" class="camada" role="dialog" aria-labelledby="lembrete-titulo" hidden>
+  <div class="cartao-camada cartao-lembrete">
+    <div class="lembrete-simbolo" id="lembrete-simbolo" aria-hidden="true">💧</div>
+    <h2 id="lembrete-titulo"></h2>
+    <p id="lembrete-texto" aria-live="polite"></p>
+    <div class="lembrete-passos" id="lembrete-passos"></div>
+    <button class="botao-pronto" id="lembrete-botao"></button>
+  </div>
 </div>
 
 <div id="abertura" role="dialog" aria-label="Miguel, o Gato Falante">
@@ -1447,47 +1367,92 @@
   })();
 
   // ---------- Falas do Miguel (voz do aparelho) ----------
+  // tom perto do natural: voz agradável, sem som de robô
+  const VOZ_MIGUEL = { tom: 1.12, ritmo: 1.0 };
+  const VOZ_CRIANCA = { tom: 1.25, ritmo: 0.95 };
   let narracaoId = 0, mexendoBoca = null;
 
-  function vozPortugues() {
-    if (!('speechSynthesis' in window)) return null;
-    const lista = speechSynthesis.getVoices();
-    return lista.find(v => v.lang === 'pt-BR') || lista.find(v => v.lang.startsWith('pt')) || null;
+  // escolhe a voz mais natural do aparelho para cada idioma
+  let mudo = false;
+  const cacheVozes = {};
+  if ('speechSynthesis' in window) speechSynthesis.addEventListener?.('voiceschanged', () => {
+    for (const k in cacheVozes) delete cacheVozes[k];
+    try { preencherVozes(); } catch (e) {}
+  });
+  function pontuarVoz(v, lang) {
+    const l = v.lang.replace('_', '-').toLowerCase();
+    let p = 0;
+    if (l === lang.toLowerCase()) p += 4;
+    if (/natural|neural|online|premium|enhanced|melhorad|aprimorad|wavenet|siri/i.test(v.name)) p += 6;
+    if (/google/i.test(v.name)) p += 3;
+    if (!v.localService) p += 1;
+    if (/compact|eloquence|espeak/i.test(v.name)) p -= 4;
+    return p;
+  }
+  function vozesDoIdioma(lang) {
+    if (!('speechSynthesis' in window)) return [];
+    const base = lang.slice(0, 2).toLowerCase();
+    return speechSynthesis.getVoices()
+      .filter(v => v.lang.replace('_', '-').toLowerCase().startsWith(base))
+      .sort((a, b) => pontuarVoz(b, lang) - pontuarVoz(a, lang));
+  }
+  function melhorVoz(lang) {
+    if (lang === 'pt-BR') {
+      const escolhida = ler('miguel-voz-aparelho');
+      if (escolhida) {
+        const v = speechSynthesis.getVoices().find(v => v.name === escolhida);
+        if (v) return v;
+      }
+    }
+    if (!(lang in cacheVozes)) cacheVozes[lang] = vozesDoIdioma(lang)[0] || null;
+    return cacheVozes[lang];
   }
 
-  function narrar(texto, pronto, jeito) {
+  // partes: texto ou lista de { t: texto, lang: 'en-US' } para misturar idiomas na mesma fala
+  // forcar: fala mesmo com as falas desligadas (quando a criança toca no 🔊)
+  function falarPartes(partes, { jeito = VOZ_MIGUEL, pronto = () => {}, forcar = false, devagar = false } = {}) {
+    if (typeof partes === 'string') partes = [{ t: partes }];
+    const texto = partes.map(p => p.t).join(' ');
     const inicio = performance.now();
     const minimo = 800 + texto.length * 45;
+    const vaiFalar = 'speechSynthesis' in window && (!mudo || forcar);
     let acabou = false;
     clearInterval(mexendoBoca);
-    const boca = setInterval(() => abrirBoca(0.25 + Math.random() * 0.75), 110);
+    const boca = vaiFalar ? setInterval(() => abrirBoca(0.25 + Math.random() * 0.75), 110) : null;
     mexendoBoca = boca;
     const fim = () => {
       if (acabou) return;
       acabou = true;
-      // se a voz do aparelho falhar, ainda dá tempo de ler o balão
+      // se a voz do aparelho falhar (ou estiver desligada), ainda dá tempo de ler o balão
       setTimeout(() => {
         clearInterval(boca);
         if (mexendoBoca === boca) abrirBoca(0);
         pronto();
       }, Math.max(0, minimo - (performance.now() - inicio)));
     };
-    if ('speechSynthesis' in window) {
-      const u = new SpeechSynthesisUtterance(texto.replace(/[^\p{L}\p{N}\s,.!?:]/gu, ''));
-      u.lang = 'pt-BR';
-      u.pitch = jeito.tom;
-      u.rate = jeito.ritmo * (calmo ? 0.85 : 1);
+    if (!vaiFalar) { fim(); return; }
+    speechSynthesis.cancel();
+    partes.forEach((p, i) => {
+      const lang = p.lang || 'pt-BR';
+      const u = new SpeechSynthesisUtterance(p.t.replace(/[^\p{L}\p{N}\s,.!?:¡¿'-]/gu, ''));
+      u.lang = lang;
+      const estrangeira = lang !== 'pt-BR';
+      u.pitch = estrangeira ? 1.05 : jeito.tom;
+      u.rate = (estrangeira ? 0.85 : jeito.ritmo) * (calmo ? 0.88 : 1) * (devagar ? 0.65 : 1);
       u.volume = calmo ? 0.8 : 1;
-      const voz = vozPortugues();
+      const voz = melhorVoz(lang);
       if (voz) u.voice = voz;
-      u.onend = fim;
+      if (i === partes.length - 1) u.onend = fim;
       u.onerror = fim;
-      speechSynthesis.cancel();
       speechSynthesis.speak(u);
-      setTimeout(fim, minimo * 3);
-    } else {
-      fim();
-    }
+    });
+    setTimeout(fim, minimo * 3 + 2000);
+  }
+  function narrar(texto, pronto, jeito) { falarPartes(texto, { jeito, pronto }); }
+  function calar() {
+    clearInterval(mexendoBoca);
+    abrirBoca(0);
+    if ('speechSynthesis' in window) speechSynthesis.cancel();
   }
 
   // Fala uma lista de frases, uma de cada vez, mostrando cada uma no balão
@@ -1524,8 +1489,6 @@
     terminarNarracao();
   }
 
-  const VOZ_MIGUEL = { tom: 1.9, ritmo: 1.0 };
-  const VOZ_CRIANCA = { tom: 1.7, ritmo: 0.9 };
 
   // ---------- Horário ----------
   function periodoDoDia(agora = new Date()) {
@@ -1552,7 +1515,8 @@
       { texto: 'Aqui embaixo você escolhe a minha voz. Tem tia Dani, Bob Esponja, pirata e muito mais! 👇', vozes: true },
       { texto: 'No botão Oração, eu rezo com você. 🙏' },
       { texto: 'No botão Dicas, eu te ensino coisas legais. 💡' },
-      { texto: 'E no botão Jogos, tem jogos de cores, números, letras, animais e alimentos! 🎮' },
+      { texto: 'E no botão Jogos, tem jogos para aprender, inglês, espanhol, música, desenhos para colorir e muito mais! 🎮' },
+      { texto: 'Lá em cima, no alto-falante, dá para desligar as minhas falas. 🔊' },
       { texto: 'Vamos brincar? Toque em mim! 🐾' },
     ], VOZ_MIGUEL, 350);
   }
@@ -1694,139 +1658,201 @@
   }
   document.getElementById('orar').addEventListener('click', () => { if (liberarParaNarrar()) orar(); });
   document.getElementById('dicas').addEventListener('click', () => { if (liberarParaNarrar()) darDica(); });
-  document.getElementById('ajuda').addEventListener('click', () => { if (liberarParaNarrar()) apresentar(); });
 
-  // ---------- Jogos para aprender ----------
-  // Cada tema tem "Conhecer" (toca e ouve o nome) e "Jogar" (o Miguel pergunta, a criança toca na resposta)
-  const NOMES_LETRAS = { A: 'á', B: 'bê', C: 'cê', D: 'dê', E: 'é', F: 'éfe', G: 'gê', H: 'agá', I: 'i', J: 'jota', K: 'cá', L: 'éle', M: 'ême', N: 'ene', O: 'ó', P: 'pê', Q: 'quê', R: 'érre', S: 'ésse', T: 'tê', U: 'u', V: 'vê', W: 'dáblio', X: 'xis', Y: 'ípsilon', Z: 'zê' };
-  const NUMEROS = ['zero', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez'];
-  const sortear = (lista) => lista[Math.floor(Math.random() * lista.length)];
-  const embaralhar = (lista) => lista.map(v => [Math.random(), v]).sort((a, b) => a[0] - b[0]).map(p => p[1]);
+  document.getElementById('abrir-jogos').addEventListener('click', () => {
+    if (estado === 'falando') return;
+    if (estado === 'ouvindo') setEstado('parado');
+    if (estado === 'narrando') pararNarracao();
+    obterContexto();
+    window.Miguel.jogos?.abrir();
+  });
 
-  const TEMAS = {
-    cores: {
-      nome: 'Cores', simbolo: '🎨', cor: '#ff4f8b',
-      itens: [
-        { nome: 'vermelho', cor: '#e53935', ex: '🍓', frase: 'Vermelho, como o morango!' },
-        { nome: 'azul', cor: '#1e88e5', ex: '🐳', frase: 'Azul, como o céu e o mar!' },
-        { nome: 'amarelo', cor: '#fdd835', ex: '🌻', frase: 'Amarelo, como o sol e o girassol!' },
-        { nome: 'verde', cor: '#43a047', ex: '🐸', frase: 'Verde, como o sapo e as folhas!' },
-        { nome: 'laranja', cor: '#fb8c00', ex: '🍊', frase: 'Laranja, como a fruta laranja!' },
-        { nome: 'roxo', cor: '#8e24aa', ex: '🍇', frase: 'Roxo, como a uva!' },
-        { nome: 'rosa', cor: '#f06292', ex: '🌸', frase: 'Rosa, como a flor!' },
-        { nome: 'marrom', cor: '#795548', ex: '🐻', frase: 'Marrom, como o ursinho e o chocolate!' },
-        { nome: 'preto', cor: '#212121', ex: '🐈‍⬛', frase: 'Preto, como a noite!' },
-        { nome: 'branco', cor: '#ffffff', ex: '☁️', frase: 'Branco, como a nuvem e o leite!' },
-      ],
-      desenho: (it, grande) => `<span class="bola-cor" style="background:${it.cor}"></span>${grande ? `<span class="exemplo">${it.ex}</span>` : ''}`,
-      rotulo: (it) => it.nome,
-      perguntas: [
-        (itens) => { const c = sortear(itens); return { certo: c, texto: `Toque no ${c.nome}!` }; },
-      ],
-      acerto: (it) => `Isso! É o ${it.nome}!`,
-      erro: (it) => `Esse é o ${it.nome}. Tente de novo!`,
-    },
-    numeros: {
-      nome: 'Números', simbolo: '🔢', cor: '#2f9be8',
-      itens: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => ({ n, nome: NUMEROS[n], ex: ['🍎', '⭐', '🐥', '🎈', '🐟', '🌸', '🍌', '🚗', '🦋', '🧸'][n - 1] })),
-      desenho: (it, grande) => `<span class="numero">${it.n}</span>${grande ? `<span class="contas">${it.ex.repeat(it.n)}</span>` : ''}`,
-      rotulo: (it) => it.nome,
-      frase: (it) => `${it.nome[0].toUpperCase() + it.nome.slice(1)}! Vamos contar: ${NUMEROS.slice(1, it.n + 1).join(', ')}!`,
-      perguntas: [
-        (itens) => { const c = sortear(itens); return { certo: c, texto: `Toque no número ${c.nome}!` }; },
-        (itens) => {
-          const c = sortear(itens.filter(i => i.n <= 6));
-          const bicho = sortear(['🐥', '🍎', '⭐', '🐟', '🎈']);
-          return { certo: c, texto: 'Quantos tem aqui? Conte comigo!', mostrar: bicho.repeat(c.n) };
-        },
-      ],
-      acerto: (it) => `Muito bem! É o ${it.nome}!`,
-      erro: (it) => `Esse é o ${it.nome}. Tente de novo!`,
-    },
-    letras: {
-      nome: 'Letras', simbolo: '🔤', cor: '#8b5cf6',
-      itens: [
-        ['A', 'Abelha', '🐝'], ['B', 'Bola', '⚽'], ['C', 'Casa', '🏠'], ['D', 'Dado', '🎲'], ['E', 'Elefante', '🐘'],
-        ['F', 'Foca', '🦭'], ['G', 'Gato', '🐱'], ['H', 'Hipopótamo', '🦛'], ['I', 'Ilha', '🏝️'], ['J', 'Jacaré', '🐊'],
-        ['K', 'Kiwi', '🥝'], ['L', 'Leão', '🦁'], ['M', 'Macaco', '🐒'], ['N', 'Navio', '🚢'], ['O', 'Ovo', '🥚'],
-        ['P', 'Pato', '🦆'], ['Q', 'Queijo', '🧀'], ['R', 'Rato', '🐭'], ['S', 'Sapo', '🐸'], ['T', 'Tartaruga', '🐢'],
-        ['U', 'Uva', '🍇'], ['V', 'Vaca', '🐄'], ['W', 'Waffle', '🧇'], ['X', 'Xícara', '☕'], ['Y', 'Yoga', '🧘'], ['Z', 'Zebra', '🦓'],
-      ].map(([letra, palavra, ex]) => ({ letra, palavra, ex, nome: NOMES_LETRAS[letra] })),
-      desenho: (it, grande) => `<span class="letra">${it.letra}<small>${it.letra.toLowerCase()}</small></span>${grande ? `<span class="exemplo">${it.ex}</span>` : ''}`,
-      rotulo: (it) => it.letra,
-      frase: (it) => `${it.letra} de ${it.palavra}!`,
-      falar: (it) => `${it.nome}! ${it.nome} de ${it.palavra}!`,
-      perguntas: [
-        (itens) => { const c = sortear(itens); return { certo: c, texto: `Toque na letra ${c.letra}!`, falado: `Toque na letra ${c.nome}!` }; },
-        (itens) => { const c = sortear(itens); return { certo: c, texto: `${c.palavra} começa com qual letra?`, mostrar: c.ex }; },
-      ],
-      acerto: (it) => `Isso! ${it.letra} de ${it.palavra}!`,
-      falarAcerto: (it) => `Isso! ${it.nome} de ${it.palavra}!`,
-      erro: (it) => `Essa é a letra ${it.letra}. Tente de novo!`,
-      falarErro: (it) => `Essa é a letra ${it.nome}. Tente de novo!`,
-    },
-    animais: {
-      nome: 'Animais', simbolo: '🐾', cor: '#34b25a',
-      itens: [
-        ['o', 'cachorro', '🐶', 'au au'], ['o', 'gato', '🐱', 'miau'], ['a', 'vaca', '🐮', 'muuu'], ['o', 'pato', '🦆', 'quá quá'],
-        ['o', 'porco', '🐷', 'óinc óinc'], ['a', 'galinha', '🐔', 'có có có'], ['o', 'cavalo', '🐴', 'iiirrí'], ['a', 'ovelha', '🐑', 'mééé'],
-        ['o', 'leão', '🦁', 'roarr'], ['o', 'sapo', '🐸', 'croac'], ['o', 'elefante', '🐘', 'fuuu'], ['o', 'macaco', '🐵', 'uh uh ah ah'],
-        ['a', 'coruja', '🦉', 'uhu uhu'], ['a', 'abelha', '🐝', 'zzzz'], ['o', 'passarinho', '🐦', 'piu piu'], ['o', 'coelho', '🐰', ''],
-        ['a', 'girafa', '🦒', ''], ['a', 'tartaruga', '🐢', ''], ['o', 'peixe', '🐟', ''], ['a', 'borboleta', '🦋', ''],
-      ].map(([art, nome, ex, som]) => ({ art, nome, ex, som })),
-      desenho: (it) => `<span class="emoji-grande">${it.ex}</span>`,
-      rotulo: (it) => it.nome,
-      frase: (it) => `${it.art === 'o' ? 'O' : 'A'} ${it.nome}!` + (it.som ? ` Faz ${it.som}!` : ''),
-      perguntas: [
-        (itens) => { const c = sortear(itens); return { certo: c, texto: `Onde está ${c.art} ${c.nome}?` }; },
-        (itens) => { const c = sortear(itens.filter(i => i.som)); return { certo: c, texto: `Quem faz ${c.som}?`, apenas: (i) => i === c || !i.som || i.som !== c.som }; },
-      ],
-      acerto: (it) => `Isso! ${it.art === 'o' ? 'O' : 'A'} ${it.nome}!` + (it.som ? ` ${it.som[0].toUpperCase() + it.som.slice(1)}!` : ''),
-      erro: (it) => `Esse é ${it.art} ${it.nome}. Tente de novo!`,
-    },
-    alimentos: {
-      nome: 'Alimentos', simbolo: '🍎', cor: '#ff7a1a',
-      itens: [
-        ['a', 'maçã', '🍎', 'fruta'], ['a', 'banana', '🍌', 'fruta'], ['a', 'uva', '🍇', 'fruta'], ['a', 'melancia', '🍉', 'fruta'],
-        ['o', 'morango', '🍓', 'fruta'], ['a', 'laranja', '🍊', 'fruta'], ['o', 'abacaxi', '🍍', 'fruta'], ['a', 'pera', '🍐', 'fruta'],
-        ['o', 'abacate', '🥑', 'fruta'], ['a', 'cereja', '🍒', 'fruta'], ['a', 'cenoura', '🥕', 'legume'], ['o', 'brócolis', '🥦', 'verdura'],
-        ['o', 'milho', '🌽', 'legume'], ['o', 'tomate', '🍅', 'legume'], ['a', 'batata', '🥔', 'legume'], ['o', 'pepino', '🥒', 'legume'],
-        ['o', 'pão', '🍞', 'outro'], ['o', 'queijo', '🧀', 'outro'], ['o', 'ovo', '🥚', 'outro'], ['o', 'leite', '🥛', 'outro'], ['o', 'arroz', '🍚', 'outro'],
-      ].map(([art, nome, ex, tipo]) => ({ art, nome, ex, tipo })),
-      desenho: (it) => `<span class="emoji-grande">${it.ex}</span>`,
-      rotulo: (it) => it.nome,
-      frase: (it) => `${it.art === 'o' ? 'O' : 'A'} ${it.nome}!` + ({ fruta: ' É uma fruta gostosa e saudável!', legume: ' É um legume que deixa a gente forte!', verdura: ' É uma verdura que faz muito bem!', outro: '' })[it.tipo],
-      perguntas: [
-        (itens) => { const c = sortear(itens); return { certo: c, texto: `Onde está ${c.art} ${c.nome}?` }; },
-        (itens) => {
-          const c = sortear(itens.filter(i => i.tipo === 'fruta'));
-          return { certo: c, texto: 'Qual destes é uma fruta?', apenas: (i) => i === c || i.tipo !== 'fruta' };
-        },
-      ],
-      acerto: (it) => `Isso! ${it.art === 'o' ? 'O' : 'A'} ${it.nome}!`,
-      erro: (it) => `Esse é ${it.art === 'o' ? 'o' : 'a'} ${it.nome}. Tente de novo!`,
-    },
-  };
+  // ---------- Ajustes ----------
+  const telaAjustes = document.getElementById('ajustes');
+  const chaveFalas = document.getElementById('aj-falas');
+  const chaveCalmo = document.getElementById('aj-calmo');
+  const chaveLembretes = document.getElementById('aj-lembretes');
+  const seletorVoz = document.getElementById('aj-voz');
+  const botaoSom = document.getElementById('som');
+  let lembretesLigados = true;
 
-  const telaJogos = document.getElementById('jogos');
-  const corpoJogos = document.getElementById('jogos-corpo');
-  const tituloJogos = document.getElementById('jogos-titulo');
-  const ACERTOS_PARA_GANHAR = 5;
-  let telaAtual = 'menu', temaAtual = null, rodada = null;
-
-  function falarJogo(texto, falado) {
-    narrar(falado || texto, () => {}, VOZ_CRIANCA);
+  function setCalmo(ligado) {
+    calmo = ligado;
+    document.documentElement.classList.toggle('calmo', ligado);
+    chaveCalmo.setAttribute('aria-checked', String(ligado));
+    guardar('miguel-calmo', ligado ? '1' : '0');
   }
-  function somAcerto() { [[523, 0], [659, 0.08], [784, 0.16], [1047, 0.24]].forEach(([f, t]) => tocarNota(f, t, 0.2, 0.16)); }
-  function somErro() { tocarAviso('nada'); }
+  function setMudo(ligado) {
+    mudo = ligado;
+    if (mudo) calar();
+    chaveFalas.setAttribute('aria-checked', String(!mudo));
+    botaoSom.setAttribute('aria-pressed', String(!mudo));
+    botaoSom.setAttribute('aria-label', mudo ? 'Falas do Miguel desligadas' : 'Falas do Miguel ligadas');
+    document.getElementById('som-simbolo').textContent = mudo ? '🔇' : '🔊';
+    document.getElementById('som-rotulo').textContent = mudo ? 'Mudo' : 'Falas';
+    guardar('miguel-mudo', mudo ? '1' : '0');
+  }
+  function setLembretes(ligado) {
+    lembretesLigados = ligado;
+    chaveLembretes.setAttribute('aria-checked', String(ligado));
+    guardar('miguel-lembretes', ligado ? '1' : '0');
+  }
+  function preencherVozes() {
+    const vozes = vozesDoIdioma('pt-BR');
+    const atual = ler('miguel-voz-aparelho') || '';
+    seletorVoz.innerHTML = '<option value="">Automática (a mais natural)</option>' +
+      vozes.map(v => `<option value="${v.name.replace(/"/g, '&quot;')}">${v.name} (${v.lang})</option>`).join('');
+    seletorVoz.value = vozes.some(v => v.name === atual) ? atual : '';
+  }
 
+  botaoSom.addEventListener('click', () => {
+    setMudo(!mudo);
+    if (estado === 'parado') falar(mudo ? 'Falas desligadas. Eu só vou mostrar os textos. 🔇' : 'Falas ligadas! 🔊');
+  });
+  chaveFalas.addEventListener('click', () => setMudo(!mudo));
+  chaveCalmo.addEventListener('click', () => setCalmo(!calmo));
+  chaveLembretes.addEventListener('click', () => setLembretes(!lembretesLigados));
+  seletorVoz.addEventListener('change', () => {
+    guardar('miguel-voz-aparelho', seletorVoz.value);
+    falarPartes('Oi! Eu sou o Miguel. Gostou da minha voz?', { forcar: true });
+  });
+  document.getElementById('aj-testar').addEventListener('click', () => falarPartes('Oi! Eu sou o Miguel. Gostou da minha voz?', { forcar: true }));
+  document.getElementById('abrir-ajustes').addEventListener('click', () => {
+    if (estado === 'ouvindo') setEstado('parado');
+    if (estado === 'narrando') pararNarracao();
+    preencherVozes();
+    telaAjustes.hidden = false;
+  });
+  document.getElementById('aj-fechar').addEventListener('click', () => { telaAjustes.hidden = true; });
+  document.getElementById('aj-ajuda').addEventListener('click', () => {
+    telaAjustes.hidden = true;
+    if (liberarParaNarrar()) apresentar();
+  });
+  setCalmo(ler('miguel-calmo') === '1');
+  setMudo(ler('miguel-mudo') === '1');
+  setLembretes(ler('miguel-lembretes') !== '0');
+
+  // ---------- Lembretes: água a cada 1 hora, movimento a cada 30 minutos ----------
+  const MINUTO = 60;
+  const telaLembrete = document.getElementById('lembrete');
+  let segundosAtivo = 0;
+  try { segundosAtivo = parseInt(sessionStorage.getItem('miguel-ativo'), 10) || 0; } catch (e) {}
+  let proximaAgua = (Math.floor(segundosAtivo / (60 * MINUTO)) + 1) * 60 * MINUTO;
+  let proximoMovimento = (Math.floor(segundosAtivo / (30 * MINUTO)) + 1) * 30 * MINUTO;
+  const lembretesPendentes = [];
+
+  const EXERCICIOS = [
+    ['🙆', 'Estique os braços bem alto, como se fosse pegar uma estrela!'],
+    ['🦘', 'Pule cinco vezes, contando: um, dois, três, quatro, cinco!'],
+    ['🔄', 'Gire os ombros para trás, bem devagar, três vezes.'],
+    ['🚶', 'Marche no lugar, levantando bem os joelhos, contando até dez!'],
+    ['🤸', 'Abra e feche os braços e as pernas, como uma estrelinha!'],
+    ['🙇', 'Abaixe e tente encostar as mãos nos pés. Agora suba devagar.'],
+    ['🦩', 'Fique num pé só, como um flamingo! Agora troque o pé.'],
+    ['🐢', 'Gire a cabeça bem devagar para um lado e para o outro.'],
+  ];
+
+  let lembreteAtual = 0;
+  function mostrarLembrete(tipo) {
+    const meu = ++lembreteAtual;
+    const valendo = () => meu === lembreteAtual && !telaLembrete.hidden;
+    telaLembrete.hidden = false;
+    const simbolo = document.getElementById('lembrete-simbolo');
+    const titulo = document.getElementById('lembrete-titulo');
+    const texto = document.getElementById('lembrete-texto');
+    const botao = document.getElementById('lembrete-botao');
+    const passos = document.getElementById('lembrete-passos');
+    passos.innerHTML = '';
+    const fechar = () => {
+      if (!valendo()) return;
+      telaLembrete.hidden = true;
+      calar();
+      setTimeout(verificarLembretes, 4000);
+    };
+    if (tipo === 'agua') {
+      simbolo.textContent = '💧';
+      titulo.textContent = 'Hora de beber água!';
+      const frases = [
+        'Já faz uma hora que a gente está brincando!',
+        'Que tal beber um copo de água?',
+        'A água ajuda o corpo a funcionar, dá energia e deixa a cabeça fresquinha para pensar.',
+      ];
+      let i = 0;
+      const seguir = () => {
+        if (!valendo() || i >= frases.length) return;
+        texto.textContent = frases[i];
+        falarPartes(frases[i++], { jeito: VOZ_CRIANCA, pronto: () => setTimeout(seguir, 300) });
+      };
+      seguir();
+      botao.textContent = '💧 Já bebi!';
+      botao.onclick = () => {
+        texto.textContent = 'Muito bem! Seu corpo agradece! 💙';
+        tocarMusica();
+        falarPartes('Muito bem! Seu corpo agradece!', { jeito: VOZ_CRIANCA, pronto: fechar });
+        botao.onclick = fechar;
+      };
+      return;
+    }
+    // movimento: explica a importância e guia três exercícios
+    simbolo.textContent = '🤸';
+    titulo.textContent = 'Hora de se mexer!';
+    const escolhidos = EXERCICIOS.map(e => [Math.random(), e]).sort((a, b) => a[0] - b[0]).slice(0, 3).map(p => p[1]);
+    const roteiro = [
+      ['🤸', 'Já faz meia hora que você está aqui. Vamos mexer o corpo?'],
+      ['💪', 'Mexer o corpo faz o sangue circular, deixa os músculos e os ossos fortes e ajuda a cabeça a pensar melhor!'],
+      ...escolhidos,
+      ['🌟', 'Muito bem! Agora você pode voltar a brincar!'],
+    ];
+    passos.innerHTML = roteiro.map(() => '<span></span>').join('');
+    let i = 0;
+    const mostrarPasso = () => {
+      const [emoji, frase] = roteiro[i];
+      simbolo.textContent = emoji;
+      texto.textContent = frase;
+      passos.querySelectorAll('span').forEach((s, k) => s.classList.toggle('feito', k <= i));
+      botao.textContent = i === roteiro.length - 1 ? '✅ Voltar a brincar' : i < 2 ? 'Vamos! ▶' : 'Fiz! Próximo ▶';
+      falarPartes(frase, { jeito: VOZ_CRIANCA });
+    };
+    botao.onclick = () => {
+      if (i >= roteiro.length - 1) { fechar(); return; }
+      i++;
+      if (i === roteiro.length - 1) tocarMusica();
+      mostrarPasso();
+    };
+    mostrarPasso();
+  }
+
+  function verificarLembretes() {
+    if (!lembretesLigados || !telaLembrete.hidden || !aberturaFechada || !lembretesPendentes.length) return;
+    if (estado === 'ouvindo' || estado === 'falando' || !telaAjustes.hidden) return;
+    if (estado === 'narrando') pararNarracao();
+    mostrarLembrete(lembretesPendentes.shift());
+  }
+
+  setInterval(() => {
+    if (document.visibilityState !== 'visible' || !aberturaFechada) return;
+    segundosAtivo += 5;
+    try { sessionStorage.setItem('miguel-ativo', String(segundosAtivo)); } catch (e) {}
+    if (segundosAtivo >= proximaAgua) {
+      proximaAgua += 60 * MINUTO;
+      if (lembretesLigados && !lembretesPendentes.includes('agua')) lembretesPendentes.push('agua');
+    }
+    if (segundosAtivo >= proximoMovimento) {
+      proximoMovimento += 30 * MINUTO;
+      if (lembretesLigados && !lembretesPendentes.includes('movimento')) lembretesPendentes.push('movimento');
+    }
+    verificarLembretes();
+  }, 5000);
+
+  // ---------- O que os jogos usam ----------
+  function somAcerto() { [[523, 0], [659, 0.08], [784, 0.16], [1047, 0.24]].forEach(([f, t]) => tocarNota(f, t, 0.2, 0.16)); }
   function festa(el, quantos) {
     if (calmo) quantos = Math.min(quantos, 3);
     const r = el.getBoundingClientRect();
     for (let i = 0; i < quantos; i++) {
       const s = document.createElement('span');
       s.className = 'festa';
-      s.textContent = sortear(['⭐', '✨', '🎉', '💛', '🌟']);
+      s.textContent = ['⭐', '✨', '🎉', '💛', '🌟'][Math.floor(Math.random() * 5)];
       s.style.left = (r.left + r.width / 2) + 'px';
       s.style.top = (r.top + r.height / 2) + 'px';
       document.body.appendChild(s);
@@ -1837,182 +1863,21 @@
       ], { duration: 900, easing: 'ease-out' }).onfinish = () => s.remove();
     }
   }
-
-  function abrirJogos() {
-    if (estado === 'falando') return;
-    if (estado === 'ouvindo') setEstado('parado');
-    if (estado === 'narrando') pararNarracao();
-    obterContexto();
-    telaJogos.hidden = false;
-    mostrarMenuJogos();
-    falarJogo('Vamos jogar! Escolha um jogo!');
-  }
-
-  function voltarJogos() {
-    if (telaAtual === 'menu') {
-      telaJogos.hidden = true;
-      if ('speechSynthesis' in window) speechSynthesis.cancel();
-      clearInterval(mexendoBoca);
-      abrirBoca(0);
-    } else if (telaAtual === 'tema') mostrarMenuJogos();
-    else mostrarTema(temaAtual);
-  }
-
-  function mostrarMenuJogos() {
-    telaAtual = 'menu';
-    tituloJogos.textContent = 'Jogos do Miguel';
-    corpoJogos.innerHTML = '<div class="menu-jogos">' + Object.entries(TEMAS).map(([id, t]) =>
-      `<button class="cartao-tema" data-tema="${id}" style="--cor:${t.cor}"><span class="simbolo">${t.simbolo}</span><span>${t.nome}</span></button>`
-    ).join('') + '</div>';
-  }
-
-  function mostrarTema(id) {
-    telaAtual = 'tema';
-    temaAtual = id;
-    const t = TEMAS[id];
-    tituloJogos.textContent = t.nome;
-    corpoJogos.innerHTML = `
-      <div class="tema-escolha" style="--cor:${t.cor}">
-        <div class="tema-heroi">${t.simbolo}</div>
-        <button class="modo" data-modo="conhecer"><span class="simbolo">👀</span><span><strong>Conhecer</strong><small>toque e ouça o nome</small></span></button>
-        <button class="modo" data-modo="jogar"><span class="simbolo">🎯</span><span><strong>Jogar</strong><small>o Miguel pergunta, você responde</small></span></button>
-      </div>`;
-    falarJogo(t.nome + '! Você quer conhecer ou jogar?');
-  }
-
-  function fraseDoItem(t, it) {
-    return t.frase ? t.frase(it) : it.frase;
-  }
-
-  function mostrarConhecer() {
-    telaAtual = 'conhecer';
-    const t = TEMAS[temaAtual];
-    tituloJogos.textContent = t.nome;
-    corpoJogos.innerHTML = `
-      <div class="conhecer" style="--cor:${t.cor}">
-        <div class="destaque-item" id="destaque-item"><div class="desenho tipo-${temaAtual}">${t.desenho(t.itens[0], true)}</div><p>${fraseDoItem(t, t.itens[0])}</p></div>
-        <div class="grade-itens">${t.itens.map((it, i) =>
-          `<button class="item tipo-${temaAtual}" data-i="${i}" aria-label="${t.rotulo(it)}">${t.desenho(it, false)}<span class="rotulo">${t.rotulo(it)}</span></button>`).join('')}
-        </div>
-      </div>`;
-    falarJogo('Toque em cada um para ouvir!');
-  }
-
-  function escolherNoConhecer(i, botao) {
-    const t = TEMAS[temaAtual], it = t.itens[i];
-    const destaque = document.getElementById('destaque-item');
-    destaque.innerHTML = `<div class="desenho tipo-${temaAtual}">${t.desenho(it, true)}</div><p>${fraseDoItem(t, it)}</p>`;
-    destaque.animate([{ transform: 'scale(.9)' }, { transform: 'scale(1)' }], { duration: 250, easing: 'ease-out' });
-    for (const b of corpoJogos.querySelectorAll('.item')) b.classList.toggle('ativo', b === botao);
-    falarJogo(t.falar ? t.falar(it) : fraseDoItem(t, it));
-  }
-
-  function comecarJogo() {
-    telaAtual = 'jogar';
-    rodada = { acertos: 0, recentes: [] };
-    novaPergunta();
-  }
-
-  function novaPergunta() {
-    const t = TEMAS[temaAtual];
-    // não repete a mesma resposta das últimas perguntas
-    let p;
-    for (let tentativa = 0; tentativa < 12; tentativa++) {
-      p = sortear(t.perguntas)(t.itens);
-      if (!rodada.recentes.includes(p.certo)) break;
-    }
-    rodada.recentes = [p.certo, ...rodada.recentes].slice(0, 3);
-    const candidatos = embaralhar(t.itens.filter(i => i !== p.certo && (!p.apenas || p.apenas(i))));
-    rodada.pergunta = p;
-    rodada.opcoes = embaralhar([p.certo, ...candidatos.slice(0, 2)]);
-    rodada.travado = false;
-    const estrelas = Array.from({ length: ACERTOS_PARA_GANHAR }, (_, i) => `<span class="${i < rodada.acertos ? 'ganhou' : ''}">★</span>`).join('');
-    corpoJogos.innerHTML = `
-      <div class="jogo" style="--cor:${t.cor}">
-        <div class="estrelas" aria-label="${rodada.acertos} de ${ACERTOS_PARA_GANHAR} estrelas">${estrelas}</div>
-        <div class="pergunta">
-          <img src="icones/icone-192.png" alt="">
-          <div class="pergunta-balao"><span>${p.texto}</span><button id="ouvir-de-novo" aria-label="Ouvir a pergunta de novo">🔊</button></div>
-        </div>
-        ${p.mostrar ? `<div class="mostrar">${p.mostrar}</div>` : ''}
-        <div class="opcoes">${rodada.opcoes.map((it, i) =>
-          `<button class="opcao tipo-${temaAtual}" data-i="${i}" aria-label="${t.rotulo(it)}">${t.desenho(it, false)}</button>`).join('')}
-        </div>
-      </div>`;
-    falarJogo(p.texto, p.falado);
-  }
-
-  function responder(i, botao) {
-    if (rodada.travado) return;
-    const t = TEMAS[temaAtual], it = rodada.opcoes[i];
-    if (it === rodada.pergunta.certo) {
-      rodada.travado = true;
-      rodada.acertos++;
-      botao.classList.add('certo');
-      somAcerto();
-      festa(botao, 10);
-      falarJogo(t.acerto(it), t.falarAcerto && t.falarAcerto(it));
-      const estrela = corpoJogos.querySelectorAll('.estrelas span')[rodada.acertos - 1];
-      if (estrela) estrela.classList.add('ganhou');
-      setTimeout(() => {
-        if (telaAtual !== 'jogar') return;
-        if (rodada.acertos >= ACERTOS_PARA_GANHAR) mostrarVitoria();
-        else novaPergunta();
-      }, calmo ? 2600 : 2000);
-    } else {
-      botao.classList.add('errado');
-      botao.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-10px)' }, { transform: 'translateX(10px)' }, { transform: 'translateX(0)' }], { duration: 350 });
-      somErro();
-      falarJogo(t.erro(it), t.falarErro && t.falarErro(it));
-    }
-  }
-
-  function mostrarVitoria() {
-    telaAtual = 'vitoria';
-    corpoJogos.innerHTML = `
-      <div class="vitoria">
-        <div class="trofeu">🏆</div>
-        <img src="icones/miguel.png" alt="">
-        <h2>Parabéns!</h2>
-        <p>Você ganhou ${ACERTOS_PARA_GANHAR} estrelas!</p>
-        <div class="vitoria-botoes">
-          <button class="modo" data-acao="de-novo"><span class="simbolo">🔁</span><strong>Jogar de novo</strong></button>
-          <button class="modo" data-acao="outros"><span class="simbolo">🎮</span><strong>Outros jogos</strong></button>
-        </div>
-      </div>`;
-    tocarMusica();
-    festa(corpoJogos.querySelector('.trofeu'), 18);
-    falarJogo('Parabéns! Você ganhou cinco estrelas! Você é demais!');
-  }
-
-  corpoJogos.addEventListener('click', (e) => {
-    const b = e.target.closest('button');
-    if (!b) return;
-    if (b.dataset.tema) mostrarTema(b.dataset.tema);
-    else if (b.dataset.modo === 'conhecer') mostrarConhecer();
-    else if (b.dataset.modo === 'jogar') comecarJogo();
-    else if (b.id === 'ouvir-de-novo') falarJogo(rodada.pergunta.texto, rodada.pergunta.falado);
-    else if (b.classList.contains('item')) escolherNoConhecer(+b.dataset.i, b);
-    else if (b.classList.contains('opcao')) responder(+b.dataset.i, b);
-    else if (b.dataset.acao === 'de-novo') comecarJogo();
-    else if (b.dataset.acao === 'outros') mostrarMenuJogos();
+  window.Miguel = Object.assign(window.Miguel || {}, {
+    falar: (partes, opcoes = {}) => falarPartes(partes, { jeito: opcoes.miguel ? VOZ_MIGUEL : VOZ_CRIANCA, ...opcoes }),
+    calar,
+    obterContexto,
+    tocarNota,
+    tocarMusica,
+    somAcerto,
+    somErro: () => tocarAviso('nada'),
+    festa,
+    guardar,
+    ler,
+    get calmo() { return calmo; },
+    sortear: (lista) => lista[Math.floor(Math.random() * lista.length)],
+    embaralhar: (lista) => lista.map(v => [Math.random(), v]).sort((a, b) => a[0] - b[0]).map(p => p[1]),
   });
-  document.getElementById('jogos-voltar').addEventListener('click', voltarJogos);
-  document.getElementById('abrir-jogos').addEventListener('click', abrirJogos);
-
-  // ---------- Modo calmo ----------
-  const botaoCalmo = document.getElementById('calmo');
-  function setCalmo(ligado) {
-    calmo = ligado;
-    document.documentElement.classList.toggle('calmo', ligado);
-    botaoCalmo.setAttribute('aria-pressed', String(ligado));
-    guardar('miguel-calmo', ligado ? '1' : '0');
-  }
-  botaoCalmo.addEventListener('click', () => {
-    setCalmo(!calmo);
-    if (estado === 'parado') falar(calmo ? 'Modo calmo ligado. Tudo mais tranquilo. 🌙' : 'Modo calmo desligado. ☀️');
-  });
-  setCalmo(ler('miguel-calmo') === '1');
 
   // ---------- Início ----------
   const vozGuardada = ler('miguel-voz');
@@ -2084,7 +1949,7 @@
 
   // ---------- Atualizações ----------
   // o app instalado fica aberto em segundo plano; ao voltar para ele, confere se tem versão nova
-  const VERSAO = '202610180341';
+  const VERSAO = '202610180446';
   const avisoAtualizar = document.getElementById('atualizar');
   let registro = null;
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
@@ -2121,5 +1986,13 @@
   }
 })();
 </script>
+<script src="jogos/nucleo.js" defer></script>
+<script src="jogos/aprender.js" defer></script>
+<script src="jogos/idiomas.js" defer></script>
+<script src="jogos/musica.js" defer></script>
+<script src="jogos/colorir.js" defer></script>
+<script src="jogos/pontos.js" defer></script>
+<script src="jogos/memoria.js" defer></script>
+<script src="jogos/bolhas.js" defer></script>
 </body>
 </html>
