@@ -245,15 +245,60 @@
       const matEstrela = new T.MeshLambertMaterial({ color: 0xffd23f, emissive: 0x7a5200 });
 
       function placaTexto(texto, cor = '#ff7a1a') {
-        const cv = document.createElement('canvas'); cv.width = 256; cv.height = 128;
+        // a placa cresce com o texto; a letra nunca passa de 54px (o iPhone não desenha emoji muito grande)
+        const medir = document.createElement('canvas').getContext('2d');
+        medir.font = 'bold 54px Nunito, sans-serif';
+        const larg = Math.min(720, Math.max(256, Math.ceil(medir.measureText(texto).width) + 70));
+        const cv = document.createElement('canvas'); cv.width = larg; cv.height = 128;
         const x = cv.getContext('2d');
-        x.fillStyle = '#fff'; x.beginPath(); x.roundRect ? x.roundRect(6, 6, 244, 116, 30) : x.rect(6, 6, 244, 116); x.fill();
+        x.fillStyle = '#fff'; x.beginPath(); x.roundRect ? x.roundRect(6, 6, larg - 12, 116, 30) : x.rect(6, 6, larg - 12, 116); x.fill();
         x.lineWidth = 8; x.strokeStyle = cor; x.stroke();
         x.fillStyle = cor; x.font = 'bold 54px Nunito, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
-        x.fillText(texto, 128, 68);
+        x.fillText(texto, larg / 2, 68, larg - 40);
         const sp = new T.Sprite(new T.SpriteMaterial({ map: new T.CanvasTexture(cv) }));
-        sp.scale.set(3.2, 1.6, 1);
+        sp.scale.set(1.6 * larg / 128, 1.6, 1);
         return sp;
+      }
+
+      // ilhas flutuantes com árvores, cogumelos, flores e balões dos lados do caminho
+      const geoBola = new T.SphereGeometry(1, 14, 10);
+      function enfeitar(grupo, coisas, caminho, tm, rnd) {
+        const CORES_BALAO = [0xff4f8b, 0xffd23f, 0x2f9be8, 0x34b25a, 0x8b5cf6, 0xff7a1a];
+        const pecaBola = (r, cor, x, y, z, g) => { const m = new T.Mesh(geoBola, material(cor)); m.scale.setScalar(r); m.position.set(x, y, z); g.add(m); return m; };
+        for (const pt of caminho) {
+          if (rnd() < 0.3) continue;
+          const lado = rnd() < 0.5 ? -1 : 1;
+          const ilha = new T.Group();
+          ilha.position.set(pt.x + lado * (7 + rnd() * 5), pt.y - 1.5 - rnd() * 2, pt.z + rnd() * 3);
+          const terra = new T.Mesh(new T.CylinderGeometry(2.2, 1.2, 1.2, 10), material(0x9c6b3e)); terra.position.y = -0.7; ilha.add(terra);
+          const grama = new T.Mesh(new T.CylinderGeometry(2.3, 2.3, 0.3, 10), material(tm.noite ? 0x3949ab : tm.chao)); ilha.add(grama);
+          const tipo = rnd();
+          if (tipo < 0.4) { // árvore
+            const tronco = new T.Mesh(new T.CylinderGeometry(0.2, 0.28, 1.6, 8), material(0x8d5a2b)); tronco.position.y = 0.9; ilha.add(tronco);
+            pecaBola(1, tm.noite ? 0x26a69a : 0x43a047, 0, 2.2, 0, ilha); pecaBola(0.7, tm.noite ? 0x4db6ac : 0x66bb6a, 0.5, 2.7, 0.2, ilha);
+            pecaBola(0.16, 0xe53935, 0.6, 2.0, 0.8, ilha); pecaBola(0.16, 0xe53935, -0.5, 2.4, 0.7, ilha);
+          } else if (tipo < 0.65) { // cogumelo
+            const pe = new T.Mesh(new T.CylinderGeometry(0.3, 0.38, 1, 10), material(0xfff3e0)); pe.position.y = 0.6; ilha.add(pe);
+            const chapeu = new T.Mesh(new T.SphereGeometry(1, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), material(0xe53935)); chapeu.position.y = 1.05; chapeu.scale.set(1.1, 0.8, 1.1); ilha.add(chapeu);
+            for (let k = 0; k < 4; k++) pecaBola(0.14, 0xffffff, Math.cos(k * 1.6) * 0.7, 1.55, Math.sin(k * 1.6) * 0.7, ilha);
+          } else { // flores
+            for (let k = 0; k < 5; k++) {
+              const fx = (rnd() - 0.5) * 3, fz = (rnd() - 0.5) * 3;
+              const caule = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 0.6, 5), material(0x388e3c)); caule.position.set(fx, 0.45, fz); ilha.add(caule);
+              pecaBola(0.22, CORES_BALAO[Math.floor(rnd() * CORES_BALAO.length)], fx, 0.8, fz, ilha); pecaBola(0.1, 0xffeb3b, fx, 0.8, fz + 0.15, ilha);
+            }
+          }
+          grupo.add(ilha);
+          coisas.push({ flutua: ilha, y0: ilha.position.y, fase: rnd() * 6, devagar: true });
+          if (rnd() < 0.45) { // balão colorido
+            const b = new T.Group();
+            pecaBola(0.7, CORES_BALAO[Math.floor(rnd() * CORES_BALAO.length)], 0, 0, 0, b).scale.set(0.7, 0.85, 0.7);
+            const fio = new T.Mesh(new T.CylinderGeometry(0.02, 0.02, 1.4, 4), material(0xffffff)); fio.position.y = -1.3; b.add(fio);
+            b.position.set(pt.x - lado * (4 + rnd() * 3), pt.y + 3 + rnd() * 2, pt.z + rnd() * 4);
+            grupo.add(b);
+            coisas.push({ flutua: b, y0: b.position.y, fase: rnd() * 6 });
+          }
+        }
       }
 
       function criarFase(n, inicio) {
@@ -282,6 +327,15 @@
           grupo.add(m);
           coisas.push({ estrela: true, id, malha: m, x, y: y + 1, z });
         };
+        // plaquinha de dica que flutua em cima dos blocos especiais
+        const dica = (texto, x, y, z, cor) => {
+          const sp = placaTexto(texto, cor);
+          sp.scale.multiplyScalar(0.62);
+          sp.position.set(x, y + 3, z);
+          grupo.add(sp);
+          coisas.push({ flutua: sp, y0: y + 3, fase: rnd() * 6, placa: true });
+        };
+        const caminho = [];
         // bandeira (ponto de salvar) no começo de cada fase
         const p = { ...inicio };
         bloco(p.x, p.y, p.z, 6, 1, 6, 0x43a047, { bandeira: n });
@@ -306,10 +360,12 @@
           const tipo = i === 0 ? 'salto' : tipos[Math.floor(rnd() * tipos.length)];
           const vao = 1.8 + dif * 1.9 + rnd() * 0.9;
           const lado = (rnd() - 0.5) * 3;
+          caminho.push({ ...p });
           if (tipo === 'salto') {
             const w = Math.max(1.6, 3.6 - dif * 1.8 + rnd() * 0.8), dy = (rnd() - 0.35) * 1.6;
             p.z += vao + w / 2; p.x += lado; p.y += dy;
             bloco(p.x, p.y, p.z, w, 1, w, corDe());
+            if (n <= 2 && i === 0) dica('⬆️ Pule!', p.x, p.y, p.z, '#2f9be8');
             if (rnd() < 0.45) estrela(p.x, p.y, p.z);
             p.z += w / 2;
           } else if (tipo === 'escada') {
@@ -319,6 +375,12 @@
           } else if (tipo === 'mola') {
             p.z += vao + 1.2; p.x += lado;
             bloco(p.x, p.y, p.z, 2.4, 1, 2.4, 0xffd23f, { mola: true });
+            // a mola: almofada vermelha com setas, para a criança saber que ela joga para cima
+            const almofada = new T.Mesh(new T.CylinderGeometry(0.95, 0.95, 0.22, 20), material(0xff4f8b));
+            almofada.position.set(p.x, p.y + 0.11, p.z); grupo.add(almofada);
+            const seta = placaTexto('⬆️⬆️', '#ff4f8b'); seta.scale.multiplyScalar(0.45); seta.position.set(p.x, p.y + 1.2, p.z); grupo.add(seta);
+            coisas.push({ flutua: seta, y0: p.y + 1.2, fase: 0, rapido: true });
+            dica('🟡 Mola! Pule nela!', p.x, p.y + 1.4, p.z, '#f08c1a');
             p.z += 4.5; p.y += 4.2;
             bloco(p.x, p.y, p.z, 3.2, 1, 3.2, corDe());
             estrela(p.x, p.y + 1.2, p.z);
@@ -326,14 +388,17 @@
           } else if (tipo === 'movel') {
             p.z += vao + 1.5;
             bloco(p.x, p.y, p.z, 2.6, 0.8, 2.6, corDe(), { move: { eixo: 'x', amp: 2.6 + dif * 1.5, vel: 0.9 + dif * 0.8, fase: rnd() * 6 } });
+            dica('↔️ Espere e pule!', p.x, p.y + 1, p.z - 1.5, '#2f9be8');
             p.z += 1.3;
           } else if (tipo === 'elevador') {
             p.z += vao + 1.5;
             bloco(p.x, p.y, p.z, 2.6, 0.8, 2.6, corDe(), { move: { eixo: 'y', amp: 2, vel: 1, fase: rnd() * 6 } });
+            dica('↕️ Elevador!', p.x + 2.5, p.y + 2, p.z, '#8b5cf6');
             p.z += 1.3;
           } else if (tipo === 'lava') {
             const comp = 8 + rnd() * 4;
             bloco(p.x, p.y - 0.6, p.z + comp / 2 + 1, 5, 0.6, comp, 0xff3d00, { lava: true, brilha: true });
+            dica('🔥 Chão quente! Pule nos blocos', p.x, p.y + 1, p.z + 1, '#e53935');
             let z = p.z + 1.5;
             while (z < p.z + comp) { bloco(p.x + (rnd() - 0.5) * 2.4, p.y, z + 0.7, 1.5, 0.8, 1.5, corDe()); z += 2.4 + dif * 0.6; }
             p.z += comp + 1.5;
@@ -343,9 +408,11 @@
             const comp = 6 + rnd() * 3;
             p.z += vao * 0.6 + comp / 2;
             bloco(p.x, p.y, p.z, Math.max(0.55, 0.9 - dif * 0.3), 0.7, comp, corDe());
+            dica('🐾 Ande com cuidado!', p.x, p.y + 0.6, p.z - comp / 2 + 1, '#34b25a');
             estrela(p.x, p.y, p.z);
             p.z += comp / 2;
           } else if (tipo === 'some') {
+            dica('⚠️ Esses caem! Corra!', p.x, p.y + 1, p.z + 2.6, '#607d8b');
             for (let k = 0; k < 3; k++) { p.z += 2.6; bloco(p.x + (rnd() - 0.5) * 2, p.y, p.z, 2, 0.6, 2, 0xb0bec5, { some: true }); }
             p.z += 1;
           } else if (tipo === 'giro') {
@@ -354,11 +421,13 @@
             const barra = new T.Mesh(new T.BoxGeometry(7.2, 0.45, 0.45), material(0xff1744, true));
             barra.position.set(p.x, p.y + 0.9, p.z); grupo.add(barra);
             coisas.push({ giro: true, malha: barra, x: p.x, y: p.y + 0.9, z: p.z, vel: 1.4 + dif * 1.2, comp: 3.6 });
+            dica('💫 Pule a barra!', p.x, p.y + 1.6, p.z - 3, '#e53935');
             estrela(p.x + 2.5, p.y, p.z + 2.5);
             p.z += 4;
           }
         }
         p.z += 2.8 + dif * 1.2;
+        enfeitar(grupo, coisas, caminho, tm, rnd);
         cena.add(grupo);
         return { grupo, coisas, inicio, fim: { x: p.x, y: p.y, z: p.z + 3 } };
       }
@@ -587,7 +656,14 @@
         sol.position.set(jog.pos.x + 8, jog.pos.y + 20, jog.pos.z + 6);
         sol.target.position.set(jog.pos.x, jog.pos.y, jog.pos.z);
         enfeitesCeu.position.z = jog.pos.z * 0.7;
-        for (const f of fases.values()) for (const o of f.coisas) if (o.pano) o.pano.rotation.y = Math.sin(t * 3) * 0.3;
+        for (const f of fases.values()) for (const o of f.coisas) {
+          if (o.pano) o.pano.rotation.y = Math.sin(t * 3) * 0.3;
+          else if (o.flutua) o.flutua.position.y = o.y0 + Math.sin(t * (o.rapido ? 5 : o.devagar ? 0.8 : 2) + o.fase) * (o.rapido ? 0.25 : o.devagar ? 0.35 : 0.2);
+          if (o.placa) { // a dica some quando o Miguel chega perto, para não tapar a visão
+            const d = Math.hypot(o.flutua.position.x - jog.pos.x, o.flutua.position.z - jog.pos.z);
+            o.flutua.material.opacity = Math.max(0.12, Math.min(1, (d - 1.5) / 3));
+          }
+        }
       }
 
       // ---------- música calma de aventura ----------
