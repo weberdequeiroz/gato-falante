@@ -7,9 +7,11 @@
 
   const SECOES = [
     { id: 'aprender', nome: 'Aprender', simbolo: '📚' },
+    { id: 'sons', nome: 'Sons e bichos', simbolo: '🔊' },
     { id: 'idiomas', nome: 'Inglês e espanhol', simbolo: '🌎' },
     { id: 'criar', nome: 'Criar', simbolo: '🎨' },
     { id: 'brincar', nome: 'Brincar', simbolo: '🧩' },
+    { id: 'faz-de-conta', nome: 'Faz de conta', simbolo: '🛒' },
   ];
   const jogos = [];
 
@@ -61,7 +63,7 @@
   document.getElementById('jogos-voltar').addEventListener('click', nav.voltar);
 
   function menu(c) {
-    c.innerHTML = SECOES.map(sec => {
+    c.innerHTML = `<button class="modo surpresa-jogo" data-surpresa><span class="simbolo">🎲</span><span><strong>Jogo surpresa</strong><small>o Miguel escolhe um jogo para você</small></span></button>` + SECOES.map(sec => {
       const daSecao = jogos.filter(j => j.secao === sec.id);
       if (!daSecao.length) return '';
       return `<section class="secao-jogos">
@@ -74,6 +76,12 @@
       </section>`;
     }).join('');
     c.onclick = (e) => {
+      if (e.target.closest('[data-surpresa]')) {
+        const j = M.sortear(jogos);
+        M.falar('Surpresa! Vamos jogar: ' + j.nome + '!');
+        j.abrir(nav);
+        return;
+      }
       const b = e.target.closest('[data-jogo]');
       if (!b) return;
       const j = jogos.find(x => x.id === b.dataset.jogo);
@@ -206,13 +214,16 @@
               `<button class="opcao ${pergunta.comTexto ? 'com-texto' : ''}" data-i="${i}" aria-label="${def.rotulo(it)}">${pergunta.comTexto ? pergunta.comTexto(it) : def.desenho(it, false)}</button>`).join('')}
             </div>
           </div>`;
-        M.falar(pergunta.fala || pergunta.texto);
+        M.falar(pergunta.fala || pergunta.texto, { pronto: () => { if (pergunta.tocar && c.isConnected) pergunta.tocar(); } });
         c.onclick = tratar;
       };
       const tratar = (e) => {
         const b = e.target.closest('button');
         if (!b) return;
-        if (b.classList.contains('ouvir-de-novo')) { M.falar(pergunta.fala || pergunta.texto, { forcar: true }); return; }
+        if (b.classList.contains('ouvir-de-novo')) {
+          if (pergunta.tocar) pergunta.tocar(); else M.falar(pergunta.fala || pergunta.texto, { forcar: true });
+          return;
+        }
         if (!b.classList.contains('opcao') || travado) return;
         const it = opcoes[+b.dataset.i];
         if (it === pergunta.certo) {
@@ -253,6 +264,7 @@
     nav,
     registrar: (j) => jogos.push(j),
     abrirTema,
+    telaJogar,
     telaVitoria,
     trofeus,
     ganharTrofeu,

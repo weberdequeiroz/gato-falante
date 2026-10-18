@@ -1,7 +1,8 @@
 // Guarda o jogo no celular para abrir rápido; sempre tenta buscar a versão nova primeiro
-const CACHE = 'miguel-v6';
+const CACHE = 'miguel-v7';
 const ARQUIVOS = ['./', 'index.html', 'manifest.webmanifest', 'icones/icone-192.png', 'icones/icone-512.png', 'icones/apple-touch-icon.png', 'icones/miguel.png',
-  'jogos/jogos.css', 'jogos/nucleo.js', 'jogos/aprender.js', 'jogos/idiomas.js', 'jogos/musica.js', 'jogos/colorir.js', 'jogos/pontos.js', 'jogos/memoria.js', 'jogos/bolhas.js'];
+  'jogos/jogos.css', 'jogos/nucleo.js', 'jogos/aprender.js', 'jogos/idiomas.js', 'jogos/musica.js', 'jogos/colorir.js', 'jogos/pontos.js', 'jogos/memoria.js', 'jogos/bolhas.js',
+  'jogos/sons.js', 'jogos/mercadinho.js', 'jogos/sombras.js', 'jogos/diferente.js', 'jogos/quebracabeca.js'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ARQUIVOS.map((a) => new Request(a, { cache: 'reload' })))));
@@ -29,6 +30,7 @@ self.addEventListener('fetch', (e) => {
   e.respondWith(
     fetch(e.request, pagina ? { cache: 'no-cache' } : undefined)
       .then((resposta) => {
+        if (resposta.status !== 200) return resposta;
         const copia = resposta.clone();
         const chave = pagina ? new Request(url.origin + url.pathname) : e.request;
         caches.open(CACHE).then((c) => c.put(chave, copia));

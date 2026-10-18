@@ -370,3 +370,98 @@
 @keyframes estoura { to { opacity: 0; scale: 1.6; } }
 
 .calmo .tecla.proxima, .calmo .barra-gravar .gravar.ativo { animation: none; }
+
+/* jogo surpresa */
+.surpresa-jogo { --cor: #8b5cf6; width: 100%; margin-bottom: 16px; background: linear-gradient(90deg, #f3eeff, #fff); }
+
+/* biblioteca de sons */
+.biblioteca { display: flex; flex-direction: column; gap: 12px; }
+.abas { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+.abas button { flex: none; min-height: 44px; padding: 0 14px; border: 2px solid var(--linha); border-radius: 999px; background: var(--cartao); font-weight: 800; font-size: 14px; }
+.abas button[aria-selected="true"] { border-color: var(--verde); background: #e3f6e8; color: #1e6b32; }
+.grade-sons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.botao-som { border: 0; background: transparent; padding: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; font-weight: 800; font-size: 13px; color: var(--tinta); }
+.botao-som .nome { text-align: center; line-height: 1.15; }
+.som-cartao {
+  position: relative; display: flex; align-items: center; justify-content: center; width: 100%; aspect-ratio: 1;
+  border-radius: 22px; box-shadow: inset 0 -6px 0 rgba(0,0,0,.08), 0 4px 10px rgba(31,45,61,.12); overflow: hidden;
+}
+.som-cartao::after { content: ""; position: absolute; left: -10%; right: -10%; bottom: -30%; height: 55%; border-radius: 50%; background: rgba(255,255,255,.35); }
+.som-fig { position: relative; z-index: 1; font-size: clamp(44px, 13vw, 60px); line-height: 1; filter: drop-shadow(0 6px 4px rgba(0,0,0,.18)); }
+.som-cenario { position: absolute; top: 6px; left: 0; right: 0; text-align: center; font-size: 18px; letter-spacing: 30px; opacity: .85; }
+.som-cartao.grande { width: 140px; flex: none; border-radius: 28px; }
+.som-cartao.grande .som-fig { font-size: 78px; }
+.som-cartao.grande .som-cenario { font-size: 24px; }
+.som-destaque { display: flex; gap: 14px; align-items: center; background: var(--cartao); border-radius: 24px; padding: 12px; box-shadow: var(--sombra); }
+.som-destaque[hidden] { display: none; }
+.som-info { flex: 1; min-width: 0; }
+.som-info strong { font-size: 22px; font-weight: 900; }
+.som-info p { margin: 4px 0 0; font-size: 15px; line-height: 1.35; color: var(--tinta-suave); font-weight: 700; }
+.som-info .botoes-ouvir { justify-content: flex-start; flex-wrap: wrap; }
+.som-info .botoes-ouvir button { min-height: 44px; padding: 0 12px; font-size: 14px; }
+.creditos-sons { align-self: center; min-height: 44px; border: 0; background: transparent; color: var(--tinta-suave); font-weight: 800; text-decoration: underline; }
+.creditos { font-size: 15px; line-height: 1.45; font-weight: 600; }
+.creditos ul { padding-left: 18px; color: var(--tinta-suave); font-size: 13px; }
+.opcao .som-cartao { width: 86%; }
+.opcao .som-cenario { font-size: 13px; letter-spacing: 16px; }
+.opcao .som-fig { font-size: 44px; }
+
+/* mercadinho */
+.mercado-capa { position: relative; text-align: center; background: var(--cartao); border-radius: 22px; padding: 34px 14px 12px; box-shadow: var(--sombra); overflow: hidden; margin-bottom: 14px; }
+.toldo { position: absolute; inset: 0 0 auto; height: 26px; background: repeating-linear-gradient(90deg, #e53935 0 28px, #fff 28px 56px); border-radius: 0 0 50% 50% / 0 0 14px 14px; }
+.mercado-placa { margin: 0; font-size: 24px; font-weight: 900; color: #c2410c; }
+.mercado-placa.pequena { font-size: 20px; text-align: center; }
+.moeda {
+  display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff6b0, #f5c518 55%, #c99400); border: 2px solid #b8860b;
+  color: #7a5200; font-size: 12px; font-weight: 900; vertical-align: middle; box-shadow: 0 1px 0 rgba(0,0,0,.2);
+}
+.moeda.grande { width: 46px; height: 46px; font-size: 20px; padding: 0; border-width: 3px; }
+.compras, .caixa-tela { display: flex; flex-direction: column; gap: 10px; }
+.lista-compras, .cesta, .balcao, .carteira { background: var(--cartao); border-radius: 18px; padding: 8px 12px; box-shadow: var(--sombra); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.titulo-lista { font-weight: 900; font-size: 15px; }
+#itens-lista { display: flex; gap: 6px; flex-wrap: wrap; }
+.item-lista { display: inline-flex; align-items: center; gap: 2px; font-size: 28px; background: var(--ceu-claro); border-radius: 12px; padding: 2px 8px; }
+.item-lista small { font-size: 14px; font-weight: 900; }
+.item-lista.ok { background: #e3f6e8; color: var(--verde); font-size: 26px; }
+.prateleira {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 10px; border-radius: 18px;
+  background: repeating-linear-gradient(#f5e6d3 0 calc(33.3% - 8px), #b07b4f calc(33.3% - 8px) 33.3%);
+}
+.produto { display: flex; flex-direction: column; align-items: center; gap: 2px; border: 0; background: rgba(255,255,255,.75); border-radius: 14px; padding: 6px 2px; }
+.produto .fig { font-size: 38px; line-height: 1.1; }
+.produto .nome { font-size: 12px; font-weight: 800; text-align: center; line-height: 1.1; }
+.produto .etiqueta { font-size: 13px; font-weight: 900; background: #fff4cc; border-radius: 999px; padding: 0 6px; }
+.produto .etiqueta .moeda { width: 16px; height: 16px; font-size: 9px; border-width: 1px; }
+.itens-cesta { display: flex; gap: 4px; flex-wrap: wrap; min-height: 44px; align-items: center; }
+.itens-cesta small { color: var(--tinta-suave); }
+.na-cesta { width: 44px; height: 44px; border: 2px solid var(--linha); border-radius: 12px; background: #fff; font-size: 26px; padding: 0; }
+.cupom { background: #fffdf5; border: 2px dashed #e0c98a; border-radius: 14px; padding: 8px 12px; font-weight: 800; }
+.linha-cupom { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 0; flex-wrap: wrap; }
+.linha-cupom .moeda { margin-left: 2px; }
+.linha-cupom.total { border-top: 2px dashed #e0c98a; margin-top: 4px; padding-top: 8px; font-size: 18px; }
+.moedas-area { display: flex; flex-wrap: wrap; gap: 6px; min-height: 50px; flex: 1; }
+.cliente { display: flex; align-items: center; gap: 10px; }
+.cliente-fig { font-size: 64px; line-height: 1; }
+.balao-cliente { background: var(--cartao); border-radius: 18px; padding: 10px 14px; font-weight: 900; font-size: 18px; box-shadow: var(--sombra); }
+.numero-opcao .moedinhas { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; max-width: 90%; }
+.numero-opcao .moedinhas .moeda { width: 14px; height: 14px; font-size: 0; border-width: 1px; }
+.numero-opcao .numero { color: #c2410c; }
+.produto-mostrar { font-size: 80px; }
+.simbolo-secao { font-size: 34px; }
+.palavra-opcao.pequena { font-size: 14px; color: var(--tinta); }
+
+/* sombras, diferente, quebra-cabeça */
+.sombra { font-size: 110px; filter: brightness(0); opacity: .82; }
+.diferente { display: flex; flex-direction: column; gap: 10px; }
+.grade-diferente { display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: 6px; max-width: 460px; width: 100%; margin: 0 auto; }
+.grade-diferente button { aspect-ratio: 1; border: 2px solid var(--linha); border-radius: 14px; background: var(--cartao); font-size: clamp(26px, calc(36vw / var(--n) * 1.6), 52px); padding: 0; }
+.grade-diferente button.achou { border-color: var(--verde); background: #e3f6e8; transform: scale(1.1); }
+.quebra { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.tabuleiro { display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: 3px; width: 100%; max-width: 420px; aspect-ratio: 1; background: #fff; padding: 3px; border-radius: 16px; box-shadow: var(--sombra); }
+.peca { border: 0; padding: 0; border-radius: 6px; background-repeat: no-repeat; }
+.peca.escolhida { outline: 5px solid var(--laranja); outline-offset: -5px; transform: scale(.94); }
+.tabuleiro.pronto { gap: 0; padding: 0; }
+.tabuleiro.pronto .peca { border-radius: 0; }
+.modelo { display: flex; align-items: center; gap: 8px; font-weight: 800; color: var(--tinta-suave); }
+.modelo img { width: 72px; height: 72px; border-radius: 12px; box-shadow: var(--sombra); }

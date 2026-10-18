@@ -8,7 +8,10 @@ Jogo infantil para o navegador: toque no Miguel, fale alguma coisa e ele repete 
   - **Aprender**: cores, números, letras, animais e alimentos (Conhecer e Jogar, com estrelas e troféus)
   - **Inglês e espanhol**: 9 temas cada (cumprimentos, cores, números, animais, comidas, família, corpo, roupas, casa e natureza)
   - **Criar**: música (9 instrumentos e bateria, 20 músicas para aprender, músicas surpresa sem fim, gravar a própria música, jogo de repetir melodias) e colorir (10 desenhos + desenho livre)
-  - **Brincar**: ligar os pontinhos, jogo da memória e bolhas de sabão
+  - **Sons e bichos**: biblioteca com 37 sons reais (bichos, natureza, casa e cidade, pessoas) e o jogo "Que som é esse?"
+  - **Brincar**: ligar os pontinhos, jogo da memória, bolhas de sabão, sombras, encontre o diferente e quebra-cabeça
+  - **Faz de conta**: Mercadinho do Miguel (fazer compras com lista e moedas, ser o caixa e dar troco, arrumar as prateleiras)
+  - **Jogo surpresa**: o Miguel sorteia um jogo
 - **Ajustes** (para os pais): desligar as falas, escolher a voz do aparelho, modo calmo e lembretes
 - Lembretes de beber água (a cada 1 hora) e de se mexer (a cada 30 minutos), com exercícios guiados
 - Abertura animada ao entrar
@@ -22,3 +25,7 @@ Jogo infantil para o navegador: toque no Miguel, fale alguma coisa e ele repete 
 **Jogar:** https://weberdequeiroz.github.io/gato-falante/
 
 Desenvolvido por Vini & Weber.
+
+## Créditos dos sons
+
+Os sons da pasta `sons/` são gravações reais em domínio público (CC0) do site Freesound, reunidas no banco de sons ESC-50 (https://github.com/karolpiczak/ESC-50). A lista com o autor de cada som está em `sons/creditos.json` e dentro do jogo, em Biblioteca de sons › "De onde vêm esses sons?".
