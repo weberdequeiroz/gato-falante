@@ -61,6 +61,8 @@
       ilustracao: `<div class="ilu-cena"><img class="ilu-gato" src="${MIGUEL()}" alt=""><span class="ilu-dedo arrasta">👆</span><span class="ilu-seta">↔️</span></div>` },
     { titulo: 'Chegue nas bandeiras!', texto: 'Cada bandeira é uma fase nova, e o jogo salva sozinho. Pegue as estrelas no caminho!',
       ilustracao: `<div class="ilu-itens"><span>🚩<small>salva</small></span><span>⭐<small>estrela</small></span><span>🟨<small>mola</small></span><span>♾️<small>sem fim</small></span></div>` },
+    { titulo: 'Penélope!', texto: 'Pegue o osso dourado e a cachorrinha Penélope vem ajudar: pulo duplo no ar, ímã de estrelas, e ela te salva se você cair!',
+      ilustracao: `<div class="ilu-itens"><span>🦴<small>osso</small></span><span><img src="icones/penelope.png" alt="" style="height:64px"><small>Penélope</small></span><span>⏫<small>pulo duplo</small></span><span>🛟<small>te salva</small></span></div>` },
     { titulo: 'Cuidado!', texto: 'Fuja do chão vermelho e das barras que giram. Se cair, você volta para a última bandeira.',
       ilustracao: `<div class="ilu-itens"><span>🟥<small>quente</small></span><span>💫<small>barra</small></span><span>🌀<small>caiu?</small></span><span>🚩<small>volta</small></span></div>` },
   ];
@@ -83,6 +85,7 @@
             <p>⬆️ Toque no <strong>botão de pular</strong> (à direita).</p>
             <p>👉 Arraste o dedo no lado direito da tela para <strong>girar a câmera</strong>.</p>
             <p>🚩 Chegue nas <strong>bandeiras</strong>: o jogo salva sozinho. As fases não acabam nunca!</p>
+            <p>🦴 Pegue o <strong>osso dourado</strong>: a cachorrinha <strong>Penélope</strong> vem ajudar com pulo duplo, ímã de estrelas e te salva se cair!</p>
             <p>🔥 Cuidado com o chão vermelho e com as barras que giram. Se cair, você volta para a última bandeira.</p>
           </div>
           <button class="botao-largo" data-tutorial>❓ Como jogar</button>
@@ -120,6 +123,7 @@
           <div class="corrida-hud">
             <span class="hud-caixa">🚩 Fase <strong id="m-fase"></strong></span>
             <span class="hud-caixa">⭐ <strong id="m-estrelas"></strong></span>
+            <span class="hud-caixa" id="m-poder" hidden></span>
             <span style="margin-left:auto"></span>
             <button class="hud-botao" data-acao="musica" aria-label="Música">🎵</button>
             <button class="hud-botao" data-acao="pausa" aria-label="Pausar">⏸️</button>
@@ -336,6 +340,20 @@
           coisas.push({ flutua: sp, y0: y + 3, fase: rnd() * 6, placa: true });
         };
         const caminho = [];
+        // osso dourado: chama a Penélope (um por fase, no máximo)
+        const rndOsso = sorteador(n * 31 + 7);
+        let temOsso = false;
+        const osso = (x, y, z) => {
+          const g = new T.Group();
+          const matOsso = new T.MeshLambertMaterial({ color: 0xffe9a8, emissive: 0x8a6a00 });
+          const meio = new T.Mesh(new T.CylinderGeometry(0.16, 0.16, 0.9, 10), matOsso); meio.rotation.z = Math.PI / 2; g.add(meio);
+          for (const [dx, dy] of [[-0.5, 0.15], [-0.5, -0.15], [0.5, 0.15], [0.5, -0.15]]) { const b = new T.Mesh(new T.SphereGeometry(0.22, 10, 8), matOsso); b.position.set(dx, dy, 0); g.add(b); }
+          g.position.set(x, y + 1.2, z);
+          grupo.add(g);
+          coisas.push({ osso: true, malha: g, x, y: y + 1.2, z });
+          dica('🦴 Chame a Penélope!', x, y + 0.8, z, '#c99400');
+          temOsso = true;
+        };
         // bandeira (ponto de salvar) no começo de cada fase
         const p = { ...inicio };
         bloco(p.x, p.y, p.z, 6, 1, 6, 0x43a047, { bandeira: n });
@@ -366,7 +384,9 @@
             p.z += vao + w / 2; p.x += lado; p.y += dy;
             bloco(p.x, p.y, p.z, w, 1, w, corDe());
             if (n <= 2 && i === 0) dica('⬆️ Pule!', p.x, p.y, p.z, '#2f9be8');
-            if (rnd() < 0.45) estrela(p.x, p.y, p.z);
+            const comEstrela = rnd() < 0.45;
+            if (!temOsso && i >= 1 && !comEstrela && rndOsso() < 0.5) osso(p.x, p.y, p.z);
+            if (comEstrela) estrela(p.x, p.y, p.z);
             p.z += w / 2;
           } else if (tipo === 'escada') {
             for (let k = 0; k < 4; k++) { p.z += 1.6; p.y += 0.75; bloco(p.x, p.y, p.z, 2.4, 1, 1.6, corDe()); }
@@ -517,6 +537,72 @@
         clearTimeout(avisoTimer); avisoTimer = setTimeout(() => { a.hidden = true; }, tempo);
       }
       const hud = () => { c.querySelector('#m-fase').textContent = fase; c.querySelector('#m-estrelas').textContent = dados.estrelas; };
+
+      // ---------- Penélope: a cachorrinha maltês que ajuda o Miguel ----------
+      const texPenelope = new T.TextureLoader().load('icones/penelope.png');
+      const latido = new Audio('sons/latido-fraquinho.mp3');
+      function latir() { try { const a = latido.cloneNode(); a.volume = M.calmo ? 0.35 : 0.55; a.play().catch(() => {}); } catch (e) {} }
+      let penelope = null, texHalo = null;
+      const brilhos = [];
+      const penelopeAtiva = () => penelope && !penelope.saindo;
+      function chamarPenelope() {
+        latir();
+        som('estrela');
+        if (penelope && !penelope.saindo) { penelope.t = 15; aviso('🐶 Mais tempo com a Penélope!', 1800); return; }
+        if (penelope) { cena.remove(penelope.sp); cena.remove(penelope.sp.userData.halo); }
+        const sp = new T.Sprite(new T.SpriteMaterial({ map: texPenelope, transparent: true, depthTest: false }));
+        sp.scale.set(2.3 * 369 / 420, 2.3, 1);
+        // brilho dourado atrás dela, para aparecer bem em qualquer cenário
+        if (!texHalo) {
+          const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+          const x = cv.getContext('2d'), g = x.createRadialGradient(64, 64, 8, 64, 64, 64);
+          g.addColorStop(0, 'rgba(255,240,170,.95)'); g.addColorStop(.55, 'rgba(255,214,90,.45)'); g.addColorStop(1, 'rgba(255,214,90,0)');
+          x.fillStyle = g; x.fillRect(0, 0, 128, 128);
+          texHalo = new T.CanvasTexture(cv);
+        }
+        const halo = new T.Sprite(new T.SpriteMaterial({ map: texHalo, transparent: true, depthWrite: false, depthTest: false }));
+        halo.scale.set(3.4, 3.4, 1); halo.position.z = -0.01;
+        halo.renderOrder = 998; sp.renderOrder = 999; // sempre à vista, na frente das plaquinhas
+        sp.userData.halo = halo; cena.add(halo);
+        sp.position.set(jog.pos.x, jog.pos.y + 6, jog.pos.z);
+        cena.add(sp);
+        penelope = { sp, t: 15, anim: 0, saindo: false };
+        aviso('🐶 Penélope chegou! Pulo duplo, ímã de estrelas e ela te salva se cair!', 3200);
+      }
+      if (/teste/.test(location.search)) window.__chamarPenelope = chamarPenelope; // só para testes automáticos
+      function brilho(x, y, z, cor) {
+        const m = new T.Mesh(new T.SphereGeometry(0.09, 6, 4), new T.MeshBasicMaterial({ color: cor, transparent: true }));
+        m.position.set(x, y, z); cena.add(m);
+        brilhos.push({ m, vida: 0.7, vy: 0.4 + Math.random() * 0.6 });
+      }
+      function animarPenelope(dt, t) {
+        for (let i = brilhos.length - 1; i >= 0; i--) {
+          const b = brilhos[i]; b.vida -= dt; b.m.position.y += b.vy * dt; b.m.material.opacity = Math.max(0, b.vida / 0.7); b.m.scale.setScalar(0.5 + b.vida);
+          if (b.vida <= 0) { cena.remove(b.m); brilhos.splice(i, 1); }
+        }
+        const poder = c.querySelector('#m-poder');
+        if (!penelope) { poder.hidden = true; return; }
+        penelope.anim += dt;
+        penelope.t -= dt;
+        if (penelope.t <= 0 && !penelope.saindo) { penelope.saindo = true; aviso('🐶 Tchau, Penélope! 👋', 1600); latir(); }
+        const sp = penelope.sp;
+        sp.userData.halo.position.copy(sp.position);
+        if (penelope.saindo) {
+          sp.position.y += 6 * dt; sp.material.opacity = Math.max(0, sp.material.opacity - dt * 0.8);
+          sp.userData.halo.material.opacity = sp.material.opacity;
+          if (sp.material.opacity <= 0) { cena.remove(sp); cena.remove(sp.userData.halo); penelope = null; }
+        } else {
+          // voa do lado do Miguel (à direita da câmera), balançando de alegria
+          const fx = -Math.sin(yaw), fz = -Math.cos(yaw), rx = -fz, rz = fx;
+          const alvo = new T.Vector3(jog.pos.x + rx * 1.5 - fx * 0.4, jog.pos.y + 1.9 + Math.sin(penelope.anim * 4) * 0.25, jog.pos.z + rz * 1.5 - fz * 0.4);
+          sp.position.lerp(alvo, Math.min(1, dt * 5));
+          sp.material.rotation = Math.sin(penelope.anim * 3) * 0.12;
+          sp.userData.halo.scale.setScalar(3.2 + Math.sin(penelope.anim * 5) * 0.25);
+          if (Math.random() < dt * 14) brilho(sp.position.x + (Math.random() - 0.5) * 0.8, sp.position.y - 0.5, sp.position.z + (Math.random() - 0.5) * 0.8, [0xffffff, 0xffd23f, 0xff9ecb, 0x9ee7ff][Math.floor(Math.random() * 4)]);
+        }
+        poder.hidden = !penelopeAtiva();
+        if (penelopeAtiva()) poder.textContent = '🐶 ' + Math.ceil(penelope.t);
+      }
       hud();
       aviso(`🚩 Fase ${fase}! Siga em frente!`);
 
@@ -536,6 +622,15 @@
         hud();
       }
       function morreu(motivo) {
+        // com a Penélope por perto, ela busca o Miguel e devolve no último bloco seguro
+        if (penelopeAtiva() && jog.ultimoSeguro) {
+          const o = jog.ultimoSeguro;
+          jog.pos.set(o.x, o.y + 0.01, o.z); jog.vel.set(0, 0, 0);
+          latir(); som('mola');
+          for (let k = 0; k < 14; k++) brilho(o.x + (Math.random() - 0.5) * 2, o.y + Math.random() * 2, o.z + (Math.random() - 0.5) * 2, 0xffd23f);
+          aviso('🐶 A Penélope te salvou!', 1600);
+          return;
+        }
         som(motivo === 'lava' ? 'cair' : 'voltar');
         M.miar('ai');
         aviso(motivo === 'lava' ? '🔥 Ui! Chão quente! Volte para a bandeira.' : motivo === 'giro' ? '💫 A barra te pegou! Tente de novo.' : '🌀 Caiu! Tente de novo.', 1600);
@@ -578,7 +673,13 @@
         jog.vel.x += (alvoX - jog.vel.x) * Math.min(1, aceleracao * dt);
         jog.vel.z += (alvoZ - jog.vel.z) * Math.min(1, aceleracao * dt);
         jog.tempoNoAr = jog.noChao ? 0 : jog.tempoNoAr + dt;
+        if (jog.noChao) jog.pulouDuplo = false;
         if (entrada.pular && jog.tempoNoAr < 0.12) { jog.vel.y = VPULO; jog.noChao = false; jog.tempoNoAr = 1; som('pulo'); }
+        else if (entrada.pular && penelopeAtiva() && !jog.pulouDuplo) {
+          // pulo duplo: a Penélope dá um impulso no ar
+          jog.vel.y = VPULO * 0.95; jog.pulouDuplo = true; som('mola');
+          for (let k = 0; k < 8; k++) brilho(jog.pos.x + (Math.random() - 0.5), jog.pos.y, jog.pos.z + (Math.random() - 0.5), 0xff9ecb);
+        }
         entrada.pular = false;
         jog.vel.y -= GRAV * dt;
 
@@ -597,6 +698,7 @@
           } else if (jog.vel.y > 0) { jog.pos.y = o.y - o.h - ALTURA - 0.001; jog.vel.y = 0; }
         }
         const a = jog.apoio;
+        if (a && !a.lava && !a.some && !a.move) jog.ultimoSeguro = a;
         if (a) {
           if (a.lava) return morreu('lava');
           if (a.mola) { jog.vel.y = 21; jog.noChao = false; som('mola'); }
@@ -611,9 +713,21 @@
           const proj = Math.max(-o.comp, Math.min(o.comp, px * cx + pz * sz));
           if (Math.hypot(px - proj * cx, pz - proj * sz) < MEIO + 0.25) return morreu('giro');
         }
+        // osso dourado
+        for (const f of fases.values()) for (const o of f.coisas) {
+          if (!o.osso || o.pega) continue;
+          o.malha.rotation.y = t * 3;
+          o.malha.position.y = o.y + Math.sin(t * 3) * 0.2;
+          if (Math.hypot(jog.pos.x - o.x, jog.pos.y + 1 - o.y, jog.pos.z - o.z) < 1.4) { o.pega = true; o.malha.visible = false; chamarPenelope(); }
+        }
         // estrelas
         for (const f of fases.values()) for (const o of f.coisas) {
           if (!o.estrela || o.pega) continue;
+          if (penelopeAtiva() && Math.hypot(jog.pos.x - o.x, jog.pos.z - o.z) < 7) {
+            // ímã: as estrelas vêm voando até o Miguel
+            o.x += (jog.pos.x - o.x) * Math.min(1, dt * 4); o.z += (jog.pos.z - o.z) * Math.min(1, dt * 4); o.y += (jog.pos.y + 1 - o.y) * Math.min(1, dt * 4);
+            o.malha.position.x = o.x; o.malha.position.z = o.z;
+          }
           o.malha.rotation.y = t * 2.5;
           o.malha.position.y = o.y + Math.sin(t * 3 + o.x) * 0.15;
           if (Math.hypot(jog.pos.x - o.x, jog.pos.y + 1 - o.y, jog.pos.z - o.z) < 1.25) {
@@ -692,8 +806,10 @@
         ultimo = agora;
         if (!pausado) {
           tempo += dt;
+          const dt0 = dt;
           while (dt > 0) { const d = Math.min(dt, 1 / 120); fisica(d, tempo); dt -= d; }
           animarBoneco(1 / 60, tempo);
+          animarPenelope(dt0, tempo);
         }
         renderer.render(cena, camera);
         if (rodando) quadro = requestAnimationFrame(laco);
