@@ -351,6 +351,7 @@
         acabou = true;
         musica.parar();
         som('fim');
+        M.jogos.ganharMoedas(Math.floor(peixes / 5));
         const novoRecorde = Math.floor(pontos) > dados.recorde;
         dados.recorde = Math.max(dados.recorde, Math.floor(pontos));
         dados.peixes += peixes;
@@ -365,6 +366,7 @@
                 <img src="${img.src}" alt="">
                 <p>⭐ Pontos: <strong>${Math.floor(pontos)}</strong> · 🐟 Peixes: <strong>${peixes}</strong></p>
                 <p>🚩 Você chegou ao nível <strong>${nivel}</strong> (${cenario().nome})</p>
+                ${Math.floor(peixes / 5) ? `<p class="vitoria-moedas">🪙 +${Math.floor(peixes / 5)} moedas no seu cofrinho!</p>` : ''}
                 <button class="botao-pronto" data-acao="denovo">🔁 Correr de novo</button>
                 ${nivel > 1 ? `<button class="botao-largo" data-acao="continuar-nivel">🚩 Continuar do nível ${nivel}</button>` : ''}
                 <button class="botao-largo" data-acao="sair">🏠 Sair</button>

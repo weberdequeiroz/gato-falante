@@ -531,6 +531,7 @@
         som('bandeira');
         aviso(`🚩 Fase ${n}! Jogo salvo ✓`, 2200);
         M.miar('feliz');
+        M.jogos.ganharMoedas(2);
         if (n % 5 === 0) { M.jogos.ganharTrofeu('mundo'); aviso(`🏆 Fase ${n}! Você ganhou um troféu!`, 2600); }
         hud();
       }

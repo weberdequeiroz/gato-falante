@@ -820,6 +820,7 @@
       <span class="simbolo" aria-hidden="true">⬅️</span><span class="rotulo">Voltar</span>
     </button>
     <h2 id="jogos-titulo">Jogos do Miguel</h2>
+    <button id="jogos-moedas" class="chip-moedas" aria-label="Cofrinho de moedas"><span aria-hidden="true">🪙</span><strong id="jogos-moedas-n">0</strong></button>
     <button id="jogos-som" class="botao-icone" aria-pressed="true" aria-label="Falas do Miguel ligadas">
       <span class="simbolo" aria-hidden="true" id="jogos-som-simbolo">🔊</span><span class="rotulo" id="jogos-som-rotulo">Falas</span>
     </button>
@@ -1256,18 +1257,22 @@
     for (const [f, t] of [[262, 0], [392, 0.42], [349, 0.76], [523, 1.3]]) tocarNota(f, t, 0.5, 0.07, 'triangle');
     tocarMiado(1.75);
   }
-  let bufferMiado = null;
-  fetch('sons/gato-feliz-1.mp3').then(r => r.arrayBuffer())
-    .then(b => new Promise((ok, erro) => obterContexto().decodeAudioData(b, ok, erro)))
-    .then(b => { bufferMiado = b; }).catch(() => {});
+  // o miado de verdade é carregado uma vez; se ainda não chegou, toca assim que chegar (no tempo certo da música)
+  const miadoPronto = fetch('sons/gato-feliz-1.mp3').then(r => r.arrayBuffer())
+    .then(b => new Promise((ok, erro) => obterContexto().decodeAudioData(b, ok, erro)));
+  miadoPronto.catch(() => {});
   function tocarMiado(depois) {
     const ac = obterContexto();
-    if (!bufferMiado) { setTimeout(() => { const a = new Audio('sons/gato-feliz-1.mp3'); a.volume = calmo ? 0.5 : 0.9; a.play().catch(() => {}); }, depois * 1000); return; }
-    const f = ac.createBufferSource(), g = ac.createGain();
-    f.buffer = bufferMiado;
-    g.gain.value = calmo ? 0.5 : 0.95;
-    f.connect(g); g.connect(ac.destination);
-    f.start(ac.currentTime + depois);
+    const quando = ac.currentTime + depois;
+    miadoPronto.then((buffer) => {
+      const f = ac.createBufferSource(), g = ac.createGain();
+      f.buffer = buffer;
+      g.gain.value = calmo ? 0.8 : 1.4;
+      f.connect(g); g.connect(ac.destination);
+      f.start(Math.max(quando, ac.currentTime + 0.02));
+    }).catch(() => {
+      setTimeout(() => { const a = new Audio('sons/gato-feliz-1.mp3'); a.play().catch(() => {}); }, depois * 1000);
+    });
   }
 
   // posição da orelha do Miguel na tela (o desenho tem 400 x 500)
@@ -1518,6 +1523,27 @@
     if ('speechSynthesis' in window) speechSynthesis.cancel();
   }
   // toca as partes uma depois da outra: gravação quando existe, voz do aparelho quando não
+  // acha a fala gravada; se a frase inteira não existir, monta com pedaços gravados
+  // (frases curtas, depois palavras), para nunca trocar a voz do Miguel pela do aparelho
+  function montarFala(texto, lang) {
+    const chave = chaveFala(texto, lang);
+    if (indiceFalas[chave]) return [indiceFalas[chave]];
+    const trechos = texto.split(/(?<=[,.;:!?])\s+/).filter(t => chaveFala(t, lang).length > 3);
+    if (trechos.length > 1) {
+      const lista = [];
+      for (const t of trechos) { const r = montarFala(t, lang); if (!r) return null; lista.push(...r); }
+      return lista;
+    }
+    const prefixo = chave.slice(0, 3), palavras = chave.slice(3).split(' ').filter(Boolean);
+    const lista = [];
+    for (let i = 0; i < palavras.length;) {
+      let n = Math.min(12, palavras.length - i);
+      for (; n > 0; n--) { const f = indiceFalas[prefixo + palavras.slice(i, i + n).join(' ')]; if (f) { lista.push(f); break; } }
+      if (!n) return null;
+      i += n;
+    }
+    return lista.length ? lista : null;
+  }
   function tocarFila(partes, { jeito, devagar }, fim) {
     pararFila();
     const id = filaId;
@@ -1527,15 +1553,21 @@
       if (i >= partes.length) { fim(); return; }
       const p = partes[i++];
       const lang = p.lang || 'pt-BR';
-      const arquivo = usarVozNatural() && indiceFalas[chaveFala(p.t, lang)];
-      if (arquivo) {
+      const arquivos = usarVozNatural() && montarFala(p.t, lang);
+      if (arquivos) {
         if (!audioFala) audioFala = new Audio();
-        audioFala.src = 'falas/' + arquivo;
-        audioFala.playbackRate = (calmo ? 0.92 : 1) * (devagar ? 0.72 : 1);
-        audioFala.volume = calmo ? 0.8 : 1;
-        audioFala.onended = proxima;
-        audioFala.onerror = proxima;
-        audioFala.play().catch(proxima);
+        let k = 0;
+        const tocarPedaco = () => {
+          if (id !== filaId) return;
+          if (k >= arquivos.length) { proxima(); return; }
+          audioFala.src = 'falas/' + arquivos[k++];
+          audioFala.playbackRate = (calmo ? 0.92 : 1) * (devagar ? 0.72 : 1);
+          audioFala.volume = calmo ? 0.8 : 1;
+          audioFala.onended = tocarPedaco;
+          audioFala.onerror = tocarPedaco;
+          audioFala.play().catch(tocarPedaco);
+        };
+        tocarPedaco();
         return;
       }
       if (!('speechSynthesis' in window)) { proxima(); return; }
@@ -2049,7 +2081,7 @@
     document.getElementById('jogos').hidden && telaAjustes.hidden && telaLembrete.hidden;
   function ronronar() {
     const ac = obterContexto();
-    if (ac.state !== 'running') return;
+    if (ac.state !== 'running') { ac.resume().catch(() => {}); return; }
     ronronando = true;
     const RESPIRAR = 1.6, VEZES = 3, t0 = ac.currentTime + 0.05;
     const fonte = ac.createBufferSource();
@@ -2093,14 +2125,16 @@
     fonte.onended = fim;
     setTimeout(fim, dur * 1000 + 200);
   }
+  // ronrona depois de 20 segundos sem a criança tocar em nada, e repete a cada 20 segundos enquanto ela não interagir
+  const ESPERA_RONROM = 20000;
   setInterval(() => {
-    if (ronronando || !telaPrincipalLivre()) return;
-    const parado = Date.now() - ultimoToque;
-    if (parado > 25000) {
+    if (ronronando) return;
+    if (!telaPrincipalLivre()) { ultimoToque = Math.max(ultimoToque, Date.now() - ESPERA_RONROM + 3000); return; }
+    if (Date.now() - ultimoToque >= ESPERA_RONROM) {
       ronronar();
-      ultimoToque = Date.now() - 25000 + 40000 + Math.random() * 30000; // próximo ronrom em 40 a 70 segundos
+      ultimoToque = Date.now() + 5000; // conta os próximos 20 segundos a partir do fim deste ronrom (que dura uns 5)
     }
-  }, 3000);
+  }, 1000);
   document.addEventListener('pointerdown', () => {
     if (!ronronando) return;
     if (navigator.vibrate) try { navigator.vibrate(0); } catch (e) {}

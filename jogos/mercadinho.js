@@ -90,7 +90,8 @@
             : '<small>vazia: toque nas coisas da prateleira</small>';
         };
         atualizar();
-        M.falar(`A lista de hoje tem: ${textoLista}. Toque nas coisas da prateleira para colocar na cesta!`);
+        // falado em pedacinhos: cada pedaço já está gravado com a voz do Miguel
+        M.falar([{ t: 'A lista de hoje tem:' }, ...lista.map(({ p, qtd }, i) => ({ t: (i && i === lista.length - 1 ? 'e ' : '') + quantos(p, qtd) })), { t: 'Toque nas coisas da prateleira para colocar na cesta!' }]);
         c.onclick = (e) => {
           const b = e.target.closest('button');
           if (!b) return;
@@ -145,7 +146,7 @@
         <button class="botao-pronto" data-acao="pagar">💰 Pagar</button>
       </div>`;
     const somaFalada = cesta.map(p => N(p.preco)).join(' mais ');
-    M.falar(cesta.length > 1 ? `Vamos somar: ${somaFalada}. Dá ${moedasF(total)}. Toque nas moedas para pagar!` : `Custa ${moedasF(total)}. Toque nas moedas para pagar!`);
+    M.falar(cesta.length > 1 ? [{ t: 'Vamos somar:' }, { t: somaFalada }, { t: `Dá ${moedasF(total)}.` }, { t: 'Toque nas moedas para pagar!' }] : `Custa ${moedasF(total)}. Toque nas moedas para pagar!`);
     const balcao = c.querySelector('#no-balcao'), carteira = c.querySelector('#na-carteira');
     c.onclick = (e) => {
       const b = e.target.closest('button');
@@ -208,7 +209,7 @@
             <div class="cupom">${compra.map(p => `<div class="linha-cupom"><span>${p.fig} ${p.nome}</span><span>${htmlMoedas(p.preco)}</span></div>`).join('')}</div>
             <div class="pergunta-caixa"></div>
           </div>`;
-        const descricao = compra.map(p => `${um(p)} ${p.nome} de ${moedasF(p.preco)}`).join(', e ');
+        const descricao = compra.map((p, i) => ({ t: (i ? 'e ' : '') + `${um(p)} ${p.nome} de ${moedasF(p.preco)}` }));
         // espera o Miguel terminar a frase antes do próximo cliente
         const terminar = (frase) => {
           atendidos++;
@@ -220,11 +221,11 @@
             } else proximo();
           }, 500) });
         };
-        pergunta('Quanto deu a compra?', `${nome} comprou ${descricao}. Quanto deu a compra?`, total, () => {
+        pergunta('Quanto deu a compra?', [{ t: `${nome} comprou` }, ...descricao, { t: 'Quanto deu a compra?' }], total, () => {
           if (!comTroco) { terminar(`Isso! Deu ${moedasF(total)}. Obrigado, volte sempre!`); return; }
           M.falar(`Isso! Deu ${moedasF(total)}.`, { pronto: () => c.isConnected && pergunta(
             `${nome} pagou com ${pagou} moedas. Quanto de troco?`,
-            `${nome} pagou com ${moedasF(pagou)}. Quanto você devolve de troco? Pense: ${N(pagou)} menos ${N(total)}.`,
+            [{ t: `${nome} pagou com ${moedasF(pagou)}.` }, { t: 'Quanto você devolve de troco?' }, { t: `Pense: ${N(pagou)} menos ${N(total)}.` }],
             pagou - total,
             () => terminar(`Muito bem! O troco é ${moedasF(pagou - total)}.`),
           ) });
@@ -263,11 +264,18 @@
     for (let n = 1; n <= 15; n++) f.push(falta(n), `Você deu ${moedasF(n)} a mais. Toque nas moedas do balcão para pegar de volta.`,
       `Isso! Deu ${moedasF(n)}. Obrigado, volte sempre!`, `Isso! Deu ${moedasF(n)}.`, `Muito bem! O troco é ${moedasF(n)}.`, `Custa ${moedasF(n)}. Toque nas moedas para pagar!`,
       `Muito bem! Você pagou ${moedasF(n)} certinho. Obrigado e volte sempre!`);
-    f.push('Muito bem! O troco é 0 moedas.', 'Parabéns! Você é um ótimo caixa!');
+    f.push('Muito bem! O troco é 0 moedas.', 'Parabéns! Você é um ótimo caixa!', 'A lista de hoje tem:', 'Toque nas coisas da prateleira para colocar na cesta!',
+      'Vamos somar:', 'Toque nas moedas para pagar!', 'Quanto deu a compra?', 'Quanto você devolve de troco?');
+    for (let n = 1; n <= 15; n++) f.push(`Dá ${moedasF(n)}.`);
+    for (const pagou of [5, 10]) for (let t = 0; t <= pagou; t++) f.push(`Pense: ${N(pagou)} menos ${N(t)}.`);
+    for (const a of [1, 2, 3]) for (const b of [1, 2, 3]) { f.push(`${N(a)} mais ${N(b)}`); for (const d of [1, 2, 3]) f.push(`${N(a)} mais ${N(b)} mais ${N(d)}`); }
+    for (const [, nome] of CLIENTES) f.push(`${nome} comprou`, `${nome} pagou com ${moedasF(5)}.`, `${nome} pagou com ${moedasF(10)}.`);
     for (const p of PRODUTOS) {
       f.push(`${Art(p)} ${p.nome}! Custa ${moedasF(p.preco)}.`, `Devolvi ${p.art} ${p.nome} para a prateleira.`, `${textoFalta(p, 1)}. Olhe a lista!`,
         ...(podeDois(p) ? [`${textoFalta(p, 2)}. Olhe a lista!`] : []), `Opa! Tem ${quantos(p, 1)} a mais na cesta. Toque ${ele(p)} na cesta para devolver.`,
         `Onde guardar ${p.art} ${p.nome}?`, `Isso! ${Art(p)} ${p.nome} ${vai(p)} em ${secao(p.sec).nome}, porque ${secao(p.sec).porque}.`);
+      f.push(quantos(p, 1), `e ${quantos(p, 1)}`, `${um(p)} ${p.nome} de ${moedasF(p.preco)}`, `e ${um(p)} ${p.nome} de ${moedasF(p.preco)}`);
+      if (podeDois(p)) f.push(quantos(p, 2), `e ${quantos(p, 2)}`);
       f.push(`Hum, não é aí. Pense: ${p.art} ${p.nome} ${eh(p)} de comer, de beber ou de limpar?`);
     }
     return f;

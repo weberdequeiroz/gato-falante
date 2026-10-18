@@ -618,3 +618,21 @@ html.calmo .tutorial-ilustra * { animation-duration: 3.2s !important; }
 @keyframes ilu-raio { 0%, 30%, 60%, 100% { opacity: 0; transform: rotate(24deg) scaleX(.2); } 40%, 50% { opacity: 1; transform: rotate(24deg) scaleX(1); } }
 @keyframes ilu-some { 0%, 45% { opacity: 1; transform: scale(1); } 52%, 95% { opacity: 0; transform: scale(.3); } 100% { opacity: 1; } }
 @keyframes ilu-aparece { 0%, 48% { opacity: 0; transform: scale(.3); } 56%, 92% { opacity: 1; transform: scale(1) translateY(-6px); } 100% { opacity: 0; } }
+
+/* moedas e cofrinho */
+.chip-moedas { flex: none; display: flex; align-items: center; gap: 4px; height: 44px; padding: 0 12px; border: 3px solid #f5b301; border-radius: 999px; background: #fff8dc; font: inherit; font-size: 18px; color: #8a5a00; box-shadow: var(--sombra); }
+.chip-moedas strong { font-weight: 900; }
+.chip-moedas.ganhou { animation: moeda-pulo .6s ease-out; }
+@keyframes moeda-pulo { 0% { transform: scale(1); } 35% { transform: scale(1.3) rotate(-6deg); background: #ffe082; } 100% { transform: scale(1); } }
+.moedas-voando { position: absolute; top: 64px; right: 90px; z-index: 40; font-size: 26px; font-weight: 900; color: #b37400; text-shadow: 0 2px 0 #fff, 0 0 8px #fff; pointer-events: none; animation: moedas-sobem 1.5s ease-out forwards; }
+@keyframes moedas-sobem { 0% { opacity: 0; transform: translateY(30px) scale(.6); } 20% { opacity: 1; transform: translateY(0) scale(1.15); } 100% { opacity: 0; transform: translateY(-40px) scale(1); } }
+.vitoria-moedas { margin: 2px 0; padding: 6px 14px; border-radius: 999px; background: #fff8dc; border: 2px solid #f5b301; color: #8a5a00; font-weight: 900; }
+.cofrinho { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.cofrinho-porco { font-size: 96px; line-height: 1; animation: chama-botao 1.6s ease-in-out infinite; }
+.cofrinho-total { margin: 0; font-size: 30px; color: #8a5a00; }
+.cofrinho-total strong { font-size: 44px; font-weight: 900; }
+.cofrinho .como-ganhar { background: #fff; border-radius: 20px; padding: 10px 16px; box-shadow: var(--sombra); text-align: left; width: 100%; }
+.cofrinho .como-ganhar p { margin: 4px 0; }
+.cofrinho .grade-jogos { width: 100%; }
+@media (max-width: 400px) { .chip-moedas { padding: 0 9px; font-size: 16px; } }
+@media (max-width: 420px) { .jogos-topo h2 { font-size: 19px; } .jogos-topo { gap: 8px; } }

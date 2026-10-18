@@ -101,9 +101,51 @@
   }
 
   // ---------- troféus guardados no aparelho ----------
+  // ---------- moedas: ficam no cofrinho (botão 🪙 no alto da tela de jogos) ----------
+  const botaoMoedas = document.getElementById('jogos-moedas');
+  const moedas = () => parseInt(M.ler('miguel-moedas'), 10) || 0;
+  let ultimasMoedas = { n: 0, quando: 0 };
+  function mostrarMoedas() { document.getElementById('jogos-moedas-n').textContent = moedas(); }
+  function ganharMoedas(n) {
+    if (n <= 0) return;
+    M.guardar('miguel-moedas', String(moedas() + n));
+    ultimasMoedas = { n, quando: Date.now() };
+    mostrarMoedas();
+    botaoMoedas.classList.remove('ganhou'); void botaoMoedas.offsetWidth; botaoMoedas.classList.add('ganhou');
+    const voa = document.createElement('div');
+    voa.className = 'moedas-voando';
+    voa.textContent = `+${n} 🪙`;
+    tela.appendChild(voa);
+    setTimeout(() => voa.remove(), 1600);
+    try { M.tocarNota(1319, 0, 0.1, 0.08, 'square'); M.tocarNota(1760, 0.08, 0.18, 0.08, 'square'); } catch (e) {}
+  }
+  function cofrinho() {
+    nav.ir('Cofrinho do Miguel', (c) => {
+      const comTrofeu = jogos.filter(j => trofeus(j.id));
+      c.innerHTML = `
+        <div class="cofrinho">
+          <div class="cofrinho-porco" aria-hidden="true">🐷</div>
+          <p class="cofrinho-total"><span aria-hidden="true">🪙</span> <strong>${moedas()}</strong> ${moedas() === 1 ? 'moeda' : 'moedas'}</p>
+          <div class="como-ganhar">
+            <p><strong>Como ganhar moedas</strong></p>
+            <p>🏆 Terminar um jogo e ganhar um troféu: <strong>5 moedas</strong></p>
+            <p>🐟 Corrida do Miguel: <strong>1 moeda</strong> a cada 5 peixinhos</p>
+            <p>🚩 Mundo do Miguel: <strong>2 moedas</strong> em cada bandeira</p>
+          </div>
+          ${comTrofeu.length ? `<p class="titulo-lista">Seus troféus</p><div class="grade-jogos">${comTrofeu.map(j =>
+            `<div class="cartao-jogo" style="--cor:${j.cor}"><span class="simbolo" aria-hidden="true">${j.simbolo}</span><span class="nome">${j.nome}</span><span class="selo">🏆${trofeus(j.id)}</span></div>`).join('')}</div>`
+            : '<p class="instrucao">Ainda não tem troféus. Termine um jogo para ganhar o primeiro!</p>'}
+        </div>`;
+      M.falar(moedas() ? 'Esse é o seu cofrinho! Cada jogo que você termina dá moedas.' : 'Seu cofrinho ainda está vazio. Termine um jogo para ganhar moedas!');
+    });
+  }
+  botaoMoedas.addEventListener('click', cofrinho);
+  mostrarMoedas();
+
   function trofeus(chave) { return parseInt(M.ler('miguel-trofeus-' + chave), 10) || 0; }
   function ganharTrofeu(chave) {
     M.guardar('miguel-trofeus-' + chave, String(trofeus(chave) + 1));
+    ganharMoedas(5);
     const raiz = chave.split('/')[0];
     if (raiz !== chave) M.guardar('miguel-trofeus-' + raiz, String(trofeus(raiz) + 1));
   }
@@ -116,6 +158,7 @@
         <img src="icones/miguel.png" alt="">
         <h2>${texto}</h2>
         <p>${sub}</p>
+        ${Date.now() - ultimasMoedas.quando < 5000 ? `<p class="vitoria-moedas">🪙 +${ultimasMoedas.n} moedas no seu cofrinho!</p>` : ''}
         <div class="vitoria-botoes">
           <button class="modo" data-acao="de-novo"><span class="simbolo">🔁</span><strong>Jogar de novo</strong></button>
           <button class="modo" data-acao="outros"><span class="simbolo">🎮</span><strong>Outros jogos</strong></button>
@@ -331,8 +374,12 @@
     miado.play().catch(() => {});
   };
 
+  M.catalogo.push(() => ['Esse é o seu cofrinho! Cada jogo que você termina dá moedas.', 'Seu cofrinho ainda está vazio. Termine um jogo para ganhar moedas!']);
+
   M.jogos = {
     abrir,
+    ganharMoedas,
+    moedas,
     tutorial,
     textoTutorial,
     falasDoTema,
