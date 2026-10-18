@@ -3,8 +3,8 @@
   const M = window.Miguel;
   const NUMEROS = ['zero', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze', 'treze', 'catorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove', 'vinte'];
   const CORES = [
-    { nome: 'vermelha', cor: '#e53935' }, { nome: 'azul', cor: '#1e88e5' }, { nome: 'amarela', cor: '#fdd835' },
-    { nome: 'verde', cor: '#43a047' }, { nome: 'roxa', cor: '#8e24aa' }, { nome: 'laranja', cor: '#fb8c00' },
+    { nome: 'vermelha', plural: 'vermelhas', cor: '#e53935' }, { nome: 'azul', plural: 'azuis', cor: '#1e88e5' }, { nome: 'amarela', plural: 'amarelas', cor: '#fdd835' },
+    { nome: 'verde', plural: 'verdes', cor: '#43a047' }, { nome: 'roxa', plural: 'roxas', cor: '#8e24aa' }, { nome: 'laranja', plural: 'laranja', cor: '#fb8c00' },
   ];
   const META = 10;
 
@@ -32,12 +32,12 @@
         const bolhas = [];
         c.innerHTML = `
           <div class="bolhas-jogo">
-            <p class="instrucao">${alvo ? `Estoure as bolhas <strong style="color:${alvo.cor}">${alvo.nome}s</strong>!` : 'Estoure as bolhas e conte comigo!'}
+            <p class="instrucao">${alvo ? `Estoure as bolhas <strong style="color:${alvo.cor}">${alvo.plural}</strong>!` : 'Estoure as bolhas e conte comigo!'}
               <span class="contador"><strong id="contador">0</strong> / ${META}</span></p>
             <div class="ceu-bolhas"></div>
           </div>`;
         const ceu = c.querySelector('.ceu-bolhas');
-        M.falar(alvo ? `Estoure só as bolhas ${alvo.nome}s!` : 'Estoure as bolhas! Vamos contar juntos!');
+        M.falar(alvo ? `Estoure só as bolhas ${alvo.plural}!` : 'Estoure as bolhas! Vamos contar juntos!');
         const nova = () => {
           const largura = ceu.clientWidth, altura = ceu.clientHeight;
           const tam = 64 + Math.random() * 36;
@@ -74,7 +74,7 @@
           const b = bolhas[i];
           if (alvo && b.cor !== alvo) {
             M.somErro();
-            M.falar(`Essa é ${b.cor.nome}. Procure as ${alvo.nome}s!`);
+            M.falar(`Essa bolha é ${b.cor.nome}. Procure as ${alvo.plural}!`);
             return;
           }
           bolhas.splice(i, 1);
@@ -102,5 +102,10 @@
     });
   }
 
+  M.catalogo.push(() => [
+    'Bolhas de sabão! Como você quer brincar?', 'Estoure as bolhas! Vamos contar juntos!', `Parabéns! Você estourou ${NUMEROS[META]} bolhas!`,
+    ...NUMEROS.slice(1, 21),
+    ...CORES.flatMap(a => [`Estoure só as bolhas ${a.plural}!`, ...CORES.filter(b => b !== a).map(b => `Essa bolha é ${b.nome}. Procure as ${a.plural}!`)]),
+  ]);
   M.jogos.registrar({ id: 'bolhas', nome: 'Bolhas', simbolo: '🫧', cor: '#4fc3f7', secao: 'brincar', abrir: inicio });
 })();

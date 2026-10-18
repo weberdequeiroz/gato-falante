@@ -40,5 +40,6 @@
       proxima();
     });
   }
+  M.catalogo.push(() => ['Encontre a figura que é diferente das outras!', 'Essa é igual às outras. Procure de novo!', 'Achou!', 'Muito bem!', 'Que olho bom!', 'Isso mesmo!', 'Parabéns! Você tem olhos de detetive!']);
   M.jogos.registrar({ id: 'diferente', nome: 'O diferente', simbolo: '🔍', cor: '#ef6c00', secao: 'brincar', abrir: jogar });
 })();

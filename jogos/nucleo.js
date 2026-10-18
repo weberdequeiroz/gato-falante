@@ -19,8 +19,15 @@
   // ---------- navegação: uma pilha de telas, o botão Voltar desempilha ----------
   const pilha = [];
   let limparTela = null;
+  // ao trocar de tela, tudo o que estava tocando para
+  function silenciar() {
+    M.calar();
+    M.musica?.pararTudo?.();
+    M.sons?.parar?.();
+  }
   function mostrarTopo() {
     if (limparTela) { limparTela(); limparTela = null; }
+    silenciar();
     const atual = pilha[pilha.length - 1];
     titulo.textContent = atual.titulo;
     corpo.innerHTML = '';
@@ -51,6 +58,7 @@
   };
 
   function abrir() {
+    M.liberarMicrofone?.();
     tela.hidden = false;
     pilha.length = 0;
     nav.ir('Jogos do Miguel', menu);
@@ -58,6 +66,7 @@
   }
   function fechar() {
     if (limparTela) { limparTela(); limparTela = null; }
+    silenciar();
     tela.hidden = true;
     M.calar();
   }
@@ -233,10 +242,10 @@
           b.classList.add('certo');
           M.somAcerto();
           M.festa(b, 10);
-          M.falar(def.acerto(it));
           const estrela = c.querySelectorAll('.estrelas span')[rodada.acertos - 1];
           if (estrela) estrela.classList.add('ganhou');
-          proximo = setTimeout(() => {
+          // só segue para a próxima pergunta quando o Miguel terminar de falar
+          const seguir = () => {
             if (rodada.acertos >= ACERTOS_PARA_GANHAR) {
               ganharTrofeu(def.chave);
               rodada.acertos = 0;
@@ -247,7 +256,8 @@
                 outros: nav.voltar,
               });
             } else nova();
-          }, M.calmo ? 2800 : 2200);
+          };
+          M.falar(def.acerto(it), { pronto: () => { if (c.isConnected) proximo = setTimeout(seguir, M.calmo ? 900 : 500); } });
         } else {
           b.classList.add('errado');
           b.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-10px)' }, { transform: 'translateX(10px)' }, { transform: 'translateX(0)' }], { duration: 350 });
@@ -260,8 +270,72 @@
     });
   }
 
+  // todas as falas de um tema (para gravar com voz natural)
+  function falasDoTema(def) {
+    const falas = ['Toque em cada um para ouvir!', 'Parabéns! Você ganhou cinco estrelas! Você é demais!'];
+    for (const it of def.itens) falas.push(def.fala(it), def.acerto(it), def.erro(it));
+    for (let k = 0; k < 400; k++) { const p = M.sortear(def.perguntas)(def.itens); falas.push(p.fala || p.texto); }
+    return falas;
+  }
+  M.catalogo.push(() => [
+    'Vamos jogar! Escolha um jogo!',
+    ...jogos.flatMap(j => [j.nome + '!', 'Surpresa! Vamos jogar: ' + j.nome + '!']),
+    ...SECOES.map(s => s.nome + '!'),
+  ]);
+
+  // "Como jogar" ilustrado, passo a passo, com o Miguel explicando
+  function tutorial(passos, aoFim) {
+    const el = document.createElement('div');
+    el.className = 'tutorial';
+    el.setAttribute('role', 'dialog');
+    el.setAttribute('aria-label', 'Como jogar');
+    let i = 0;
+    const mostrar = () => {
+      const p = passos[i];
+      el.innerHTML = `<div class="tutorial-cartao">
+        <button data-t="pular" class="tutorial-pular">Pular ✕</button>
+        <p class="tutorial-passo">Como jogar · ${i + 1} de ${passos.length}</p>
+        <div class="tutorial-ilustra" aria-hidden="true">${p.ilustracao}</div>
+        <h2>${p.titulo}</h2>
+        <p class="tutorial-texto">${p.texto}</p>
+        <div class="tutorial-pontos">${passos.map((_, k) => `<span class="${k === i ? 'ativo' : ''}"></span>`).join('')}</div>
+        <div class="tutorial-botoes">
+          ${i > 0 ? '<button data-t="voltar" class="botao-largo">◀</button>' : ''}
+          <button data-t="seguir" class="botao-pronto">${i < passos.length - 1 ? 'Próximo ▶' : '✅ Entendi! Vamos jogar'}</button>
+        </div></div>`;
+      M.falar(p.titulo + ' ' + p.texto.replace(/<[^>]+>/g, ''));
+    };
+    const fechar = () => { el.remove(); M.calar(); if (aoFim) aoFim(); };
+    el.addEventListener('pointerdown', (e) => e.stopPropagation());
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const b = e.target.closest('[data-t]');
+      if (!b) return;
+      if (b.dataset.t === 'voltar') i--;
+      else if (b.dataset.t === 'seguir' && i < passos.length - 1) i++;
+      else { fechar(); return; }
+      mostrar();
+    });
+    tela.appendChild(el);
+    mostrar();
+  }
+  const textoTutorial = (passos) => passos.map(p => p.titulo + ' ' + p.texto.replace(/<[^>]+>/g, ''));
+
+  // miados de verdade (nas aventuras, no lugar das falas)
+  const MIADOS = { ai: ['gato-ai-1', 'gato-ai-2'], feliz: ['gato-feliz-1', 'gato-feliz-2'], triste: ['gato-triste-1', 'gato-triste-2'], miau: ['gato-miau'], glub: ['gato-glub'] };
+  let miado = null;
+  M.miar = (tipo) => {
+    if (miado) miado.pause();
+    miado = new Audio('sons/' + M.sortear(MIADOS[tipo]) + '.mp3');
+    miado.volume = M.calmo ? 0.55 : 0.9;
+    miado.play().catch(() => {});
+  };
+
   M.jogos = {
     abrir,
+    tutorial,
+    textoTutorial,
+    falasDoTema,
     nav,
     registrar: (j) => jogos.push(j),
     abrirTema,

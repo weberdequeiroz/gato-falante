@@ -20,7 +20,8 @@
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-bottom: 6px;
 }
-.jogos-topo h2 { margin: 0; font-size: 24px; font-weight: 900; }
+.jogos-topo h2 { margin: 0; font-size: 24px; font-weight: 900; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#jogos-som[aria-pressed="false"] { opacity: .7; }
 #jogos-corpo {
   flex: 1;
   min-height: 0;
@@ -530,7 +531,8 @@
 .hud-nivel { position: absolute; top: 58px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,.85); border-radius: 999px; padding: 4px 12px; font-size: 13px; white-space: nowrap; pointer-events: none; }
 .hud-barra { width: 70px; height: 8px; border-radius: 999px; background: #dfe6ee; overflow: hidden; }
 .hud-barra span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #ffb300, #ff5722); }
-.corrida-aviso { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); background: rgba(255,255,255,.95); border-radius: 22px; padding: 12px 20px; font-size: 22px; font-weight: 900; color: #ff5722; box-shadow: var(--sombra); text-align: center; pointer-events: none; white-space: nowrap; }
+.corrida-aviso { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); background: rgba(255,255,255,.95); border-radius: 22px; padding: 12px 20px; font-size: 22px; font-weight: 900; color: #ff5722; box-shadow: var(--sombra); text-align: center; pointer-events: none; width: max-content; max-width: min(88%, 420px); line-height: 1.25; overflow-wrap: break-word; }
+@media (max-width: 480px) { .corrida-aviso { font-size: 19px; padding: 10px 16px; } }
 .corrida-aviso[hidden] { display: none; }
 .corrida-pausa { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(31,45,61,.45); }
 .corrida-pausa[hidden] { display: none; }
@@ -557,3 +559,54 @@
 }
 .botao-pular small { font-size: 12px; margin-top: 2px; }
 .botao-pular.apertado { transform: translateY(4px); box-shadow: 0 2px 0 #1f6b2d; }
+.tocando-agora { background: #ffe0ef !important; border-color: #e66fb0 !important; color: #b0306f !important; animation: pisca 1.2s ease-in-out infinite; }
+
+/* como jogar (tutorial ilustrado) */
+.tutorial { position: absolute; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(31,45,61,.55); animation: tutorial-aparece .2s ease; }
+@keyframes tutorial-aparece { from { opacity: 0; } to { opacity: 1; } }
+.tutorial-cartao { position: relative; width: 100%; max-width: 420px; max-height: 100%; overflow-y: auto; background: #fff; border-radius: 28px; padding: 18px 18px 16px; box-shadow: var(--sombra); text-align: center; display: flex; flex-direction: column; gap: 10px; }
+.tutorial-cartao h2 { margin: 0; font-size: 24px; font-weight: 900; color: #ff5722; }
+.tutorial-passo { margin: 0; font-size: 14px; font-weight: 800; color: #8a97a6; }
+.tutorial-texto { margin: 0; font-size: 18px; line-height: 1.35; }
+.tutorial-pular { position: absolute; top: 10px; right: 10px; border: 0; background: #eef2f6; border-radius: 999px; padding: 6px 12px; font-weight: 800; font-size: 14px; color: #5b6b7c; }
+.tutorial-ilustra { height: 150px; border-radius: 20px; background: linear-gradient(#bfe6ff, #e6f6ff); overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
+.tutorial-pontos { display: flex; justify-content: center; gap: 8px; }
+.tutorial-pontos span { width: 10px; height: 10px; border-radius: 50%; background: #d5dde6; }
+.tutorial-pontos span.ativo { background: #ff5722; transform: scale(1.25); }
+.tutorial-botoes { display: flex; gap: 10px; }
+.tutorial-botoes .botao-pronto { flex: 1; margin: 0; }
+.tutorial-botoes .botao-largo { width: auto; margin: 0; padding: 0 20px; }
+.ilu-cena { position: absolute; inset: 0; }
+.ilu-chao { position: absolute; left: 0; right: 0; bottom: 0; height: 26px; background: #6cc04a; border-top: 4px solid #4e9a32; }
+.ilu-gato { position: absolute; left: 22%; bottom: 26px; width: 74px; }
+.ilu-gato.pula { animation: ilu-pula 1.6s ease-in-out infinite; }
+.ilu-gato.pula-duplo { animation: ilu-pula-duplo 2s ease-in-out infinite; }
+.ilu-gato.anda { left: 48%; animation: ilu-anda 2.4s ease-in-out infinite; }
+.ilu-obst { position: absolute; left: 52%; bottom: 24px; font-size: 40px; }
+.ilu-obst.alto { font-size: 44px; letter-spacing: -14px; }
+.ilu-dedo { position: absolute; right: 10%; bottom: 40px; font-size: 42px; animation: ilu-toque 1.6s ease-in-out infinite; }
+.ilu-dedo.duplo { animation: ilu-toque-duplo 2s ease-in-out infinite; }
+.ilu-dedo.arrasta { right: 18%; bottom: 30px; animation: ilu-arrasta 2s ease-in-out infinite; }
+.ilu-seta { position: absolute; right: 16%; top: 18px; font-size: 32px; }
+.ilu-itens { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px 14px; padding: 8px; }
+.ilu-itens span { display: flex; flex-direction: column; align-items: center; font-size: 40px; line-height: 1.1; animation: ilu-balanca 1.8s ease-in-out infinite; }
+.ilu-itens span:nth-child(2n) { animation-delay: .4s; }
+.ilu-itens small { font-size: 13px; font-weight: 800; color: #3b4b5c; }
+.ilu-itens .vidas { font-size: 24px; }
+.ilu-itens.lugares span { font-size: 34px; }
+.ilu-joystick { position: absolute; left: 8%; bottom: 14px; width: 84px; height: 84px; border-radius: 50%; background: rgba(255,255,255,.65); border: 3px solid rgba(31,45,61,.25); }
+.ilu-bolinha { position: absolute; left: 50%; top: 50%; width: 36px; height: 36px; margin: -18px; border-radius: 50%; background: #2f9be8; animation: ilu-joy 2.4s ease-in-out infinite; }
+.ilu-bloco { position: absolute; left: 12%; bottom: 0; width: 34%; height: 40px; background: #8bc34a; border-top: 6px solid #6a9f30; border-radius: 6px 6px 0 0; }
+.ilu-bloco.dir { left: auto; right: 4%; width: 28%; height: 56px; background: #ffb74d; border-top-color: #f08c1a; }
+.ilu-pular { position: absolute; right: 6%; top: 10px; display: flex; flex-direction: column; align-items: center; width: 56px; height: 56px; justify-content: center; border-radius: 50%; background: #fff; font-size: 22px; box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+.ilu-pular small { font-size: 10px; font-weight: 800; }
+.ilu-cena .ilu-pular + .ilu-dedo { right: 4%; bottom: auto; top: 40px; font-size: 32px; }
+@keyframes ilu-pula { 0%, 30%, 100% { transform: translateY(0); } 55% { transform: translate(40px, -70px); } 80% { transform: translate(90px, 0); opacity: 1; } 95% { opacity: 0; } }
+@keyframes ilu-pula-duplo { 0%, 20%, 100% { transform: translateY(0); } 40% { transform: translate(30px, -45px); } 60% { transform: translate(60px, -95px) rotate(-12deg); } 85% { transform: translate(110px, 0); opacity: 1; } 95% { opacity: 0; } }
+@keyframes ilu-anda { 0%, 100% { transform: translateX(0) scaleX(1); } 45% { transform: translateX(70px) scaleX(1); } 50% { transform: translateX(70px) scaleX(-1); } 95% { transform: translateX(0) scaleX(-1); } }
+@keyframes ilu-joy { 0%, 100% { transform: translateX(0); } 45% { transform: translateX(18px); } 50%, 95% { transform: translateX(-18px); } }
+@keyframes ilu-toque { 0%, 20%, 100% { transform: scale(1); } 28% { transform: scale(.8) translateY(6px); } 36% { transform: scale(1); } }
+@keyframes ilu-toque-duplo { 0%, 12%, 100% { transform: scale(1); } 18% { transform: scale(.8) translateY(6px); } 26%, 36% { transform: scale(1); } 44% { transform: scale(.8) translateY(6px); } 52% { transform: scale(1); } }
+@keyframes ilu-arrasta { 0%, 100% { transform: translateX(-30px); } 50% { transform: translateX(30px); } }
+@keyframes ilu-balanca { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+html.calmo .tutorial-ilustra * { animation-duration: 3.2s !important; }

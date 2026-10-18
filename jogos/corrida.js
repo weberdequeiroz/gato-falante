@@ -7,13 +7,13 @@
   const SEGUNDOS_POR_NIVEL = 32;
 
   const CENARIOS = [
-    { nome: 'Campo', ceu: ['#7cc8f5', '#dff4ff'], morro: '#7ccb68', morro2: '#5fb24f', chao: '#6abf4b', terra: '#9b6b43', obst: ['🪨', '🪵', '🌵'], voa: ['🐝', '🦋'], enfeite: ['🌳', '🌻', '🌷'] },
-    { nome: 'Praia', ceu: ['#5ec4f0', '#fff3cf'], morro: '#4fb3e6', morro2: '#2f98cf', chao: '#f4d58d', terra: '#e0b765', obst: ['🦀', '🪣', '🐚'], voa: ['🐦', '🪁'], enfeite: ['🌴', '⛱️', '🏖️'] },
-    { nome: 'Floresta', ceu: ['#89d39b', '#e9f9e3'], morro: '#3f8f4f', morro2: '#2e6f3b', chao: '#4f9a3c', terra: '#7a4f2c', obst: ['🍄', '🪵', '🦔'], voa: ['🦉', '🐝'], enfeite: ['🌲', '🌳', '🍄'] },
-    { nome: 'Cidade', ceu: ['#9fb7ff', '#ffe6f2'], morro: '#8b95c9', morro2: '#6f78ad', chao: '#9aa3ad', terra: '#6b7280', obst: ['🚧', '🗑️', '📦'], voa: ['🕊️', '🎈'], enfeite: ['🏠', '🏪', '🚦'] },
-    { nome: 'Neve', ceu: ['#bfe3ff', '#ffffff'], morro: '#e3f2ff', morro2: '#c8e1f7', chao: '#f4fbff', terra: '#b8d4ea', obst: ['⛄', '🧊', '🎄'], voa: ['❄️', '🐦'], enfeite: ['🌲', '⛄', '🏔️'] },
-    { nome: 'Deserto', ceu: ['#ffcf8a', '#fff1d6'], morro: '#f0b867', morro2: '#d99a45', chao: '#f2c879', terra: '#c9934a', obst: ['🌵', '🦂', '🪨'], voa: ['🦅', '🐝'], enfeite: ['🌵', '🐪', '🏜️'] },
-    { nome: 'Espaço', ceu: ['#1b1f4b', '#4b3c8f'], morro: '#2f2a63', morro2: '#241f4f', chao: '#a9a9c9', terra: '#77779a', obst: ['☄️', '🪨', '👾'], voa: ['🛸', '☄️'], enfeite: ['🪐', '🌙', '⭐'], noite: true },
+    { nome: 'Campo', onde: 'no campo', ceu: ['#7cc8f5', '#dff4ff'], morro: '#7ccb68', morro2: '#5fb24f', chao: '#6abf4b', terra: '#9b6b43', obst: ['🪨', '🪵', '🌵'], voa: ['🐝', '🦋'], enfeite: ['🌳', '🌻', '🌷'] },
+    { nome: 'Praia', onde: 'na praia', ceu: ['#5ec4f0', '#fff3cf'], morro: '#4fb3e6', morro2: '#2f98cf', chao: '#f4d58d', terra: '#e0b765', obst: ['🦀', '🪣', '🐚'], voa: ['🐦', '🪁'], enfeite: ['🌴', '⛱️', '🏖️'] },
+    { nome: 'Floresta', onde: 'na floresta', ceu: ['#89d39b', '#e9f9e3'], morro: '#3f8f4f', morro2: '#2e6f3b', chao: '#4f9a3c', terra: '#7a4f2c', obst: ['🍄', '🪵', '🦔'], voa: ['🦉', '🐝'], enfeite: ['🌲', '🌳', '🍄'] },
+    { nome: 'Cidade', onde: 'na cidade', ceu: ['#9fb7ff', '#ffe6f2'], morro: '#8b95c9', morro2: '#6f78ad', chao: '#9aa3ad', terra: '#6b7280', obst: ['🚧', '🗑️', '📦'], voa: ['🕊️', '🎈'], enfeite: ['🏠', '🏪', '🚦'] },
+    { nome: 'Neve', onde: 'na neve', ceu: ['#bfe3ff', '#ffffff'], morro: '#e3f2ff', morro2: '#c8e1f7', chao: '#f4fbff', terra: '#b8d4ea', obst: ['⛄', '🧊', '🎄'], voa: ['❄️', '🐦'], enfeite: ['🌲', '⛄', '🏔️'] },
+    { nome: 'Deserto', onde: 'no deserto', ceu: ['#ffcf8a', '#fff1d6'], morro: '#f0b867', morro2: '#d99a45', chao: '#f2c879', terra: '#c9934a', obst: ['🌵', '🦂', '🪨'], voa: ['🦅', '🐝'], enfeite: ['🌵', '🐪', '🏜️'] },
+    { nome: 'Espaço', onde: 'no espaço', ceu: ['#1b1f4b', '#4b3c8f'], morro: '#2f2a63', morro2: '#241f4f', chao: '#a9a9c9', terra: '#77779a', obst: ['☄️', '🪨', '👾'], voa: ['🛸', '☄️'], enfeite: ['🪐', '🌙', '⭐'], noite: true },
   ];
 
   const lerDados = () => { try { return Object.assign({ recorde: 0, peixes: 0, nivelMax: 1 }, JSON.parse(M.ler('miguel-corrida') || '{}')); } catch (e) { return { recorde: 0, peixes: 0, nivelMax: 1 }; } };
@@ -77,6 +77,22 @@
     };
   }
 
+  const miar = (tipo) => M.miar(tipo);
+
+  const MIGUEL = () => (M.roupas ? M.roupas.imagemMiguel() : 'icones/miguel.png');
+  const TUTORIAL = () => [
+    { titulo: 'Toque para pular!', texto: 'O Miguel corre sozinho. Toque em qualquer lugar da tela para ele pular.',
+      ilustracao: `<div class="ilu-cena"><img class="ilu-gato pula" src="${MIGUEL()}" alt=""><span class="ilu-obst">🪨</span><span class="ilu-dedo">👆</span><div class="ilu-chao"></div></div>` },
+    { titulo: 'Pulo duplo!', texto: 'Com o Miguel no ar, toque de novo para ele pular ainda mais alto.',
+      ilustracao: `<div class="ilu-cena"><img class="ilu-gato pula-duplo" src="${MIGUEL()}" alt=""><span class="ilu-obst alto">🌵🌵</span><span class="ilu-dedo duplo">👆</span><div class="ilu-chao"></div></div>` },
+    { titulo: 'Pegue os prêmios!', texto: 'Peixinho vale 1 ponto, estrela vale 10. O presente dá um poder e o coração dá mais uma vida.',
+      ilustracao: `<div class="ilu-itens"><span>🐟<small>+1</small></span><span>⭐<small>+10</small></span><span>🎁<small>🛡️⚡🧲</small></span><span>❤️<small>+1 vida</small></span></div>` },
+    { titulo: 'Desvie dos obstáculos!', texto: 'Pule por cima das pedras e dos bichinhos. Você tem 3 vidas.',
+      ilustracao: `<div class="ilu-itens"><span>🪨<small>pule</small></span><span>🌵<small>pule</small></span><span>🐝<small>cuidado</small></span><span class="vidas">❤️❤️❤️<small>3 vidas</small></span></div>` },
+    { titulo: 'Novos lugares!', texto: 'A cada nível o lugar muda e fica mais rápido. O jogo guarda o nível que você alcançou.',
+      ilustracao: `<div class="ilu-itens lugares"><span>🌳</span><span>🏖️</span><span>🌲</span><span>🏙️</span><span>⛄</span><span>🏜️</span><span>🪐</span></div>` },
+  ];
+
   // ---------- telas ----------
   function inicio(nav) {
     nav.ir('Corrida do Miguel', (c) => {
@@ -97,12 +113,19 @@
             <p>❤️ Você tem 3 vidas. A cada nível o lugar muda e fica mais rápido.</p>
           </div>
           <button class="botao-pronto" data-nivel="1">▶ Correr do começo</button>
+          <button class="botao-largo" data-tutorial>❓ Como jogar</button>
           ${d.nivelMax > 1 ? `<button class="modo" data-nivel="${d.nivelMax}"><span class="simbolo">🚩</span><span><strong>Continuar do nível ${d.nivelMax}</strong><small>${CENARIOS[(d.nivelMax - 1) % CENARIOS.length].nome}</small></span></button>` : ''}
         </div>`;
       M.falar('Corrida do Miguel! Toque na tela para pular. Pegue os peixinhos e desvie dos obstáculos!');
       c.onclick = (e) => {
+        if (e.target.closest('[data-tutorial]')) { M.jogos.tutorial(TUTORIAL()); return; }
         const b = e.target.closest('[data-nivel]');
-        if (b) jogar(nav, +b.dataset.nivel);
+        if (!b) return;
+        // na primeira vez, o Miguel mostra como jogar antes de começar
+        if (M.ler('miguel-tutorial-corrida') !== '1') {
+          M.guardar('miguel-tutorial-corrida', '1');
+          M.jogos.tutorial(TUTORIAL(), () => jogar(nav, +b.dataset.nivel));
+        } else jogar(nav, +b.dataset.nivel);
       };
     });
   }
@@ -124,6 +147,7 @@
           <div class="corrida-pausa" id="pausa" hidden>
             <div class="cartao-camada"><h2>⏸️ Pausa</h2>
               <button class="botao-pronto" data-acao="continuar">▶ Continuar</button>
+              <button class="botao-largo" data-acao="como-jogar">❓ Como jogar</button>
               <button class="botao-largo" data-acao="sair">🏠 Sair da corrida</button></div>
           </div>
         </div>`;
@@ -251,9 +275,10 @@
       function ganharPoder() {
         const p = M.sortear(['escudo', 'turbo', 'ima']);
         som('poder');
-        if (p === 'escudo') { jogador.escudo = true; aviso('🛡️ Escudo! Protege de uma batida.'); M.falar('Escudo!'); }
-        if (p === 'turbo') { jogador.turbo = 6; aviso('⚡ Turbo! Ninguém te pega!'); M.falar('Turbo!'); }
-        if (p === 'ima') { jogador.ima = 9; aviso('🧲 Ímã! Os peixinhos vêm até você!'); M.falar('Ímã de peixinhos!'); }
+        miar('feliz');
+        if (p === 'escudo') { jogador.escudo = true; aviso('🛡️ Escudo! Protege de uma batida.'); }
+        if (p === 'turbo') { jogador.turbo = 6; aviso('⚡ Turbo! Ninguém te pega!'); }
+        if (p === 'ima') { jogador.ima = 9; aviso('🧲 Ímã! Os peixinhos vêm até você!'); }
       }
 
       function bater(o) {
@@ -262,12 +287,12 @@
         if (jogador.escudo) { jogador.escudo = false; jogador.invencivel = 1.2; som('escudo'); o.morto = true; brilho(o.x + 25, o.y + 25, '#80deea', 14); return; }
         vidas--;
         som('batida');
+        if (vidas <= 0) miar('triste'); else if (vidas > 0) miar('ai');
         jogador.invencivel = 1.8;
         jogador.vy = -420; jogador.noChao = false;
         tremor = 0.35;
         if (navigator.vibrate && !M.calmo) navigator.vibrate(120);
         if (vidas <= 0) fimDeJogo();
-        else M.falar(M.sortear(['Ai! Cuidado!', 'Opa! Vamos de novo!', 'Ui! Pule mais cedo!']));
       }
       let tremor = 0;
 
@@ -294,7 +319,7 @@
                 <button class="botao-largo" data-acao="sair">🏠 Sair</button>
               </div>
             </div>`);
-          M.falar(novoRecorde ? `Novo recorde! ${Math.floor(pontos)} pontos!` : `Fim da corrida! Você pegou ${peixes} peixinhos!`);
+          miar(novoRecorde ? 'feliz' : 'miau');
         }, 700);
       }
 
@@ -322,7 +347,7 @@
           som('nivel');
           musica.tempo(nivel);
           aviso(`🚩 Nível ${nivel}! ${cenario().nome}`, 2200);
-          M.falar(`Nível ${nivel}! Agora na ${cenario().nome.toLowerCase()}!`);
+          miar('feliz');
           if (nivel > dados.nivelMax) { dados.nivelMax = nivel; guardarDados(dados); }
           brilho(jogador.x + 34, jogador.y + 40, '#ffd54f', 24);
         }
@@ -362,10 +387,10 @@
           if (!toca || o.tipo === 'plataforma') continue;
           if (o.tipo === 'obst') { bater(o); continue; }
           o.morto = true;
-          if (o.tipo === 'peixe') { peixes++; pontos += 1; som('peixe'); pontinho(o.x, o.y, '+1', '#fff'); }
+          if (o.tipo === 'peixe') { peixes++; pontos += 1; som('peixe'); pontinho(o.x, o.y, '+1', '#fff'); if (peixes % 15 === 0) miar('miau'); }
           else if (o.tipo === 'estrela') { pontos += 10; som('estrela'); brilho(o.x + 20, o.y + 20, '#ffd54f', 16); pontinho(o.x, o.y, '+10', '#ffe082'); }
           else if (o.tipo === 'presente') { brilho(o.x + 20, o.y + 20, '#f48fb1', 16); ganharPoder(); }
-          else if (o.tipo === 'vida') { vidas = Math.min(3, vidas + 1); som('vida'); pontinho(o.x, o.y, '+❤️', '#ff8a80'); }
+          else if (o.tipo === 'vida') { vidas = Math.min(3, vidas + 1); som('vida'); miar('glub'); pontinho(o.x, o.y, '+❤️', '#ff8a80'); }
         }
         for (let i = coisas.length - 1; i >= 0; i--) if (coisas[i].x + coisas[i].w < -80 || coisas[i].morto && coisas[i].tipo !== 'obst') coisas.splice(i, 1);
         for (let i = coisas.length - 1; i >= 0; i--) if (coisas[i].morto && coisas[i].tipo === 'obst') coisas.splice(i, 1);
@@ -474,6 +499,7 @@
         if (!b) return;
         const acao = b.dataset.acao;
         if (acao === 'pausa') { pausado = true; musica.parar(); c.querySelector('#pausa').hidden = false; }
+        else if (acao === 'como-jogar') M.jogos.tutorial(TUTORIAL());
         else if (acao === 'continuar') { pausado = false; ultimoTempo = performance.now(); c.querySelector('#pausa').hidden = true; musica.iniciar(); }
         else if (acao === 'musica') { musica.alternar(); b.style.opacity = musica.ligada ? 1 : 0.45; }
         else if (acao === 'sair') nav.voltar();
@@ -502,5 +528,9 @@
     }, 'corpo-jogo');
   }
 
+  M.catalogo.push(() => [
+    'Corrida do Miguel! Toque na tela para pular. Pegue os peixinhos e desvie dos obstáculos!',
+    ...M.jogos.textoTutorial(TUTORIAL()),
+  ]);
   M.jogos.registrar({ id: 'corrida', nome: 'Corrida do Miguel', simbolo: '🏃', cor: '#ff5722', secao: 'aventura', abrir: inicio });
 })();

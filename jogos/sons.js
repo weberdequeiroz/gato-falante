@@ -150,14 +150,20 @@
             return { certo: s, texto: 'Escute... Que som é esse? 👂', fala: 'Escute com atenção. Que som é esse?', tocar: () => tocarSom(s), apenas: (i) => i.cat === s.cat || itens.length < 13 };
           }],
           acerto: (s) => `Isso! ${Art(s)} ${s.nome}! ${s.fato}`,
-          erro: (s) => `Esse é ${s.art} ${s.nome}. Escute de novo no alto-falante e tente outra vez!`,
+          erro: (s) => `${M.esse(s.art)} ${s.nome}. Escute de novo no alto-falante e tente outra vez!`,
         });
       };
       return pararSom;
     });
   }
 
+  M.catalogo.push(() => [
+    'Biblioteca de sons! Toque numa figura para ouvir o som de verdade.', 'Que som é esse? Escolha um jogo!',
+    'Escute com atenção. Que som é esse?',
+    ...CATEGORIAS.map(k => k.nome + '!'),
+    ...SONS.flatMap(s => [`${Art(s)} ${s.nome}!`, s.fato, `Isso! ${Art(s)} ${s.nome}! ${s.fato}`, `${M.esse(s.art)} ${s.nome}. Escute de novo no alto-falante e tente outra vez!`]),
+  ]);
   M.jogos.registrar({ id: 'biblioteca-sons', nome: 'Biblioteca de sons', simbolo: '📚', cor: '#34b25a', secao: 'sons', abrir: biblioteca });
   M.jogos.registrar({ id: 'que-som', nome: 'Que som é esse?', simbolo: '👂', cor: '#2bb3a3', secao: 'sons', abrir: quiz });
-  M.sons = { SONS, tocarSom, figura };
+  M.sons = { SONS, tocarSom, figura, parar: pararSom };
 })();

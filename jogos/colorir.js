@@ -246,5 +246,7 @@
     });
   }
 
+  M.catalogo.push(() => ['Escolha um desenho para colorir!', 'Toque numa parte do desenho para pintar.', 'Passe o dedo para pintar.', 'Que lindo! Guardei o seu desenho.',
+    'Escolha uma cor e toque numa parte do desenho!', 'Escolha uma cor e desenhe com o dedo!']);
   M.jogos.registrar({ id: 'colorir', nome: 'Colorir', simbolo: '🖍️', cor: '#ff8a3d', secao: 'criar', abrir: galeria });
 })();

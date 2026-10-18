@@ -4,6 +4,10 @@
   const NUMEROS = ['zero', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze', 'treze', 'catorze', 'quinze'];
   const N = (n) => NUMEROS[n] || String(n);
   const moedas = (n) => `${n} ${n === 1 ? 'moeda' : 'moedas'}`;
+  // nas falas, os números de moedas vão por extenso e no feminino: "uma moeda", "duas moedas"
+  const NF = (n) => (n === 1 ? 'uma' : n === 2 ? 'duas' : N(n));
+  const moedasF = (n) => `${NF(n)} ${n === 1 ? 'moeda' : 'moedas'}`;
+  const falta = (n) => (n === 1 ? 'Ainda falta uma moeda.' : `Ainda faltam ${moedasF(n)}.`);
 
   const SECOES = [
     { id: 'hortifruti', nome: 'Frutas e verduras', simbolo: '🥕', porque: 'são plantinhas que a gente come' },
@@ -26,6 +30,14 @@
   const secao = (id) => SECOES.find(s => s.id === id);
   const Art = (p) => p.art[0].toUpperCase() + p.art.slice(1);
   const um = (p) => (p.art.endsWith('s') ? 'uns' : p.art.startsWith('a') ? 'uma' : 'um');
+  const dois = (p) => (p.art.startsWith('a') ? 'duas' : 'dois');
+  const plural = (p) => (p.art.endsWith('s') ? p.nome : p.nome + 's');
+  const ele = (p) => ({ o: 'nele', a: 'nela', os: 'neles', as: 'nelas' })[p.art];
+  const vai = (p) => (p.art.endsWith('s') ? 'vão' : 'vai');
+  const eh = (p) => (p.art.endsWith('s') ? 'são' : 'é');
+  const podeDois = (p) => /^[a-zà-ú]+[aeo]$/.test(p.nome) && p.art.length === 1;
+  const textoFalta = (p, n) => p.art.endsWith('s') ? `Ainda faltam ${p.art} ${p.nome}` : `${n > 1 ? 'Ainda faltam' : 'Ainda falta'} ${quantos(p, n)}`;
+  const quantos = (p, n) => (n === 1 ? `${um(p)} ${p.nome}` : `${n === 2 ? dois(p) : N(n)} ${plural(p)}`);
   const CLIENTES = [['🐻', 'O urso'], ['🐰', 'A coelha'], ['👵', 'A vovó'], ['🧒', 'O menino'], ['👧', 'A menina'], ['🐼', 'O panda'], ['🦊', 'A raposa'], ['🐸', 'O sapo'], ['👴', 'O vovô'], ['🐵', 'O macaco']];
   const htmlMoedas = (n) => Array.from({ length: n }, () => '<span class="moeda">1</span>').join('');
 
@@ -56,10 +68,10 @@
     nav.ir('Fazer compras', (c) => {
       const novaRodada = () => {
         const escolhidos = M.embaralhar(PRODUTOS.filter(p => p.sec !== 'doces')).slice(0, M.sortear([2, 2, 3]));
-        const lista = escolhidos.map(p => ({ p, qtd: p.preco <= 2 && /^[a-zà-ú]+[aeo]$/.test(p.nome) && Math.random() < 0.4 ? 2 : 1 }));
+        const lista = escolhidos.map(p => ({ p, qtd: p.preco <= 2 && podeDois(p) && Math.random() < 0.4 ? 2 : 1 }));
         const naPrateleira = M.embaralhar([...escolhidos, ...M.embaralhar(PRODUTOS.filter(p => !escolhidos.includes(p))).slice(0, 9 - escolhidos.length)]);
         const cesta = [];
-        const textoLista = lista.map(({ p, qtd }) => qtd === 1 ? `${um(p)} ${p.nome}` : `${N(qtd)} ${p.nome}s`).join(', ');
+        const textoLista = lista.map(({ p, qtd }) => quantos(p, qtd)).join(', ');
         c.innerHTML = `
           <div class="compras">
             <div class="lista-compras"><span class="titulo-lista">📝 Lista:</span><div id="itens-lista"></div></div>
@@ -87,7 +99,7 @@
             cesta.push(p);
             b.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.15)' }, { transform: 'scale(1)' }], { duration: 250 });
             M.tocarNota(700, 0, 0.12, 0.1);
-            M.falar(`${Art(p)} ${p.nome}! Custa ${moedas(p.preco)}.`);
+            M.falar(`${Art(p)} ${p.nome}! Custa ${moedasF(p.preco)}.`);
             atualizar();
           } else if (b.dataset.tirar !== undefined) {
             const [p] = cesta.splice(+b.dataset.tirar, 1);
@@ -103,12 +115,12 @@
               const { p, qtd } = falta[0];
               const tem = cesta.filter(x => x === p).length;
               M.somErro();
-              M.falar(`Ainda falta ${N(qtd - tem)} ${qtd - tem > 1 ? p.nome + 's' : p.nome}. Olhe a lista!`);
+              M.falar(`${textoFalta(p, qtd - tem)}. Olhe a lista!`);
               return;
             }
             if (sobra.length) {
               M.somErro();
-              M.falar(`Opa! Tem ${sobra[0].nome} a mais na cesta. Toque nele na cesta para devolver.`);
+              M.falar(`Opa! Tem ${quantos(sobra[0], 1)} a mais na cesta. Toque ${ele(sobra[0])} na cesta para devolver.`);
               return;
             }
             pagar(c, cesta, novaRodada);
@@ -133,7 +145,7 @@
         <button class="botao-pronto" data-acao="pagar">💰 Pagar</button>
       </div>`;
     const somaFalada = cesta.map(p => N(p.preco)).join(' mais ');
-    M.falar(cesta.length > 1 ? `Vamos somar: ${somaFalada}. Dá ${moedas(total)}. Toque nas moedas para pagar!` : `Custa ${moedas(total)}. Toque nas moedas para pagar!`);
+    M.falar(cesta.length > 1 ? `Vamos somar: ${somaFalada}. Dá ${moedasF(total)}. Toque nas moedas para pagar!` : `Custa ${moedasF(total)}. Toque nas moedas para pagar!`);
     const balcao = c.querySelector('#no-balcao'), carteira = c.querySelector('#na-carteira');
     c.onclick = (e) => {
       const b = e.target.closest('button');
@@ -146,13 +158,13 @@
         M.tocarNota(veioDaCarteira ? 900 : 600, 0, 0.08, 0.1);
         M.falar(N(dei));
       } else if (b.dataset.acao === 'pagar') {
-        if (dei < total) { M.somErro(); M.falar(`Ainda falta ${moedas(total - dei)}.`); return; }
-        if (dei > total) { M.somErro(); M.falar(`Você deu ${moedas(dei - total)} a mais. Toque nas moedas do balcão para pegar de volta.`); return; }
+        if (dei < total) { M.somErro(); M.falar(falta(total - dei)); return; }
+        if (dei > total) { M.somErro(); M.falar(`Você deu ${moedasF(dei - total)} a mais. Toque nas moedas do balcão para pegar de volta.`); return; }
         M.jogos.ganharTrofeu('mercadinho');
         M.jogos.telaVitoria(c, {
           texto: 'Compra feita!',
           sub: `Você pagou ${moedas(total)} certinho. Obrigado e volte sempre! 🛒`,
-          fala: `Muito bem! Você pagou ${moedas(total)} certinho. Obrigado e volte sempre!`,
+          fala: `Muito bem! Você pagou ${moedasF(total)} certinho. Obrigado e volte sempre!`,
           deNovo: novaRodada,
           outros: M.jogos.nav.voltar,
         });
@@ -196,25 +208,26 @@
             <div class="cupom">${compra.map(p => `<div class="linha-cupom"><span>${p.fig} ${p.nome}</span><span>${htmlMoedas(p.preco)}</span></div>`).join('')}</div>
             <div class="pergunta-caixa"></div>
           </div>`;
-        const descricao = compra.map(p => `${um(p)} ${p.nome} de ${moedas(p.preco)}`).join(', e ');
-        const terminar = () => {
+        const descricao = compra.map(p => `${um(p)} ${p.nome} de ${moedasF(p.preco)}`).join(', e ');
+        // espera o Miguel terminar a frase antes do próximo cliente
+        const terminar = (frase) => {
           atendidos++;
-          setTimeout(() => {
+          M.falar(frase, { pronto: () => setTimeout(() => {
+            if (!c.isConnected) return;
             if (atendidos >= META) {
               M.jogos.ganharTrofeu('mercadinho');
               M.jogos.telaVitoria(c, { sub: `Você atendeu ${META} clientes!`, fala: 'Parabéns! Você é um ótimo caixa!', deNovo: () => { atendidos = 0; proximo(); }, outros: M.jogos.nav.voltar });
             } else proximo();
-          }, 1800);
+          }, 500) });
         };
         pergunta('Quanto deu a compra?', `${nome} comprou ${descricao}. Quanto deu a compra?`, total, () => {
-          if (!comTroco) { M.falar(`Isso! Deu ${moedas(total)}. Obrigado, volte sempre!`); terminar(); return; }
-          M.falar(`Isso! Deu ${moedas(total)}.`);
-          setTimeout(() => pergunta(
+          if (!comTroco) { terminar(`Isso! Deu ${moedasF(total)}. Obrigado, volte sempre!`); return; }
+          M.falar(`Isso! Deu ${moedasF(total)}.`, { pronto: () => c.isConnected && pergunta(
             `${nome} pagou com ${pagou} moedas. Quanto de troco?`,
-            `${nome} pagou com ${moedas(pagou)}. Quanto você devolve de troco? Pense: ${N(pagou)} menos ${N(total)}.`,
+            `${nome} pagou com ${moedasF(pagou)}. Quanto você devolve de troco? Pense: ${N(pagou)} menos ${N(total)}.`,
             pagou - total,
-            () => { M.falar(`Muito bem! O troco é ${moedas(pagou - total)}.`); terminar(); },
-          ), 1600);
+            () => terminar(`Muito bem! O troco é ${moedasF(pagou - total)}.`),
+          ) });
         });
       };
       proximo();
@@ -239,10 +252,25 @@
           comTexto: (s) => `<span class="simbolo-secao">${s.simbolo}</span><span class="palavra-opcao pequena">${s.nome}</span>`,
         };
       }],
-      acerto: (s) => `Isso! ${Art(produto)} ${produto.nome} vai em ${s.nome}, porque ${s.porque}.`,
-      erro: (s) => `Hum, ${s.nome}? Não. Pense: ${produto.art} ${produto.nome} é de comer, de beber ou de limpar?`,
+      acerto: (s) => `Isso! ${Art(produto)} ${produto.nome} ${vai(produto)} em ${s.nome}, porque ${s.porque}.`,
+      erro: () => `Hum, não é aí. Pense: ${produto.art} ${produto.nome} ${eh(produto)} de comer, de beber ou de limpar?`,
     });
   }
 
+  M.catalogo.push(() => {
+    const f = ['Bem-vindo ao mercadinho do Miguel! Aqui as coisas custam moedas. O que você quer fazer?'];
+    for (let n = 0; n <= 17; n++) f.push(N(n), `Não é ${N(n)}. Conte as moedas de novo!`);
+    for (let n = 1; n <= 15; n++) f.push(falta(n), `Você deu ${moedasF(n)} a mais. Toque nas moedas do balcão para pegar de volta.`,
+      `Isso! Deu ${moedasF(n)}. Obrigado, volte sempre!`, `Isso! Deu ${moedasF(n)}.`, `Muito bem! O troco é ${moedasF(n)}.`, `Custa ${moedasF(n)}. Toque nas moedas para pagar!`,
+      `Muito bem! Você pagou ${moedasF(n)} certinho. Obrigado e volte sempre!`);
+    f.push('Muito bem! O troco é 0 moedas.', 'Parabéns! Você é um ótimo caixa!');
+    for (const p of PRODUTOS) {
+      f.push(`${Art(p)} ${p.nome}! Custa ${moedasF(p.preco)}.`, `Devolvi ${p.art} ${p.nome} para a prateleira.`, `${textoFalta(p, 1)}. Olhe a lista!`,
+        ...(podeDois(p) ? [`${textoFalta(p, 2)}. Olhe a lista!`] : []), `Opa! Tem ${quantos(p, 1)} a mais na cesta. Toque ${ele(p)} na cesta para devolver.`,
+        `Onde guardar ${p.art} ${p.nome}?`, `Isso! ${Art(p)} ${p.nome} ${vai(p)} em ${secao(p.sec).nome}, porque ${secao(p.sec).porque}.`);
+      f.push(`Hum, não é aí. Pense: ${p.art} ${p.nome} ${eh(p)} de comer, de beber ou de limpar?`);
+    }
+    return f;
+  });
   M.jogos.registrar({ id: 'mercadinho', nome: 'Mercadinho', simbolo: '🛒', cor: '#ff7a1a', secao: 'faz-de-conta', abrir: inicio });
 })();

@@ -9,16 +9,18 @@
     ['a', 'estrela', '⭐'], ['a', 'lua', '🌙'], ['o', 'coração', '❤️'], ['a', 'guitarra', '🎸'], ['o', 'foguete', '🚀'], ['o', 'sorvete', '🍦'],
   ].map(([art, nome, fig]) => ({ art, nome, fig }));
   const Art = (i) => (i.art === 'o' ? 'O' : 'A');
+  const DEF = {
+    chave: 'sombras', nome: 'De quem é a sombra?', simbolo: '👤', cor: '#5c6bc0', itens: COISAS,
+    desenho: (i) => `<span class="emoji-grande">${i.fig}</span>`,
+    rotulo: (i) => i.nome,
+    fala: (i) => `${Art(i)} ${i.nome}!`,
+    perguntas: [(lista) => { const c = M.sortear(lista); return { certo: c, texto: 'De quem é essa sombra?', mostrar: `<span class="sombra">${c.fig}</span>` }; }],
+    acerto: (i) => `Isso! É ${i.art} ${i.nome}!`,
+    erro: (i) => `${M.esse(i.art)} ${i.nome}. Olhe bem o formato da sombra!`,
+  };
+  M.catalogo.push(() => M.jogos.falasDoTema(DEF));
   M.jogos.registrar({
     id: 'sombras', nome: 'Sombras', simbolo: '👤', cor: '#5c6bc0', secao: 'brincar',
-    abrir: () => M.jogos.telaJogar({
-      chave: 'sombras', nome: 'De quem é a sombra?', simbolo: '👤', cor: '#5c6bc0', itens: COISAS,
-      desenho: (i) => `<span class="emoji-grande">${i.fig}</span>`,
-      rotulo: (i) => i.nome,
-      fala: (i) => `${Art(i)} ${i.nome}!`,
-      perguntas: [(lista) => { const c = M.sortear(lista); return { certo: c, texto: 'De quem é essa sombra?', mostrar: `<span class="sombra">${c.fig}</span>` }; }],
-      acerto: (i) => `Isso! É ${i.art} ${i.nome}!`,
-      erro: (i) => `Esse é ${i.art} ${i.nome}. Olhe bem o formato da sombra!`,
-    }),
+    abrir: () => M.jogos.telaJogar(DEF),
   });
 })();

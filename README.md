@@ -28,6 +28,10 @@ Jogo infantil para o navegador: toque no Miguel, fale alguma coisa e ele repete 
 
 Desenvolvido por Vini & Weber.
 
+## Voz do Miguel
+
+As falas ficam gravadas na pasta `falas/` (uma voz neural natural, deixada com jeito de criança). O índice `falas/indice.json` liga cada frase ao seu arquivo. Frases que mudam a cada jogada e não têm gravação usam a voz do aparelho. As vozes usadas têm licença livre: Piper pt_BR (CC0) e Kokoro (Apache 2.0).
+
 ## Créditos
 
 O mundo 3D usa a biblioteca three.js (licença MIT, cópia em `vendor/`).

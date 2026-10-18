@@ -89,7 +89,7 @@
         },
       ],
       acerto: (it) => [{ t: 'Isso!' }, { t: it.w + '!', lang: L }, { t: 'quer dizer ' + it.pt + '!' }],
-      erro: (it) => [{ t: 'Esse é' }, { t: it.w, lang: L }, { t: ', que quer dizer ' + it.pt + '. Tente de novo!' }],
+      erro: (it) => [{ t: 'Essa palavra é' }, { t: it.w, lang: L }, { t: 'que quer dizer ' + it.pt + '. Tente de novo!' }],
     };
   }
 
@@ -115,6 +115,10 @@
     });
   }
 
+  M.catalogo.push(() => Object.values(IDIOMAS).flatMap(idi => [
+    `Vamos aprender ${idi.idioma}! Escolha um tema.`,
+    ...TOPICOS.flatMap(t => M.jogos.falasDoTema(temaDoTopico(idi, t))),
+  ]));
   M.jogos.registrar({ id: 'ingles', nome: 'Inglês', simbolo: '🇺🇸', cor: IDIOMAS.ingles.cor, secao: 'idiomas', abrir: (nav) => abrirIdioma('ingles', nav) });
   M.jogos.registrar({ id: 'espanhol', nome: 'Espanhol', simbolo: '🇪🇸', cor: IDIOMAS.espanhol.cor, secao: 'idiomas', abrir: (nav) => abrirIdioma('espanhol', nav) });
 })();

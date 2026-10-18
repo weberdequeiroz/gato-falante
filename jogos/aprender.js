@@ -81,7 +81,7 @@
         (itens) => { const c = sortear(itens.filter(i => i.som)); return { certo: c, texto: `Quem faz ${c.som}?`, apenas: (i) => i.som !== c.som }; },
       ],
       acerto: (it) => `Isso! ${Art(it)} ${it.nome}!` + (it.som ? ` ${it.som}!` : ''),
-      erro: (it) => `Esse é ${it.art} ${it.nome}. Tente de novo!`,
+      erro: (it) => `${M.esse(it.art)} ${it.nome}. Tente de novo!`,
     },
     {
       chave: 'alimentos', nome: 'Alimentos', simbolo: '🍎', cor: '#ff7a1a',
@@ -100,10 +100,11 @@
         (itens) => { const c = sortear(itens.filter(i => i.tipo === 'fruta')); return { certo: c, texto: 'Qual destes é uma fruta?', apenas: (i) => i.tipo !== 'fruta' }; },
       ],
       acerto: (it) => `Isso! ${Art(it)} ${it.nome}!`,
-      erro: (it) => `Esse é ${it.art} ${it.nome}. Tente de novo!`,
+      erro: (it) => `${M.esse(it.art)} ${it.nome}. Tente de novo!`,
     },
   ];
 
+  M.catalogo.push(() => TEMAS.flatMap(t => [t.nome + '!', ...M.jogos.falasDoTema(t)]));
   for (const t of TEMAS) {
     M.jogos.registrar({ id: t.chave, nome: t.nome, simbolo: t.simbolo, cor: t.cor, secao: 'aprender', abrir: () => M.jogos.abrirTema(t) });
   }

@@ -301,7 +301,7 @@
       else {
         const peca = PECAS[categoria].find(p => p.id === b.dataset.peca);
         roupa[categoria] = { id: peca.id, cor: roupa[categoria]?.cor || CORES[Math.floor(Math.random() * CORES.length)][0], estampa: roupa[categoria]?.estampa };
-        aplicar(`${peca.nome} ${nomeCor(roupa[categoria].cor)}!`);
+        aplicar(`${peca.nome}!`);
       }
       desenharPainel();
     } else if (b.dataset.cor && roupa[categoria]) {
@@ -334,5 +334,12 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar); else iniciar();
 
+  M.catalogo?.push(() => [
+    'Vamos trocar a minha roupa? Escolha uma parte, um modelo e uma cor!', 'Adorei a minha roupa!', 'Fiquei lindo!', 'Que estiloso!', 'Obrigado pela roupa nova!',
+    'Sem nada aqui.', 'Roupa surpresa! Ficou demais!', 'Tirei tudo! Agora escolha uma roupa nova.',
+    ...CORES.map(([, n]) => n + '!'),
+    ...ESTAMPAS.map(e => 'Estampa ' + e.nome + '!'),
+    ...Object.values(PECAS).flat().map(p => `${p.nome}!`),
+  ]);
   M.roupas = { abrir, vestir, imagemMiguel, atual: () => roupa, tom };
 })();

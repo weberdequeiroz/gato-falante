@@ -191,6 +191,8 @@
   #gato.rezando #cabeca { animation: none; transform: rotate(0) translateY(6px); }
   @keyframes balanca { 25% { transform: rotate(-3deg); } 75% { transform: rotate(3deg); } }
   #gato.cutucado #corpo-todo { animation: pulinho .35s ease-out; }
+  #gato.ronronando #corpo-todo { animation: ronrom 1.6s ease-in-out infinite; transform-origin: 50% 90%; }
+  @keyframes ronrom { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.025, 1.015); } }
   @keyframes pulinho { 40% { transform: translateY(-14px) scale(1.02, .98); } }
   #mao-orelha { display: none; }
   #gato.ouvindo #mao-orelha { display: inline; }
@@ -804,6 +806,9 @@
       <span class="simbolo" aria-hidden="true">⬅️</span><span class="rotulo">Voltar</span>
     </button>
     <h2 id="jogos-titulo">Jogos do Miguel</h2>
+    <button id="jogos-som" class="botao-icone" aria-pressed="true" aria-label="Falas do Miguel ligadas">
+      <span class="simbolo" aria-hidden="true" id="jogos-som-simbolo">🔊</span><span class="rotulo" id="jogos-som-rotulo">Falas</span>
+    </button>
   </div>
   <div id="jogos-corpo"></div>
 </div>
@@ -817,7 +822,7 @@
       <button class="chave" id="aj-falas" role="switch" aria-checked="true" aria-label="Falas do Miguel"></button>
     </div>
     <div class="linha-ajuste coluna">
-      <div><strong>🗣️ Voz do Miguel</strong><small>Escolha a voz mais natural do seu aparelho.</small></div>
+      <div><strong>🗣️ Voz do Miguel</strong><small>A voz natural do Miguel já vem gravada no jogo. Se preferir, escolha uma voz do aparelho.</small></div>
       <div class="voz-escolha"><select id="aj-voz" aria-label="Voz do Miguel"></select><button id="aj-testar">▶ Testar</button></div>
     </div>
     <div class="linha-ajuste">
@@ -829,7 +834,7 @@
       <button class="chave" id="aj-lembretes" role="switch" aria-checked="true" aria-label="Lembretes"></button>
     </div>
     <button class="botao-largo" id="aj-ajuda">❓ Ver a explicação do Miguel de novo</button>
-    <p class="nota-ajuste">💡 Para a voz ficar ainda mais natural: no Android, instale a voz "Português (Brasil)" em Configurações › Idioma › Saída de texto para voz. No iPhone, baixe a voz "Luciana (Melhorada)" em Ajustes › Acessibilidade › Conteúdo Falado › Vozes. Depois escolha ela aqui em cima.</p>
+    <p class="nota-ajuste">💡 Algumas frases que mudam a cada jogada usam a voz do aparelho. Para elas ficarem mais naturais: no Android, instale a voz "Português (Brasil)" em Configurações › Idioma › Saída de texto para voz. No iPhone, baixe a voz "Luciana (Melhorada)" em Ajustes › Acessibilidade › Conteúdo Falado › Vozes. Depois escolha ela aqui em cima.</p>
     <button class="botao-pronto" id="aj-fechar">Pronto</button>
   </div>
 </div>
@@ -949,14 +954,43 @@
       const Ctx = window.AudioContext || window.webkitAudioContext;
       ctx = new Ctx();
     }
-    if (ctx.state === 'suspended') ctx.resume();
+    if (ctx.state !== 'running') ctx.resume().catch(() => {});
     return ctx;
+  }
+  // iPhone: o áudio só destrava num toque que termina (touchend/click), e o
+  // botão do silencioso calava os sons criados na hora; por isso pedimos
+  // "playback" e destravamos o áudio a cada toque, se precisar
+  const ehIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const sessaoAudio = (tipo) => { try { if (navigator.audioSession) navigator.audioSession.type = tipo; } catch (e) {} };
+  if (ehIOS) sessaoAudio('playback');
+  let audioDestravado = false;
+  function destravarAudio() {
+    if (audioDestravado && ctx && ctx.state === 'running') return;
+    const ac = obterContexto();
+    const vazio = ac.createBuffer(1, 1, 22050);
+    const f = ac.createBufferSource();
+    f.buffer = vazio;
+    f.connect(ac.destination);
+    f.start(0);
+    audioDestravado = true;
+  }
+  ['touchend', 'pointerup', 'click', 'keydown'].forEach(ev => document.addEventListener(ev, destravarAudio, { capture: true, passive: true }));
+  let fluxoMicrofone = null;
+  // no iPhone, com o microfone aberto o som sai baixinho pelo alto-falante de ligação;
+  // nos jogos o microfone é fechado e volta a abrir quando a criança tocar no Miguel
+  function liberarMicrofone() {
+    if (!ehIOS || !fluxoMicrofone || estado === 'ouvindo') return;
+    fluxoMicrofone.getTracks().forEach(t => t.stop());
+    try { microfone.disconnect(); processador.disconnect(); } catch (e) {}
+    fluxoMicrofone = microfone = processador = null;
+    sessaoAudio('playback');
   }
 
   async function prepararAudio() {
     obterContexto();
-    if (microfone) return;
-    const stream = await navigator.mediaDevices.getUserMedia({
+    if (microfone && fluxoMicrofone && fluxoMicrofone.getAudioTracks().some(t => t.readyState === 'live')) return;
+    if (ehIOS) sessaoAudio('play-and-record');
+    const stream = fluxoMicrofone = await navigator.mediaDevices.getUserMedia({
       audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
     });
     microfone = ctx.createMediaStreamSource(stream);
@@ -1189,6 +1223,19 @@
     osc.frequency.linearRampToValueAtTime(620, t + 0.5);
   }
 
+  // som da abertura: uma caixinha de música alegre e um miado de verdade
+  let aberturaTocou = false;
+  function tocarAbertura() {
+    if (aberturaTocou) return;
+    aberturaTocou = true;
+    const melodia = [[523, 0], [659, 0.14], [784, 0.28], [1047, 0.42], [988, 0.62], [784, 0.76], [880, 0.9], [1047, 1.04], [1319, 1.3]];
+    for (const [f, t] of melodia) { tocarNota(f, t, 0.35, 0.13, 'sine'); tocarNota(f * 2, t, 0.18, 0.03, 'triangle'); }
+    for (const [f, t] of [[262, 0], [392, 0.42], [349, 0.76], [523, 1.3]]) tocarNota(f, t, 0.5, 0.07, 'triangle');
+    const miau = new Audio('sons/gato-feliz-1.mp3');
+    miau.volume = calmo ? 0.4 : 0.8;
+    setTimeout(() => miau.play().catch(() => {}), 1500);
+  }
+
   // posição da orelha do Miguel na tela (o desenho tem 400 x 500)
   function pontoDoGato(x, y) {
     const r = gato.getBoundingClientRect(), a = areaGato.getBoundingClientRect();
@@ -1410,7 +1457,7 @@
   function melhorVoz(lang) {
     if (lang === 'pt-BR') {
       const escolhida = ler('miguel-voz-aparelho');
-      if (escolhida) {
+      if (escolhida && escolhida !== 'aparelho') {
         const v = speechSynthesis.getVoices().find(v => v.name === escolhida);
         if (v) return v;
       }
@@ -1421,12 +1468,63 @@
 
   // partes: texto ou lista de { t: texto, lang: 'en-US' } para misturar idiomas na mesma fala
   // forcar: fala mesmo com as falas desligadas (quando a criança toca no 🔊)
+  // falas gravadas com voz natural (pasta falas/); a chave é o texto sem emoji e sem pontuação
+  let indiceFalas = {};
+  const colhendoFalas = /colher-falas/.test(location.search);
+  const falasColhidas = new Map();
+  fetch('falas/indice.json').then(r => r.json()).then(j => { indiceFalas = j; }).catch(() => {});
+  const chaveFala = (t, lang = 'pt-BR') => lang.slice(0, 2) + ':' + t.toLowerCase().normalize('NFC').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+  const usarVozNatural = () => !ler('miguel-voz-aparelho');
+  let audioFala = null, filaId = 0;
+  function pararFila() {
+    filaId++;
+    if (audioFala) { audioFala.onended = audioFala.onerror = null; audioFala.pause(); }
+    if ('speechSynthesis' in window) speechSynthesis.cancel();
+  }
+  // toca as partes uma depois da outra: gravação quando existe, voz do aparelho quando não
+  function tocarFila(partes, { jeito, devagar }, fim) {
+    pararFila();
+    const id = filaId;
+    let i = 0;
+    const proxima = () => {
+      if (id !== filaId) return;
+      if (i >= partes.length) { fim(); return; }
+      const p = partes[i++];
+      const lang = p.lang || 'pt-BR';
+      const arquivo = usarVozNatural() && indiceFalas[chaveFala(p.t, lang)];
+      if (arquivo) {
+        if (!audioFala) audioFala = new Audio();
+        audioFala.src = 'falas/' + arquivo;
+        audioFala.playbackRate = (calmo ? 0.92 : 1) * (devagar ? 0.72 : 1);
+        audioFala.volume = calmo ? 0.8 : 1;
+        audioFala.onended = proxima;
+        audioFala.onerror = proxima;
+        audioFala.play().catch(proxima);
+        return;
+      }
+      if (!('speechSynthesis' in window)) { proxima(); return; }
+      const u = new SpeechSynthesisUtterance(p.t.replace(/[^\p{L}\p{N}\s,.!?:¡¿'-]/gu, ''));
+      u.lang = lang;
+      const estrangeira = lang !== 'pt-BR';
+      u.pitch = estrangeira ? 1.05 : jeito.tom;
+      u.rate = (estrangeira ? 0.85 : jeito.ritmo) * (calmo ? 0.88 : 1) * (devagar ? 0.65 : 1);
+      u.volume = calmo ? 0.8 : 1;
+      const voz = melhorVoz(lang);
+      if (voz) u.voice = voz;
+      u.onend = proxima;
+      u.onerror = proxima;
+      speechSynthesis.speak(u);
+    };
+    proxima();
+  }
+
   function falarPartes(partes, { jeito = VOZ_MIGUEL, pronto = () => {}, forcar = false, devagar = false } = {}) {
     if (typeof partes === 'string') partes = [{ t: partes }];
+    if (colhendoFalas) for (const p of partes) falasColhidas.set(chaveFala(p.t, p.lang), { t: p.t, lang: p.lang || 'pt-BR' });
     const texto = partes.map(p => p.t).join(' ');
     const inicio = performance.now();
     const minimo = 800 + texto.length * 45;
-    const vaiFalar = 'speechSynthesis' in window && (!mudo || forcar);
+    const vaiFalar = !colhendoFalas && (!mudo || forcar) && ('speechSynthesis' in window || usarVozNatural());
     let acabou = false;
     clearInterval(mexendoBoca);
     const boca = vaiFalar ? setInterval(() => abrirBoca(0.25 + Math.random() * 0.75), 110) : null;
@@ -1442,28 +1540,14 @@
       }, Math.max(0, minimo - (performance.now() - inicio)));
     };
     if (!vaiFalar) { fim(); return; }
-    speechSynthesis.cancel();
-    partes.forEach((p, i) => {
-      const lang = p.lang || 'pt-BR';
-      const u = new SpeechSynthesisUtterance(p.t.replace(/[^\p{L}\p{N}\s,.!?:¡¿'-]/gu, ''));
-      u.lang = lang;
-      const estrangeira = lang !== 'pt-BR';
-      u.pitch = estrangeira ? 1.05 : jeito.tom;
-      u.rate = (estrangeira ? 0.85 : jeito.ritmo) * (calmo ? 0.88 : 1) * (devagar ? 0.65 : 1);
-      u.volume = calmo ? 0.8 : 1;
-      const voz = melhorVoz(lang);
-      if (voz) u.voice = voz;
-      if (i === partes.length - 1) u.onend = fim;
-      u.onerror = fim;
-      speechSynthesis.speak(u);
-    });
-    setTimeout(fim, minimo * 3 + 2000);
+    tocarFila(partes, { jeito, devagar }, fim);
+    setTimeout(fim, minimo * 3 + 2500);
   }
   function narrar(texto, pronto, jeito) { falarPartes(texto, { jeito, pronto }); }
   function calar() {
     clearInterval(mexendoBoca);
     abrirBoca(0);
-    if ('speechSynthesis' in window) speechSynthesis.cancel();
+    pararFila();
   }
 
   // Fala uma lista de frases, uma de cada vez, mostrando cada uma no balão
@@ -1496,7 +1580,7 @@
   function pararNarracao() {
     narracaoId++;
     clearInterval(mexendoBoca);
-    if ('speechSynthesis' in window) speechSynthesis.cancel();
+    pararFila();
     terminarNarracao();
   }
 
@@ -1516,10 +1600,8 @@
   const hoje = () => new Date().toDateString();
 
   // ---------- Apresentação ----------
-  function apresentar() {
-    guardar('miguel-apresentou', '1');
-    narrarSequencia('ajuda', [
-      { texto: SAUDACAO[periodoDoDia()] + '! Eu sou o Miguel, o gato falante! 😺' },
+  const frasesApresentacao = (saudacao) => [
+      { texto: saudacao + '! Eu sou o Miguel, o gato falante! 😺' },
       { texto: 'Toque em mim e fale alguma coisa. 👆' },
       { texto: 'Quando eu estiver ouvindo, bolinhas coloridas voam para a minha orelha! 👂' },
       { texto: 'Quando você parar de falar, eu repito com uma voz engraçada! 😹' },
@@ -1530,7 +1612,10 @@
       { texto: 'No botão Vestir, você troca a minha roupa! 👕' },
       { texto: 'Lá em cima, no alto-falante, dá para desligar as minhas falas. 🔊' },
       { texto: 'Vamos brincar? Toque em mim! 🐾' },
-    ], VOZ_MIGUEL, 350);
+  ];
+  function apresentar() {
+    guardar('miguel-apresentou', '1');
+    narrarSequencia('ajuda', frasesApresentacao(SAUDACAO[periodoDoDia()]), VOZ_MIGUEL, 350);
   }
 
   // ---------- Orações (de acordo com o horário) ----------
@@ -1702,6 +1787,11 @@
     botaoSom.setAttribute('aria-label', mudo ? 'Falas do Miguel desligadas' : 'Falas do Miguel ligadas');
     document.getElementById('som-simbolo').textContent = mudo ? '🔇' : '🔊';
     document.getElementById('som-rotulo').textContent = mudo ? 'Mudo' : 'Falas';
+    const botaoJogos = document.getElementById('jogos-som');
+    botaoJogos.setAttribute('aria-pressed', String(!mudo));
+    botaoJogos.setAttribute('aria-label', mudo ? 'Falas do Miguel desligadas' : 'Falas do Miguel ligadas');
+    document.getElementById('jogos-som-simbolo').textContent = mudo ? '🔇' : '🔊';
+    document.getElementById('jogos-som-rotulo').textContent = mudo ? 'Mudo' : 'Falas';
     guardar('miguel-mudo', mudo ? '1' : '0');
   }
   function setLembretes(ligado) {
@@ -1712,9 +1802,9 @@
   function preencherVozes() {
     const vozes = vozesDoIdioma('pt-BR');
     const atual = ler('miguel-voz-aparelho') || '';
-    seletorVoz.innerHTML = '<option value="">Automática (a mais natural)</option>' +
+    seletorVoz.innerHTML = '<option value="">🐱 Voz do Miguel (natural)</option><option value="aparelho">📱 Voz do aparelho (automática)</option>' +
       vozes.map(v => `<option value="${v.name.replace(/"/g, '&quot;')}">${v.name} (${v.lang})</option>`).join('');
-    seletorVoz.value = vozes.some(v => v.name === atual) ? atual : '';
+    seletorVoz.value = atual === 'aparelho' || vozes.some(v => v.name === atual) ? atual : '';
   }
 
   botaoSom.addEventListener('click', () => {
@@ -1722,6 +1812,10 @@
     if (estado === 'parado') falar(mudo ? 'Falas desligadas. Eu só vou mostrar os textos. 🔇' : 'Falas ligadas! 🔊');
   });
   chaveFalas.addEventListener('click', () => setMudo(!mudo));
+  document.getElementById('jogos-som').addEventListener('click', () => {
+    setMudo(!mudo);
+    if (!mudo) falarPartes('Falas ligadas!');
+  });
   chaveCalmo.addEventListener('click', () => setCalmo(!calmo));
   chaveLembretes.addEventListener('click', () => setLembretes(!lembretesLigados));
   seletorVoz.addEventListener('change', () => {
@@ -1879,6 +1973,7 @@
     falar: (partes, opcoes = {}) => falarPartes(partes, { jeito: opcoes.miguel ? VOZ_MIGUEL : VOZ_CRIANCA, ...opcoes }),
     calar,
     obterContexto,
+    liberarMicrofone,
     tocarNota,
     tocarMusica,
     somAcerto,
@@ -1887,9 +1982,93 @@
     guardar,
     ler,
     get calmo() { return calmo; },
+    catalogo: [],
+    // português certinho: "Esse é o gato", "Essa é a vaca", "Esses são os grilos"
+    esse: (art) => ({ o: 'Esse é o', a: 'Essa é a', os: 'Esses são os', as: 'Essas são as' })[art] || 'Esse é o',
+    falasColhidas: () => [...falasColhidas.values()],
     sortear: (lista) => lista[Math.floor(Math.random() * lista.length)],
     embaralhar: (lista) => lista.map(v => [Math.random(), v]).sort((a, b) => a[0] - b[0]).map(p => p[1]),
   });
+
+  // tudo o que o Miguel fala na tela principal (para gravar as falas com voz natural)
+  window.Miguel.catalogo.push(() => [
+    ...Object.values(SAUDACAO).flatMap(sau => frasesApresentacao(sau).map(f => f.texto)),
+    ...Object.values(SAUDACAO).map(sau => sau + '! Que bom te ver de novo! Toque em mim e fale! 😺'),
+    ...ORACOES.flatMap(o => [o.titulo, ...o.frases]),
+    ...DICAS.flatMap(d => [d.titulo, ...d.frases]),
+    'Já faz uma hora que a gente está brincando!', 'Que tal beber um copo de água?',
+    'A água ajuda o corpo a funcionar, dá energia e deixa a cabeça fresquinha para pensar.', 'Muito bem! Seu corpo agradece!',
+    'Já faz meia hora que você está aqui. Vamos mexer o corpo?',
+    'Mexer o corpo faz o sangue circular, deixa os músculos e os ossos fortes e ajuda a cabeça a pensar melhor!',
+    'Muito bem! Agora você pode voltar a brincar!',
+    ...EXERCICIOS.map(e => e[1]),
+    'Oi! Eu sou o Miguel. Gostou da minha voz?',
+  ]);
+
+  // ---------- Ronronar: quando a criança fica um tempinho sem brincar, o Miguel ronrona baixinho ----------
+  // e o celular vibra junto com cada respiração do ronrom (onde o aparelho deixa vibrar)
+  let ultimoToque = Date.now(), ronronando = false;
+  ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => { ultimoToque = Date.now(); }, { capture: true, passive: true }));
+  const telaPrincipalLivre = () => aberturaFechada && estado === 'parado' && document.visibilityState === 'visible' &&
+    document.getElementById('jogos').hidden && telaAjustes.hidden && telaLembrete.hidden;
+  function ronronar() {
+    const ac = obterContexto();
+    if (ac.state !== 'running') return;
+    ronronando = true;
+    const RESPIRAR = 1.6, VEZES = 3, t0 = ac.currentTime + 0.05;
+    const fonte = ac.createBufferSource();
+    const dur = RESPIRAR * VEZES + 0.3;
+    const buf = ac.createBuffer(1, Math.ceil(ac.sampleRate * dur), ac.sampleRate);
+    const d = buf.getChannelData(0);
+    // ruído "rosado" com pulsos de ~25 por segundo, que é o tremido do ronrom
+    let b = 0;
+    for (let i = 0; i < d.length; i++) {
+      b = 0.97 * b + 0.03 * (Math.random() * 2 - 1);
+      const tt = i / ac.sampleRate;
+      const pulso = Math.pow(0.5 + 0.5 * Math.sin(2 * Math.PI * 25 * tt), 3);
+      d[i] = b * 6 * pulso;
+    }
+    fonte.buffer = buf;
+    const filtro = ac.createBiquadFilter();
+    filtro.type = 'lowpass';
+    filtro.frequency.value = 380;
+    const g = ac.createGain();
+    const pico = calmo ? 0.1 : 0.16;
+    g.gain.setValueAtTime(0.0001, t0);
+    for (let k = 0; k < VEZES; k++) {
+      const t = t0 + k * RESPIRAR;
+      // puxa o ar (mais fraco) e solta o ar (mais forte)
+      g.gain.linearRampToValueAtTime(pico * 0.45, t + 0.3);
+      g.gain.linearRampToValueAtTime(pico * 0.2, t + 0.65);
+      g.gain.linearRampToValueAtTime(pico, t + 0.95);
+      g.gain.linearRampToValueAtTime(0.0001, t + RESPIRAR - 0.05);
+    }
+    fonte.connect(filtro); filtro.connect(g); g.connect(ac.destination);
+    fonte.start(t0);
+    fonte.stop(t0 + dur);
+    gato.classList.add('ronronando');
+    if (navigator.vibrate) {
+      // a cada respiração: vibra fraquinho ao puxar o ar, para, e vibra mais ao soltar
+      const padrao = [];
+      for (let k = 0; k < VEZES; k++) padrao.push(300, 350, 700, 250);
+      try { navigator.vibrate(padrao); } catch (e) {}
+    }
+    const fim = () => { ronronando = false; gato.classList.remove('ronronando'); };
+    fonte.onended = fim;
+    setTimeout(fim, dur * 1000 + 200);
+  }
+  setInterval(() => {
+    if (ronronando || !telaPrincipalLivre()) return;
+    const parado = Date.now() - ultimoToque;
+    if (parado > 25000) {
+      ronronar();
+      ultimoToque = Date.now() - 25000 + 40000 + Math.random() * 30000; // próximo ronrom em 40 a 70 segundos
+    }
+  }, 3000);
+  document.addEventListener('pointerdown', () => {
+    if (!ronronando) return;
+    if (navigator.vibrate) try { navigator.vibrate(0); } catch (e) {}
+  }, { capture: true, passive: true });
 
   // ---------- Início ----------
   const vozGuardada = ler('miguel-voz');
@@ -1901,7 +2080,7 @@
   function entrarNoJogo() {
     if (aberturaFechada) return;
     aberturaFechada = true;
-    tocarMusica();
+    if (aberturaTocou) tocarMusica(); else tocarAbertura();
     abertura.classList.add('saindo');
     setTimeout(() => {
       abertura.hidden = true;
@@ -1914,6 +2093,12 @@
     }, 550);
   }
   abertura.addEventListener('click', entrarNoJogo);
+  // tenta tocar a música da abertura assim que a tela aparece (alguns aparelhos só deixam depois do primeiro toque)
+  try {
+    const ac = obterContexto();
+    if (ac.state === 'running') tocarAbertura();
+    else ac.resume().then(() => { if (!aberturaFechada && ac.state === 'running') tocarAbertura(); }).catch(() => {});
+  } catch (e) {}
   if ('speechSynthesis' in window) speechSynthesis.getVoices();
 
   // ---------- Instalar no celular ----------
@@ -1961,7 +2146,7 @@
 
   // ---------- Atualizações ----------
   // o app instalado fica aberto em segundo plano; ao voltar para ele, confere se tem versão nova
-  const VERSAO = '202610180514';
+  const VERSAO = '202610180733';
   const avisoAtualizar = document.getElementById('atualizar');
   let registro = null;
   if ('serviceWorker' in navigator && location.protocol === 'https:') {

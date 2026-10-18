@@ -88,5 +88,6 @@
     });
   }
 
+  M.catalogo.push(() => ['Jogo da memória! Escolha as figuras e o tamanho do jogo.', 'Vire duas cartas e encontre as figuras iguais!', 'Parabéns! Você achou todos os pares! Que memória boa!']);
   M.jogos.registrar({ id: 'memoria', nome: 'Memória', simbolo: '🃏', cor: '#00a5bd', secao: 'brincar', abrir: inicio });
 })();

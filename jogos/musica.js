@@ -28,6 +28,18 @@
     mestre.gain.value = M.calmo ? 0.45 : 0.8;
     return ac;
   }
+  // corta na hora todos os sons de música (as notas já agendadas também)
+  function pararTudo() {
+    if (!mestre) return;
+    try { mestre.gain.cancelScheduledValues(0); mestre.disconnect(); } catch (e) {}
+    mestre = null;
+  }
+  // botão que vira "⏹ Parar" enquanto a música toca
+  function botaoTocando(b, tocando, textoParado) {
+    if (!b) return;
+    if (tocando) { b.dataset.textoParado = textoParado || b.innerHTML; b.innerHTML = '⏹ Parar'; b.classList.add('tocando-agora'); }
+    else { b.innerHTML = b.dataset.textoParado || textoParado || b.innerHTML; b.classList.remove('tocando-agora'); }
+  }
   function envelope(g, t, ataque, pico, duracao) {
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(pico, t + ataque);
@@ -303,7 +315,7 @@
       t += n.dur * batida;
     }
     timers.push(setTimeout(() => aoTerminar && aoTerminar(), t * 1000 + 300));
-    return () => { timers.forEach(clearTimeout); };
+    return () => { timers.forEach(clearTimeout); pararTudo(); };
   }
 
   // ---------- minhas músicas ----------
@@ -316,7 +328,7 @@
     }, ms));
     const fim = (g.eventos.length ? g.eventos[g.eventos.length - 1][0] : 0) + 1200;
     timers.push(setTimeout(() => aoTerminar && aoTerminar(), fim));
-    return () => timers.forEach(clearTimeout);
+    return () => { timers.forEach(clearTimeout); pararTudo(); };
   }
 
   // ---------- telas ----------
@@ -421,8 +433,10 @@
             M.falar(ultima ? 'Pronto! Quer ouvir a sua música?' : 'Você não tocou nenhuma nota.');
           }
         } else if (acao === 'ouvir' && ultima) {
+          if (b.classList.contains('tocando-agora')) { if (pararTocar) pararTocar(); pararTocar = null; botaoTocando(b, false); return; }
           if (pararTocar) pararTocar();
-          pararTocar = tocarGravacao(ultima, area);
+          botaoTocando(b, true);
+          pararTocar = tocarGravacao(ultima, area, () => { botaoTocando(b, false); pararTocar = null; });
         } else if (acao === 'guardar' && ultima) {
           const lista = lerGravacoes();
           const nome = `Minha música ${lista.length + 1}`;
@@ -439,7 +453,8 @@
           M.falar(s.nome + '! Escute.');
           if (pararTocar) pararTocar();
           oitava = 3; sustenidos = false; desenhar();
-          pararTocar = tocarLista(inst.id, s.lista, s.bpm, area);
+          botaoTocando(b, true, '🎲 Surpresa');
+          pararTocar = tocarLista(inst.id, s.lista, s.bpm, area, () => { botaoTocando(b, false, '🎲 Surpresa'); pararTocar = null; });
         } else if (acao === 'ritmo') {
           const batida = [['bumbo', 0], ['chimbal', 0.25], ['caixa', 0.5], ['chimbal', 0.75]];
           const eventos = [];
@@ -539,8 +554,10 @@
           c.querySelectorAll('[data-inst]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
           tocarNotaInst(instId, tocaveis[Math.min(pos, tocaveis.length - 1)].m);
         } else if (b.dataset.acao === 'ouvir') {
+          if (b.classList.contains('tocando-agora')) { if (pararTocar) pararTocar(); pararTocar = null; botaoTocando(b, false); marcar(); return; }
           if (pararTocar) pararTocar();
-          pararTocar = tocarLista(instId, musica.lista, musica.bpm, area, marcar);
+          botaoTocando(b, true);
+          pararTocar = tocarLista(instId, musica.lista, musica.bpm, area, () => { botaoTocando(b, false); pararTocar = null; marcar(); });
         } else if (b.dataset.acao === 'recomecar') { pos = 0; marcar(); }
       };
       return () => { if (pararTocar) pararTocar(); };
@@ -623,8 +640,13 @@
         if (!b) return;
         const lista = lerGravacoes();
         if (b.dataset.tocar !== undefined) {
+          const estava = b.classList.contains('tocando-agora');
           if (parar) parar();
-          parar = tocarGravacao(lista[+b.dataset.tocar]);
+          parar = null;
+          c.querySelectorAll('[data-tocar]').forEach(x => botaoTocando(x, false, '▶'));
+          if (estava) return;
+          botaoTocando(b, true);
+          parar = tocarGravacao(lista[+b.dataset.tocar], null, () => { botaoTocando(b, false, '▶'); parar = null; });
         } else if (b.dataset.apagar !== undefined) {
           lista.splice(+b.dataset.apagar, 1);
           guardarGravacoes(lista);
@@ -635,6 +657,14 @@
     });
   }
 
+  M.catalogo.push(() => [
+    'Vamos fazer música! O que você quer fazer?', 'Escolha um instrumento!', 'Gravando! Pode tocar.', 'Pronto! Quer ouvir a sua música?',
+    'Você não tocou nenhuma nota.', 'Escolha uma música para aprender!', 'Toque na tecla que está brilhando! Ou toque em Ouvir a música primeiro.',
+    'Quase! Vamos ouvir de novo.', 'Uau! Cinco notas! Você ganhou um troféu!', 'Escute as notas e depois toque igualzinho!',
+    ...INSTRUMENTOS.map(i => i.nome + '!'),
+    ...MUSICAS.map(m => `Parabéns! Você tocou ${m.nome}! Escute como ficou.`),
+    ...Array.from({ length: 30 }, (_, k) => `Guardei! Ela se chama Minha música ${k + 1}. Está em Minhas músicas.`),
+  ]);
   M.jogos.registrar({ id: 'musica', nome: 'Música', simbolo: '🎵', cor: '#e66fb0', secao: 'criar', abrir: inicio });
-  M.musica = { tocarNotaInst, lerNotas, MUSICAS };
+  M.musica = { tocarNotaInst, lerNotas, MUSICAS, pararTudo };
 })();

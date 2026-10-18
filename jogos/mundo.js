@@ -51,6 +51,20 @@
   }
 
   // ---------- telas ----------
+  const MIGUEL = () => (M.roupas ? M.roupas.imagemMiguel() : 'icones/miguel.png');
+  const TUTORIAL = () => [
+    { titulo: 'Ande com o círculo!', texto: 'Arraste o dedo no círculo da esquerda para o Miguel andar para qualquer lado.',
+      ilustracao: `<div class="ilu-cena"><div class="ilu-joystick"><span class="ilu-bolinha"></span></div><img class="ilu-gato anda" src="${MIGUEL()}" alt=""><div class="ilu-chao"></div></div>` },
+    { titulo: 'Toque para pular!', texto: 'O botão da direita faz o Miguel pular de um bloco para o outro.',
+      ilustracao: `<div class="ilu-cena"><span class="ilu-bloco"></span><img class="ilu-gato pula" src="${MIGUEL()}" alt=""><span class="ilu-bloco dir"></span><span class="ilu-pular">⬆️<small>Pular</small></span><span class="ilu-dedo">👆</span></div>` },
+    { titulo: 'Gire a câmera!', texto: 'Arraste o dedo no lado direito da tela para olhar em volta.',
+      ilustracao: `<div class="ilu-cena"><img class="ilu-gato" src="${MIGUEL()}" alt=""><span class="ilu-dedo arrasta">👆</span><span class="ilu-seta">↔️</span></div>` },
+    { titulo: 'Chegue nas bandeiras!', texto: 'Cada bandeira é uma fase nova, e o jogo salva sozinho. Pegue as estrelas no caminho!',
+      ilustracao: `<div class="ilu-itens"><span>🚩<small>salva</small></span><span>⭐<small>estrela</small></span><span>🟨<small>mola</small></span><span>♾️<small>sem fim</small></span></div>` },
+    { titulo: 'Cuidado!', texto: 'Fuja do chão vermelho e das barras que giram. Se cair, você volta para a última bandeira.',
+      ilustracao: `<div class="ilu-itens"><span>🟥<small>quente</small></span><span>💫<small>barra</small></span><span>🌀<small>caiu?</small></span><span>🚩<small>volta</small></span></div>` },
+  ];
+
   function inicio(nav) {
     nav.ir('Mundo do Miguel', (c) => {
       const d = lerDados();
@@ -71,13 +85,22 @@
             <p>🚩 Chegue nas <strong>bandeiras</strong>: o jogo salva sozinho. As fases não acabam nunca!</p>
             <p>🔥 Cuidado com o chão vermelho e com as barras que giram. Se cair, você volta para a última bandeira.</p>
           </div>
+          <button class="botao-largo" data-tutorial>❓ Como jogar</button>
           <button class="botao-pronto" data-fase="${d.fase}">▶ ${d.fase > 1 ? `Continuar na fase ${d.fase}` : 'Começar a aventura'}</button>
           ${d.fase > 1 ? '<button class="botao-largo" data-fase="1">🔁 Começar da fase 1 (sem perder estrelas)</button>' : ''}
         </div>`;
-      M.falar(d.fase > 1 ? `Mundo do Miguel! Você parou na fase ${d.fase}. Vamos continuar?` : 'Mundo do Miguel! Ande, pule e chegue nas bandeiras. As fases não acabam nunca!');
+      M.falar(d.fase > 1 ? [{ t: 'Mundo do Miguel!' }, { t: `Você parou na fase ${d.fase}.` }, { t: 'Vamos continuar?' }] : 'Mundo do Miguel! Ande, pule e chegue nas bandeiras. As fases não acabam nunca!');
       c.onclick = (e) => {
+        if (e.target.closest('[data-tutorial]')) { M.jogos.tutorial(TUTORIAL()); return; }
         const b = e.target.closest('[data-fase]');
         if (!b) return;
+        // na primeira vez, o Miguel mostra como jogar enquanto o mundo carrega
+        if (M.ler('miguel-tutorial-mundo') !== '1') {
+          M.guardar('miguel-tutorial-mundo', '1');
+          const pronto = carregarThree().catch(() => null);
+          M.jogos.tutorial(TUTORIAL(), () => pronto.then(() => { if (window.THREE) jogar(nav, +b.dataset.fase); }));
+          return;
+        }
         b.disabled = true;
         b.textContent = '⏳ Carregando o mundo...';
         carregarThree().then(() => jogar(nav, +b.dataset.fase)).catch(() => {
@@ -108,6 +131,7 @@
             <div class="cartao-camada"><h2>⏸️ Pausa</h2>
               <p>Seu jogo está salvo na fase <strong id="m-salvo"></strong>.</p>
               <button class="botao-pronto" data-acao="continuar">▶ Continuar</button>
+              <button class="botao-largo" data-acao="como-jogar">❓ Como jogar</button>
               <button class="botao-largo" data-acao="voltar-bandeira">🚩 Voltar para a bandeira</button>
               <button class="botao-largo" data-acao="sair">🏠 Sair do mundo</button></div>
           </div>
@@ -437,12 +461,13 @@
         aplicarTema();
         som('bandeira');
         aviso(`🚩 Fase ${n}! Jogo salvo ✓`, 2200);
-        if (n % 5 === 0) { M.jogos.ganharTrofeu('mundo'); M.falar(`Uau! Fase ${n}! Você ganhou um troféu!`); }
-        else M.falar(M.sortear([`Fase ${n}!`, 'Muito bem! Jogo salvo!', 'Você é demais!', 'Bandeira!']));
+        M.miar('feliz');
+        if (n % 5 === 0) { M.jogos.ganharTrofeu('mundo'); aviso(`🏆 Fase ${n}! Você ganhou um troféu!`, 2600); }
         hud();
       }
       function morreu(motivo) {
         som(motivo === 'lava' ? 'cair' : 'voltar');
+        M.miar('ai');
         aviso(motivo === 'lava' ? '🔥 Ui! Chão quente! Volte para a bandeira.' : motivo === 'giro' ? '💫 A barra te pegou! Tente de novo.' : '🌀 Caiu! Tente de novo.', 1600);
         irParaBandeira();
       }
@@ -597,7 +622,7 @@
         if (rodando) quadro = requestAnimationFrame(laco);
       }
       quadro = requestAnimationFrame(laco);
-      M.falar(`Fase ${fase}! Siga em frente e chegue na próxima bandeira!`);
+      M.miar('miau');
 
       c.onclick = (e) => {
         const b = e.target.closest('[data-acao]');
@@ -605,6 +630,7 @@
         const acao = b.dataset.acao;
         if (acao === 'pausa') { pausado = true; desligarMusica(); c.querySelector('#m-salvo').textContent = dados.fase; c.querySelector('#pausa').hidden = false; }
         else if (acao === 'continuar') { pausado = false; ultimo = performance.now(); c.querySelector('#pausa').hidden = true; ligarMusica(); }
+        else if (acao === 'como-jogar') M.jogos.tutorial(TUTORIAL());
         else if (acao === 'voltar-bandeira') { irParaBandeira(); c.querySelector('[data-acao="continuar"]').click(); }
         else if (acao === 'musica') { musicaLigada = !musicaLigada; M.guardar('miguel-mundo-musica', musicaLigada ? '1' : '0'); musicaLigada ? ligarMusica() : desligarMusica(); b.style.opacity = musicaLigada ? 1 : 0.45; }
         else if (acao === 'sair') nav.voltar();
@@ -625,5 +651,10 @@
     }, 'corpo-jogo');
   }
 
+  M.catalogo.push(() => {
+    const f = ['Mundo do Miguel! Ande, pule e chegue nas bandeiras. As fases não acabam nunca!', 'Mundo do Miguel!', 'Vamos continuar?', ...M.jogos.textoTutorial(TUTORIAL())];
+    for (let n = 1; n <= 60; n++) f.push(`Você parou na fase ${n}.`);
+    return f;
+  });
   M.jogos.registrar({ id: 'mundo', nome: 'Mundo do Miguel', simbolo: '🌍', cor: '#2f9be8', secao: 'aventura', abrir: inicio });
 })();

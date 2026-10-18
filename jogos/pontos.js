@@ -64,7 +64,7 @@
         const i = +g.dataset.i;
         if (i !== proximo) {
           M.somErro();
-          M.falar(`Esse é o ${NUMEROS[i + 1] || i + 1}. Procure o ${NUMEROS[proximo + 1] || proximo + 1}!`);
+          M.falar([{ t: `Esse é o ${NUMEROS[i + 1] || i + 1}.` }, { t: `Procure o ${NUMEROS[proximo + 1] || proximo + 1}!` }]);
           return;
         }
         proximo++;
@@ -86,5 +86,11 @@
     });
   }
 
+  M.catalogo.push(() => {
+    const f = ['Escolha um desenho surpresa! Ligue os pontinhos para descobrir o que é.', 'Ligue os pontinhos! Comece pelo número um.'];
+    for (let i = 1; i <= 20; i++) f.push(NUMEROS[i], `Esse é o ${NUMEROS[i]}.`, `Procure o ${NUMEROS[i]}!`);
+    for (const fig of FIGURAS) f.push(`Uau! É ${fig.nome}!`);
+    return f;
+  });
   M.jogos.registrar({ id: 'pontos', nome: 'Ligar pontinhos', simbolo: '✏️', cor: '#7c5cff', secao: 'brincar', abrir: lista });
 })();
