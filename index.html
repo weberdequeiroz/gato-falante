@@ -989,7 +989,20 @@
   const sessaoAudio = (tipo) => { try { if (navigator.audioSession) navigator.audioSession.type = tipo; } catch (e) {} };
   if (ehIOS) sessaoAudio('playback');
   let audioDestravado = false;
+  // um áudio mudo de verdade (HTML) no primeiro toque faz o iPhone tocar os sons mesmo com a chave do silencioso
+  let audioMudo = null;
+  function tocarAudioMudo() {
+    if (audioMudo) return;
+    const n = 800, buf = new ArrayBuffer(44 + n), v = new DataView(buf);
+    const txt = (o, t) => { for (let i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); };
+    txt(0, 'RIFF'); v.setUint32(4, 36 + n, true); txt(8, 'WAVEfmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); txt(36, 'data'); v.setUint32(40, n, true);
+    for (let i = 0; i < n; i++) v.setUint8(44 + i, 128);
+    audioMudo = new Audio(URL.createObjectURL(new Blob([buf], { type: 'audio/wav' })));
+    audioMudo.play().catch(() => { audioMudo = null; });
+  }
   function destravarAudio() {
+    if (ehIOS) tocarAudioMudo();
     if (audioDestravado && ctx && ctx.state === 'running') return;
     const ac = obterContexto();
     const vazio = ac.createBuffer(1, 1, 22050);
@@ -1266,9 +1279,18 @@
 
   // som da abertura: uma caixinha de música alegre e um miado de verdade
   let aberturaTocou = false;
+  let aberturaTocouEm = 0;
   function tocarAbertura() {
     if (aberturaTocou) return;
     aberturaTocou = true;
+    aberturaTocouEm = performance.now();
+    // se o som ainda estiver travado, espera destravar e toca a música inteira (com o miado no fim)
+    const ac = obterContexto();
+    if (ac.state !== 'running') { ac.resume().then(musicaAbertura).catch(() => { aberturaTocou = false; }); return; }
+    musicaAbertura();
+  }
+  function musicaAbertura() {
+    aberturaTocouEm = performance.now();
     const melodia = [[523, 0], [659, 0.14], [784, 0.28], [1047, 0.42], [988, 0.62], [784, 0.76], [880, 0.9], [1047, 1.04], [1319, 1.3]];
     for (const [f, t] of melodia) { tocarNota(f, t, 0.35, 0.13, 'sine'); tocarNota(f * 2, t, 0.18, 0.03, 'triangle'); }
     for (const [f, t] of [[262, 0], [392, 0.42], [349, 0.76], [523, 1.3]]) tocarNota(f, t, 0.5, 0.07, 'triangle');
@@ -2180,7 +2202,9 @@
   function entrarNoJogo() {
     if (aberturaFechada) return;
     aberturaFechada = true;
-    if (aberturaTocou) { tocarMusica(); } else tocarAbertura();
+    // a música da abertura toca aqui se ainda não tocou; se tocou faz tempo, toca a musiquinha curta com miado
+    if (!aberturaTocou) tocarAbertura();
+    else if (performance.now() - aberturaTocouEm > 3500) tocarMusica();
     abertura.classList.add('saindo');
     setTimeout(() => {
       abertura.hidden = true;
@@ -2193,6 +2217,22 @@
     }, 550);
   }
   abertura.addEventListener('click', entrarNoJogo);
+  // o celular costuma reabrir o app de onde parou: se ficou mais de 1 minuto fora e está na tela principal,
+  // mostra a abertura de novo, com a musiquinha e o miado
+  let escondidoEm = 0;
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') { escondidoEm = Date.now(); return; }
+    const livre = aberturaFechada && escondidoEm && Date.now() - escondidoEm > 60000 && estado === 'parado' &&
+      document.getElementById('jogos').hidden && telaAjustes.hidden && telaLembrete.hidden && !document.querySelector('#guarda-roupa:not([hidden])');
+    if (!livre) return;
+    calar();
+    aberturaFechada = false;
+    aberturaTocou = false;
+    abertura.classList.remove('saindo');
+    abertura.hidden = false;
+    const ac = obterContexto();
+    ac.resume().then(() => { if (!aberturaFechada && ac.state === 'running') tocarAbertura(); }).catch(() => {});
+  });
   // tenta tocar a música da abertura assim que a tela aparece (alguns aparelhos só deixam depois do primeiro toque)
   try {
     const ac = obterContexto();
@@ -2246,7 +2286,7 @@
 
   // ---------- Atualizações ----------
   // o app instalado fica aberto em segundo plano; ao voltar para ele, confere se tem versão nova
-  const VERSAO = '202610181330';
+  const VERSAO = '202610181332';
   const avisoAtualizar = document.getElementById('atualizar');
   let registro = null;
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
