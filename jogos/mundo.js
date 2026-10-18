@@ -539,9 +539,7 @@
       const hud = () => { c.querySelector('#m-fase').textContent = fase; c.querySelector('#m-estrelas').textContent = dados.estrelas; };
 
       // ---------- Penélope: a cachorrinha maltês que ajuda o Miguel ----------
-      const texPenelope = new T.TextureLoader().load('icones/penelope.png');
-      const latido = new Audio('sons/latido-fraquinho.mp3');
-      function latir() { try { const a = latido.cloneNode(); a.volume = M.calmo ? 0.35 : 0.55; a.play().catch(() => {}); } catch (e) {} }
+      const latir = () => M.penelope3d.latir();
       let penelope = null, texHalo = null;
       const brilhos = [];
       const penelopeAtiva = () => penelope && !penelope.saindo;
@@ -549,24 +547,24 @@
         latir();
         som('estrela');
         if (penelope && !penelope.saindo) { penelope.t = 15; aviso('🐶 Mais tempo com a Penélope!', 1800); return; }
-        if (penelope) { cena.remove(penelope.sp); cena.remove(penelope.sp.userData.halo); }
-        const sp = new T.Sprite(new T.SpriteMaterial({ map: texPenelope, transparent: true, depthTest: false }));
-        sp.scale.set(2.3 * 369 / 420, 2.3, 1);
+        if (penelope) { cena.remove(penelope.modelo.grupo); cena.remove(penelope.halo); }
+        // a Penélope de verdade em 3D (dá para ver de todos os lados)
+        const modelo = M.penelope3d.criar(T);
+        modelo.grupo.scale.setScalar(1.05);
+        modelo.grupo.position.set(jog.pos.x, jog.pos.y + 6, jog.pos.z);
+        cena.add(modelo.grupo);
         // brilho dourado atrás dela, para aparecer bem em qualquer cenário
         if (!texHalo) {
           const cv = document.createElement('canvas'); cv.width = cv.height = 128;
           const x = cv.getContext('2d'), g = x.createRadialGradient(64, 64, 8, 64, 64, 64);
-          g.addColorStop(0, 'rgba(255,240,170,.95)'); g.addColorStop(.55, 'rgba(255,214,90,.45)'); g.addColorStop(1, 'rgba(255,214,90,0)');
+          g.addColorStop(0, 'rgba(255,240,170,.75)'); g.addColorStop(.55, 'rgba(255,214,90,.3)'); g.addColorStop(1, 'rgba(255,214,90,0)');
           x.fillStyle = g; x.fillRect(0, 0, 128, 128);
           texHalo = new T.CanvasTexture(cv);
         }
-        const halo = new T.Sprite(new T.SpriteMaterial({ map: texHalo, transparent: true, depthWrite: false, depthTest: false }));
-        halo.scale.set(3.4, 3.4, 1); halo.position.z = -0.01;
-        halo.renderOrder = 998; sp.renderOrder = 999; // sempre à vista, na frente das plaquinhas
-        sp.userData.halo = halo; cena.add(halo);
-        sp.position.set(jog.pos.x, jog.pos.y + 6, jog.pos.z);
-        cena.add(sp);
-        penelope = { sp, t: 15, anim: 0, saindo: false };
+        const halo = new T.Sprite(new T.SpriteMaterial({ map: texHalo, transparent: true, depthWrite: false }));
+        halo.scale.set(3.2, 3.2, 1);
+        cena.add(halo);
+        penelope = { modelo, halo, t: 15, anim: 0, saindo: false, sumindo: 1 };
         aviso('🐶 Penélope chegou! Pulo duplo, ímã de estrelas e ela te salva se cair!', 3200);
       }
       if (/teste/.test(location.search)) window.__chamarPenelope = chamarPenelope; // só para testes automáticos
@@ -585,20 +583,26 @@
         penelope.anim += dt;
         penelope.t -= dt;
         if (penelope.t <= 0 && !penelope.saindo) { penelope.saindo = true; aviso('🐶 Tchau, Penélope! 👋', 1600); latir(); }
-        const sp = penelope.sp;
-        sp.userData.halo.position.copy(sp.position);
+        const g = penelope.modelo.grupo;
+        penelope.modelo.animar(penelope.anim, { correndo: !penelope.saindo, voando: true });
+        penelope.halo.position.set(g.position.x, g.position.y + 0.9, g.position.z);
         if (penelope.saindo) {
-          sp.position.y += 6 * dt; sp.material.opacity = Math.max(0, sp.material.opacity - dt * 0.8);
-          sp.userData.halo.material.opacity = sp.material.opacity;
-          if (sp.material.opacity <= 0) { cena.remove(sp); cena.remove(sp.userData.halo); penelope = null; }
+          g.position.y += 6 * dt; g.rotation.y += dt * 6;
+          penelope.sumindo -= dt * 0.8;
+          g.scale.setScalar(Math.max(0.01, 1.05 * penelope.sumindo)); penelope.halo.material.opacity = Math.max(0, penelope.sumindo);
+          if (penelope.sumindo <= 0) { cena.remove(g); cena.remove(penelope.halo); penelope = null; poder.hidden = true; return; }
         } else {
-          // voa do lado do Miguel (à direita da câmera), balançando de alegria
+          // voa do lado do Miguel (à direita da câmera), olhando para onde ele vai, balançando de alegria
           const fx = -Math.sin(yaw), fz = -Math.cos(yaw), rx = -fz, rz = fx;
-          const alvo = new T.Vector3(jog.pos.x + rx * 1.5 - fx * 0.4, jog.pos.y + 1.9 + Math.sin(penelope.anim * 4) * 0.25, jog.pos.z + rz * 1.5 - fz * 0.4);
-          sp.position.lerp(alvo, Math.min(1, dt * 5));
-          sp.material.rotation = Math.sin(penelope.anim * 3) * 0.12;
-          sp.userData.halo.scale.setScalar(3.2 + Math.sin(penelope.anim * 5) * 0.25);
-          if (Math.random() < dt * 14) brilho(sp.position.x + (Math.random() - 0.5) * 0.8, sp.position.y - 0.5, sp.position.z + (Math.random() - 0.5) * 0.8, [0xffffff, 0xffd23f, 0xff9ecb, 0x9ee7ff][Math.floor(Math.random() * 4)]);
+          const alvo = new T.Vector3(jog.pos.x + rx * 1.5 - fx * 0.4, jog.pos.y + 0.9 + Math.sin(penelope.anim * 4) * 0.25, jog.pos.z + rz * 1.5 - fz * 0.4);
+          g.position.lerp(alvo, Math.min(1, dt * 5));
+          let dif = boneco.rotation.y - g.rotation.y;
+          while (dif > Math.PI) dif -= Math.PI * 2;
+          while (dif < -Math.PI) dif += Math.PI * 2;
+          g.rotation.y += dif * Math.min(1, dt * 6);
+          g.rotation.z = Math.sin(penelope.anim * 3) * 0.1;
+          penelope.halo.scale.setScalar(3.0 + Math.sin(penelope.anim * 5) * 0.25);
+          if (Math.random() < dt * 14) brilho(g.position.x + (Math.random() - 0.5) * 0.8, g.position.y + 0.3, g.position.z + (Math.random() - 0.5) * 0.8, [0xffffff, 0xffd23f, 0xff9ecb, 0x9ee7ff][Math.floor(Math.random() * 4)]);
         }
         poder.hidden = !penelopeAtiva();
         if (penelopeAtiva()) poder.textContent = '🐶 ' + Math.ceil(penelope.t);

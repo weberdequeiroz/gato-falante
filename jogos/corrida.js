@@ -89,6 +89,8 @@
       ilustracao: `<div class="ilu-itens"><span>🐟<small>+1</small></span><span>⭐<small>+10</small></span><span>🎁<small>🛡️⚡🧲</small></span><span>❤️<small>+1 vida</small></span></div>` },
     { titulo: 'Super Miguel!', texto: 'Às vezes, o presente chama o Super Miguel! Ele voa junto com o gatinho e transforma os obstáculos em peixinhos.',
       ilustracao: `<div class="ilu-cena ilu-super"><img class="ilu-heroi" src="icones/super-miguel.png" alt=""><span class="ilu-raio"></span><span class="ilu-obst">🪨</span><span class="ilu-vira">🐟</span><div class="ilu-chao"></div></div>` },
+    { titulo: 'Penélope!', texto: 'Pegue o osso dourado e a cachorrinha Penélope vem correr com você. Ela dá super latidos que assopram os obstáculos para longe, e chove ossinhos para pegar!',
+      ilustracao: `<div class="ilu-itens"><span>🦴<small>osso</small></span><span><img src="icones/penelope.png" alt="" style="height:64px"><small>Penélope</small></span><span>💨<small>assopra</small></span><span>🦴🦴<small>+3</small></span></div>` },
     { titulo: 'Desvie dos obstáculos!', texto: 'Pule por cima das pedras e dos bichinhos. Você tem 3 vidas.',
       ilustracao: `<div class="ilu-itens"><span>🪨<small>pule</small></span><span>🌵<small>pule</small></span><span>🐝<small>cuidado</small></span><span class="vidas">❤️❤️❤️<small>3 vidas</small></span></div>` },
     { titulo: 'Novos lugares!', texto: 'A cada nível o lugar muda e fica mais rápido. O jogo guarda o nível que você alcançou.',
@@ -112,6 +114,7 @@
             <p><strong>Como jogar</strong></p>
             <p>👆 Toque na tela para <strong>pular</strong>. Toque de novo no ar para pular <strong>mais alto</strong>!</p>
             <p>🐟 Pegue peixinhos, ⭐ estrelas e 🎁 presentes. Desvie das pedras e dos bichinhos!</p>
+            <p>🦴 O <strong>osso dourado</strong> chama a cachorrinha <strong>Penélope</strong>: ela late e assopra os obstáculos para longe!</p>
             <p>🦸 Às vezes o presente chama o <strong>Super Miguel</strong>, que voa com você e transforma os obstáculos em peixinhos!</p>
             <p>❤️ Você tem 3 vidas. A cada nível o lugar muda e fica mais rápido.</p>
           </div>
@@ -207,6 +210,30 @@
       let heroi = null, presentesSemHeroi = 0, clarao = 0;
       const raios = [];
       const heroiAtivo = () => heroi && !heroi.saindo;
+      // Penélope: a cachorrinha em 3D corre na frente e dá super latidos que assopram os obstáculos para longe
+      let penelope = null, telinhaPenelope = null;
+      const ondas = [];
+      const penelopeAtiva = () => penelope && !penelope.saindo;
+      M.penelope3d?.carregarThree().then((T) => { if (rodando) telinhaPenelope = M.penelope3d.telinha(T, 256); }).catch(() => {});
+      const fotoPenelope = new Image();
+      fotoPenelope.src = 'icones/penelope.png';
+      function chamarPenelope() {
+        penelope = { t: M.calmo ? 14 : 12, x: -120, anim: 0, latido: 1.0, saindo: false, ossos: 0.6 };
+        clarao = 0.4;
+        M.penelope3d.latir();
+        som('poder');
+        aviso('🐶 PENÉLOPE! Ela late e assopra os obstáculos para longe! Pegue os ossinhos!', 2800);
+      }
+      if (/teste/.test(location.search)) window.__chamarPenelope = () => chamarPenelope(); // só para testes automáticos
+      // o obstáculo sai voando girando (não vira peixe: some no céu)
+      function assoprar(o) {
+        if (o.assoprado) return;
+        o.assoprado = { vx: 420 + Math.random() * 220, vy: -520 - Math.random() * 160, giro: 0, vg: 9 + Math.random() * 6 };
+        const cx = o.x + o.w / 2, cy = (o.voa ? o.yv : o.y) + o.h / 2;
+        brilho(cx, cy, '#ffffff', 10); pontinho(cx, cy - 20, '💨 +3', '#e1f5fe');
+        pontos += 3;
+        som('estrela');
+      }
 
       const cenario = () => CENARIOS[(nivel - 1) % CENARIOS.length];
       const velocidadeBase = () => Math.min(640, (250 + (nivel - 1) * 34)) * (M.calmo ? 0.82 : 1);
@@ -230,6 +257,7 @@
         if (jogador.turbo > 0) poderes.push('⚡' + Math.ceil(jogador.turbo));
         if (jogador.ima > 0) poderes.push('🧲' + Math.ceil(jogador.ima));
         if (heroiAtivo()) poderes.push('🦸' + Math.ceil(heroi.t));
+        if (penelopeAtiva()) poderes.push('🐶' + Math.ceil(penelope.t));
         c.querySelector('#hud-poder').textContent = poderes.join(' ');
       }
 
@@ -291,6 +319,7 @@
         if (sorte < 0.12) adicionar({ tipo: 'estrela', fig: '⭐', x: x + largura + 90, y: CHAO - 200, w: 40, h: 40 });
         else if (sorte < 0.2) adicionar({ tipo: 'presente', fig: '🎁', x: x + largura + 90, y: CHAO - 170, w: 44, h: 44 });
         else if (sorte < 0.235 && vidas < 3) adicionar({ tipo: 'vida', fig: '❤️', x: x + largura + 90, y: CHAO - 210, w: 40, h: 40 });
+        else if (sorte < 0.29 && !penelope && nivel >= 1) adicionar({ tipo: 'osso', fig: '🦴', x: x + largura + 90, y: CHAO - 165, w: 46, h: 46 });
         const folga = Math.max(velocidade * 0.95, 360 - nivel * 8);
         proximoSpawn = distancia + largura + folga + Math.random() * 260;
       }
@@ -334,6 +363,7 @@
       function bater(o) {
         if (jogador.turbo > 0) { o.morto = true; brilho(o.x + 25, o.y + 25, '#ffd54f', 12); som('estrela'); pontos += 5; return; }
         if (heroiAtivo()) { transformar(o); return; }
+        if (penelopeAtiva()) { assoprar(o); return; }
         if (jogador.invencivel > 0) return;
         if (jogador.escudo) { jogador.escudo = false; jogador.invencivel = 1.2; som('escudo'); o.morto = true; brilho(o.x + 25, o.y + 25, '#80deea', 14); return; }
         vidas--;
@@ -424,6 +454,34 @@
           // rastro de estrelinhas coloridas
           if (heroi && Math.random() < dt * 30) particulas.push({ x: heroi.x - 30, y: heroi.y + (Math.random() - 0.5) * 30, vx: -120 - Math.random() * 80, vy: (Math.random() - 0.5) * 40, vida: 0.6, cor: M.sortear(['#ffd54f', '#ff80ab', '#80deea', '#b388ff', '#a5d6a7']), r: 3 + Math.random() * 3 });
         }
+        if (penelope) {
+          penelope.anim += dt; penelope.t -= dt;
+          if (penelope.t <= 0 && !penelope.saindo) { penelope.saindo = true; M.penelope3d.latir(); pontinho(penelope.x, CHAO - 120, 'Tchau! 🐾', '#fff'); }
+          if (penelope.saindo) { penelope.x += 520 * dt; if (penelope.x > larguraMundo + 150) penelope = null; }
+          else {
+            // corre um pouco à frente do gatinho
+            penelope.x += (jogador.x + 120 - penelope.x) * Math.min(1, dt * 2.5);
+            penelope.latido -= dt;
+            if (penelope.latido <= 0) {
+              penelope.latido = 1.3;
+              M.penelope3d.latir();
+              ondas.push({ x: penelope.x + 60, y: CHAO - 50, r: 10, vida: 1.1 });
+            }
+            // chuva de ossinhos para pegar
+            penelope.ossos -= dt;
+            if (penelope.ossos <= 0) { penelope.ossos = 0.55; adicionar({ tipo: 'ossinho', fig: '🦴', x: jogador.x + 120 + Math.random() * (larguraMundo - jogador.x - 160), y: -Math.max(0, sobraTopo) - 30, w: 32, h: 32, cai: 140 + Math.random() * 80 }); }
+          }
+        }
+        // ondas do latido: anéis que andam para a frente e assopram o que encontram
+        for (let i = ondas.length - 1; i >= 0; i--) {
+          const w = ondas[i]; w.x += 520 * dt; w.r += 90 * dt; w.vida -= dt;
+          for (const o of coisas) if (o.tipo === 'obst' && !o.morto && !o.assoprado && Math.abs(o.x + o.w / 2 - w.x) < 40) assoprar(o);
+          if (w.vida <= 0 || w.x > larguraMundo + 60) ondas.splice(i, 1);
+        }
+        for (const o of coisas) {
+          if (o.assoprado) { const a = o.assoprado; o.x += a.vx * dt; o.y += a.vy * dt; a.vy += 900 * dt; a.giro += a.vg * dt; if (o.y < -Math.max(0, sobraTopo) - 200 || o.x > larguraMundo + 200) o.morto = true; }
+          if (o.cai) { o.y = Math.min(CHAO - o.h - 4, o.y + o.cai * dt); }
+        }
         for (let i = raios.length - 1; i >= 0; i--) { raios[i].vida -= dt; raios[i].x2 -= velocidade * dt; if (raios[i].vida <= 0) raios.splice(i, 1); }
         if (clarao > 0) clarao = Math.max(0, clarao - dt * 1.4);
 
@@ -464,11 +522,13 @@
           const oy = o.voa ? o.yv : o.y, m = o.tipo === 'obst' ? 0.22 : 0;
           const toca = caixa.x < o.x + o.w * (1 - m) && caixa.x + caixa.w > o.x + o.w * m && caixa.y < oy + o.h * (1 - m) && caixa.y + caixa.h > oy + o.h * m;
           if (!toca || o.tipo === 'plataforma') continue;
-          if (o.tipo === 'obst') { bater(o); continue; }
+          if (o.tipo === 'obst') { if (!o.assoprado) bater(o); continue; }
           o.morto = true;
           if (o.tipo === 'peixe') { peixes++; pontos += 1; som('peixe'); pontinho(o.x, o.y, '+1', '#fff'); if (peixes % 15 === 0) miar('miau'); }
           else if (o.tipo === 'estrela') { pontos += 10; som('estrela'); brilho(o.x + 20, o.y + 20, '#ffd54f', 16); pontinho(o.x, o.y, '+10', '#ffe082'); }
           else if (o.tipo === 'presente') { brilho(o.x + 20, o.y + 20, '#f48fb1', 16); ganharPoder(); }
+          else if (o.tipo === 'osso') { brilho(o.x + 20, o.y + 20, '#fff59d', 16); chamarPenelope(); }
+          else if (o.tipo === 'ossinho') { pontos += 3; som('peixe'); pontinho(o.x, o.y, '🦴 +3', '#fff8e1'); }
           else if (o.tipo === 'vida') { vidas = Math.min(3, vidas + 1); som('vida'); miar('glub'); pontinho(o.x, o.y, '+❤️', '#ff8a80'); }
         }
         for (let i = coisas.length - 1; i >= 0; i--) if (coisas[i].x + coisas[i].w < -80 || coisas[i].morto && coisas[i].tipo !== 'obst') coisas.splice(i, 1);
@@ -540,7 +600,8 @@
           const oy = o.voa ? o.yv : o.y;
           if (o.tipo === 'obst') { ctx.fillStyle = 'rgba(0,0,0,.15)'; ctx.beginPath(); ctx.ellipse(o.x + o.w / 2, CHAO + 4, o.w * 0.4, 5, 0, 0, 7); ctx.fill(); }
           const pulso = o.tipo === 'peixe' || o.tipo === 'estrela' || o.tipo === 'presente' || o.tipo === 'vida' ? Math.sin(performance.now() / 180 + o.x / 40) * 3 : 0;
-          if (o.tipo === 'estrela' || o.tipo === 'presente') { ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.beginPath(); ctx.arc(o.x + o.w / 2, oy + o.h / 2, o.w * 0.75, 0, 7); ctx.fill(); }
+          if (o.tipo === 'estrela' || o.tipo === 'presente' || o.tipo === 'osso') { ctx.fillStyle = o.tipo === 'osso' ? 'rgba(255,236,130,.6)' : 'rgba(255,255,255,.5)'; ctx.beginPath(); ctx.arc(o.x + o.w / 2, oy + o.h / 2, o.w * 0.75, 0, 7); ctx.fill(); }
+          if (o.assoprado) { ctx.save(); ctx.translate(o.x + o.w / 2, oy + o.h / 2); ctx.rotate(o.assoprado.giro); emoji(o.fig, 0, 0, o.w); ctx.restore(); continue; }
           emoji(o.fig, o.x + o.w / 2, oy + o.h / 2 + pulso, o.w);
         }
         // Miguel
@@ -565,6 +626,16 @@
         if (j.escudo) { ctx.strokeStyle = 'rgba(128,222,234,.9)'; ctx.lineWidth = 4; ctx.fillStyle = 'rgba(128,222,234,.18)'; ctx.beginPath(); ctx.arc(j.x + j.w / 2, j.y + j.h / 2, 54, 0, 7); ctx.fill(); ctx.stroke(); }
         if (j.ima > 0) emoji('🧲', j.x + j.w + 6, j.y + 6, 22);
         if (heroi) desenharHeroi();
+        if (penelope) desenharPenelope();
+        for (const w of ondas) {
+          // ondinhas de som ")))" saindo do latido
+          ctx.save(); ctx.globalAlpha = Math.max(0, Math.min(1, w.vida * 1.4)); ctx.lineCap = 'round';
+          for (let k = 0; k < 3; k++) {
+            ctx.strokeStyle = ['#ffffff', '#fff59d', '#b3e5fc'][k]; ctx.lineWidth = 6 - k;
+            ctx.beginPath(); ctx.arc(w.x - k * 18, w.y, w.r + k * 14, -0.9, 0.9); ctx.stroke();
+          }
+          ctx.restore();
+        }
         for (const r of raios) {
           const a = Math.max(0, r.vida / 0.35);
           ctx.save();
@@ -637,6 +708,19 @@
           const [dx, dy] = campo((i + 0.5) / nx, (k + 0.5) / ny);
           ctx.drawImage(im, i * iw / nx, k * ih / ny, iw / nx, ih / ny, x + i * cw + dx - 0.4, y + k * ch + dy - 0.4, cw + 0.8, ch + 0.8);
         }
+      }
+      function desenharPenelope() {
+        const tam = 140, px = penelope.x, base = CHAO + 14;
+        // sombra e brilho dourado
+        ctx.fillStyle = 'rgba(0,0,0,.16)'; ctx.beginPath(); ctx.ellipse(px, CHAO + 4, 30, 6, 0, 0, 7); ctx.fill();
+        const g = ctx.createRadialGradient(px, base - tam * 0.45, 5, px, base - tam * 0.45, tam * 0.7);
+        g.addColorStop(0, 'rgba(255,240,170,.55)'); g.addColorStop(1, 'rgba(255,240,170,0)');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px, base - tam * 0.45, tam * 0.7, 0, 7); ctx.fill();
+        if (telinhaPenelope) {
+          telinhaPenelope.desenhar(penelope.anim, { correndo: true });
+          ctx.drawImage(telinhaPenelope.canvas, px - tam / 2, base - tam, tam, tam);
+        } else if (fotoPenelope.complete && fotoPenelope.naturalWidth) ctx.drawImage(fotoPenelope, px - 40, base - 92 + Math.abs(Math.sin(penelope.anim * 10)) * -6, 80, 92);
+        else emoji('🐶', px, base - 40, 60);
       }
       function desenharHeroi() {
         const H = 104, W = H * 0.756, t = heroi.anim;
@@ -722,6 +806,7 @@
       document.addEventListener('visibilitychange', aoSumir);
       return () => {
         rodando = false;
+        telinhaPenelope?.descartar();
         cancelAnimationFrame(quadro);
         musica.parar();
         clearTimeout(avisoTimer);
