@@ -4,7 +4,9 @@ Jogo infantil para o navegador: toque no Miguel, fale alguma coisa e ele repete 
 
 - Vozes: Fininha, Tia Dani, Bob Esponja, Pirata, Gatinho, Monstro e Robô
 - Botão **🙏 Oração**: orações infantis de acordo com o horário (manhã, refeições, noite) e outras para qualquer hora
+- Botão **👕 Vestir**: guarda-roupa do Miguel (chapéus, óculos, blusas com estampas, calças, shorts, saias, sapatos, capa, asas...) em 12 cores, salvo no aparelho
 - Botão **🎮 Jogos**, separado em seções:
+  - **Aventuras**: Corrida do Miguel (corrida infinita com 7 cenários, poderes e níveis) e Mundo do Miguel (percurso 3D de obstáculos com fases infinitas que salvam sozinhas)
   - **Aprender**: cores, números, letras, animais e alimentos (Conhecer e Jogar, com estrelas e troféus)
   - **Inglês e espanhol**: 9 temas cada (cumprimentos, cores, números, animais, comidas, família, corpo, roupas, casa e natureza)
   - **Criar**: música (9 instrumentos e bateria, 20 músicas para aprender, músicas surpresa sem fim, gravar a própria música, jogo de repetir melodias) e colorir (10 desenhos + desenho livre)
@@ -26,6 +28,10 @@ Jogo infantil para o navegador: toque no Miguel, fale alguma coisa e ele repete 
 
 Desenvolvido por Vini & Weber.
 
-## Créditos dos sons
+## Créditos
+
+O mundo 3D usa a biblioteca three.js (licença MIT, cópia em `vendor/`).
+
+### Sons
 
 Os sons da pasta `sons/` são gravações reais em domínio público (CC0) do site Freesound, reunidas no banco de sons ESC-50 (https://github.com/karolpiczak/ESC-50). A lista com o autor de cada som está em `sons/creditos.json` e dentro do jogo, em Biblioteca de sons › "De onde vêm esses sons?".

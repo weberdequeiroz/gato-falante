@@ -6,6 +6,7 @@
   const titulo = document.getElementById('jogos-titulo');
 
   const SECOES = [
+    { id: 'aventura', nome: 'Aventuras', simbolo: '🚀' },
     { id: 'aprender', nome: 'Aprender', simbolo: '📚' },
     { id: 'sons', nome: 'Sons e bichos', simbolo: '🔊' },
     { id: 'idiomas', nome: 'Inglês e espanhol', simbolo: '🌎' },

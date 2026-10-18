@@ -194,7 +194,7 @@
   @keyframes pulinho { 40% { transform: translateY(-14px) scale(1.02, .98); } }
   #mao-orelha { display: none; }
   #gato.ouvindo #mao-orelha { display: inline; }
-  #gato.ouvindo #braco-e, #gato.ouvindo .braco-e-in { display: none; }
+  #gato.ouvindo #braco-e, #gato.ouvindo .braco-e-in, #gato.ouvindo .lado-e { display: none; }
   #boca-aberta { transform-origin: 200px 276px; transform: scaleY(0); }
 
   .nota { position: absolute; font-size: 28px; pointer-events: none; animation: sobe 1.6s ease-out forwards; }
@@ -561,6 +561,7 @@
     <div class="area-gato" id="area-gato">
       <div class="anel" id="anel"></div>
       <div id="orelhao" aria-hidden="true">👂</div>
+      <button id="abrir-roupas" class="botao-vestir" aria-label="Trocar a roupa do Miguel"><span aria-hidden="true">👕</span>Vestir</button>
       <svg id="gato" viewBox="0 0 400 500" role="button" tabindex="0" aria-label="Miguel, o gato: toque para falar">
         <defs>
           <radialGradient id="g-pelo" cx="38%" cy="28%" r="78%">
@@ -613,10 +614,13 @@
             <stop offset="1" stop-color="#93303f"/>
           </linearGradient>
         </defs>
+        <defs id="roupa-defs"></defs>
 
         <g id="corpo-todo">
           <!-- sombra no chão -->
           <ellipse cx="200" cy="482" rx="150" ry="18" fill="url(#g-sombra)"/>
+          <!-- roupas: cada parte fica numa camada, na ordem certa (ver jogos/roupas.js) -->
+          <g id="roupa-costas"></g>
 
           <!-- rabo -->
           <g id="rabo">
@@ -630,6 +634,7 @@
                 fill="url(#g-pelo-corpo)" stroke="#b85a0d" stroke-width="2.5"/>
           <ellipse cx="200" cy="428" rx="56" ry="58" fill="url(#g-creme)"/>
           <ellipse cx="200" cy="346" rx="96" ry="22" fill="url(#g-sombra)"/>
+          <g id="roupa-baixo"></g>
 
           <!-- patinhas de trás -->
           <g fill="url(#g-creme)" stroke="#d6a26b" stroke-width="2">
@@ -640,6 +645,8 @@
             <path d="M136 466 L 136 476 M150 465 L 150 477 M164 466 L 164 476"/>
             <path d="M236 466 L 236 476 M250 465 L 250 477 M264 466 L 264 476"/>
           </g>
+          <g id="roupa-pes"></g>
+          <g id="roupa-tronco"></g>
 
           <!-- braços -->
           <g id="braco-e">
@@ -652,6 +659,8 @@
                   fill="url(#g-pelo-corpo)" stroke="#b85a0d" stroke-width="2.5"/>
             <ellipse cx="237" cy="447" rx="21" ry="14" fill="url(#g-creme)" stroke="#d6a26b" stroke-width="2"/>
           </g>
+          <g id="roupa-mangas"></g>
+          <g id="roupa-pescoco"></g>
 
           <g id="cabeca">
             <!-- orelhas -->
@@ -733,6 +742,8 @@
               <path d="M132 268 Q 96 256 58 254"/><path d="M132 278 Q 94 278 56 284"/><path d="M134 288 Q 100 298 66 312"/>
               <path d="M268 268 Q 304 256 342 254"/><path d="M268 278 Q 306 278 344 284"/><path d="M266 288 Q 300 298 334 312"/>
             </g>
+            <g id="roupa-rosto"></g>
+            <g id="roupa-cabeca"></g>
           </g>
 
           <!-- mão na orelha (quando está ouvindo) -->
@@ -1516,6 +1527,7 @@
       { texto: 'No botão Oração, eu rezo com você. 🙏' },
       { texto: 'No botão Dicas, eu te ensino coisas legais. 💡' },
       { texto: 'E no botão Jogos, tem jogos para aprender, inglês, espanhol, música, sons dos bichos, mercadinho, desenhos para colorir e muito mais! 🎮' },
+      { texto: 'No botão Vestir, você troca a minha roupa! 👕' },
       { texto: 'Lá em cima, no alto-falante, dá para desligar as minhas falas. 🔊' },
       { texto: 'Vamos brincar? Toque em mim! 🐾' },
     ], VOZ_MIGUEL, 350);
@@ -1949,7 +1961,7 @@
 
   // ---------- Atualizações ----------
   // o app instalado fica aberto em segundo plano; ao voltar para ele, confere se tem versão nova
-  const VERSAO = '202610180458';
+  const VERSAO = '202610180514';
   const avisoAtualizar = document.getElementById('atualizar');
   let registro = null;
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
@@ -1986,6 +1998,7 @@
   }
 })();
 </script>
+<script src="jogos/roupas.js" defer></script>
 <script src="jogos/nucleo.js" defer></script>
 <script src="jogos/aprender.js" defer></script>
 <script src="jogos/idiomas.js" defer></script>
@@ -1999,5 +2012,7 @@
 <script src="jogos/sombras.js" defer></script>
 <script src="jogos/diferente.js" defer></script>
 <script src="jogos/quebracabeca.js" defer></script>
+<script src="jogos/corrida.js" defer></script>
+<script src="jogos/mundo.js" defer></script>
 </body>
 </html>
