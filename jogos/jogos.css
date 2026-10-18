@@ -610,3 +610,11 @@
 @keyframes ilu-arrasta { 0%, 100% { transform: translateX(-30px); } 50% { transform: translateX(30px); } }
 @keyframes ilu-balanca { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 html.calmo .tutorial-ilustra * { animation-duration: 3.2s !important; }
+.ilu-super .ilu-heroi { position: absolute; left: 6%; top: 6px; width: 76px; transform: scaleX(-1); filter: drop-shadow(0 0 8px rgba(255,214,79,.9)); animation: ilu-voa 2.4s ease-in-out infinite; }
+.ilu-super .ilu-raio { position: absolute; left: 28%; top: 44px; width: 38%; height: 9px; border-radius: 6px; background: linear-gradient(90deg, #ff5252, #ffd740, #69f0ae, #40c4ff, #e040fb); box-shadow: 0 0 10px #fff59d; transform: rotate(24deg); transform-origin: left center; animation: ilu-raio 2.4s ease-in-out infinite; }
+.ilu-super .ilu-obst { left: 62%; animation: ilu-some 2.4s ease-in-out infinite; }
+.ilu-super .ilu-vira { position: absolute; left: 63%; bottom: 40px; font-size: 38px; animation: ilu-aparece 2.4s ease-in-out infinite; }
+@keyframes ilu-voa { 0%, 100% { transform: scaleX(-1) translateY(0) rotate(6deg); } 50% { transform: scaleX(-1) translateY(-8px) rotate(10deg); } }
+@keyframes ilu-raio { 0%, 30%, 60%, 100% { opacity: 0; transform: rotate(24deg) scaleX(.2); } 40%, 50% { opacity: 1; transform: rotate(24deg) scaleX(1); } }
+@keyframes ilu-some { 0%, 45% { opacity: 1; transform: scale(1); } 52%, 95% { opacity: 0; transform: scale(.3); } 100% { opacity: 1; } }
+@keyframes ilu-aparece { 0%, 48% { opacity: 0; transform: scale(.3); } 56%, 92% { opacity: 1; transform: scale(1) translateY(-6px); } 100% { opacity: 0; } }

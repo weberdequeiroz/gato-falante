@@ -87,6 +87,8 @@
       ilustracao: `<div class="ilu-cena"><img class="ilu-gato pula-duplo" src="${MIGUEL()}" alt=""><span class="ilu-obst alto">🌵🌵</span><span class="ilu-dedo duplo">👆</span><div class="ilu-chao"></div></div>` },
     { titulo: 'Pegue os prêmios!', texto: 'Peixinho vale 1 ponto, estrela vale 10. O presente dá um poder e o coração dá mais uma vida.',
       ilustracao: `<div class="ilu-itens"><span>🐟<small>+1</small></span><span>⭐<small>+10</small></span><span>🎁<small>🛡️⚡🧲</small></span><span>❤️<small>+1 vida</small></span></div>` },
+    { titulo: 'Super Miguel!', texto: 'Às vezes, o presente chama o Super Miguel! Ele voa junto com o gatinho e transforma os obstáculos em peixinhos.',
+      ilustracao: `<div class="ilu-cena ilu-super"><img class="ilu-heroi" src="icones/super-miguel.png" alt=""><span class="ilu-raio"></span><span class="ilu-obst">🪨</span><span class="ilu-vira">🐟</span><div class="ilu-chao"></div></div>` },
     { titulo: 'Desvie dos obstáculos!', texto: 'Pule por cima das pedras e dos bichinhos. Você tem 3 vidas.',
       ilustracao: `<div class="ilu-itens"><span>🪨<small>pule</small></span><span>🌵<small>pule</small></span><span>🐝<small>cuidado</small></span><span class="vidas">❤️❤️❤️<small>3 vidas</small></span></div>` },
     { titulo: 'Novos lugares!', texto: 'A cada nível o lugar muda e fica mais rápido. O jogo guarda o nível que você alcançou.',
@@ -110,6 +112,7 @@
             <p><strong>Como jogar</strong></p>
             <p>👆 Toque na tela para <strong>pular</strong>. Toque de novo no ar para pular <strong>mais alto</strong>!</p>
             <p>🐟 Pegue peixinhos, ⭐ estrelas e 🎁 presentes. Desvie das pedras e dos bichinhos!</p>
+            <p>🦸 Às vezes o presente chama o <strong>Super Miguel</strong>, que voa com você e transforma os obstáculos em peixinhos!</p>
             <p>❤️ Você tem 3 vidas. A cada nível o lugar muda e fica mais rápido.</p>
           </div>
           <button class="botao-pronto" data-nivel="1">▶ Correr do começo</button>
@@ -156,6 +159,10 @@
       const dados = lerDados();
       const img = new Image();
       img.src = M.roupas ? M.roupas.imagemMiguel() : 'icones/miguel.png';
+      const imgHeroi = new Image();
+      imgHeroi.src = 'icones/super-miguel.png';
+      const gritoHeroi = new Audio('sons/super-miguel.mp3');
+      gritoHeroi.preload = 'auto';
 
       // a câmera sempre mostra pelo menos 520 unidades de caminho à frente (celular em pé ou deitado)
       let larguraMundo = 640, escala = 1, sobraTopo = 0;
@@ -180,6 +187,10 @@
       const particulas = [];
       const enfeites = [];
       let deslocFundo = 0;
+      // Super Miguel: chega voando com capa, acompanha o gatinho e transforma obstáculos em peixinhos
+      let heroi = null, presentesSemHeroi = 0, clarao = 0;
+      const raios = [];
+      const heroiAtivo = () => heroi && !heroi.saindo;
 
       const cenario = () => CENARIOS[(nivel - 1) % CENARIOS.length];
       const velocidadeBase = () => Math.min(640, (250 + (nivel - 1) * 34)) * (M.calmo ? 0.82 : 1);
@@ -202,6 +213,7 @@
         if (jogador.escudo) poderes.push('🛡️');
         if (jogador.turbo > 0) poderes.push('⚡' + Math.ceil(jogador.turbo));
         if (jogador.ima > 0) poderes.push('🧲' + Math.ceil(jogador.ima));
+        if (heroiAtivo()) poderes.push('🦸' + Math.ceil(heroi.t));
         c.querySelector('#hud-poder').textContent = poderes.join(' ');
       }
 
@@ -272,7 +284,28 @@
       function brilho(x, y, cor, n) { for (let i = 0; i < n; i++) { const a = Math.random() * Math.PI * 2, v = 80 + Math.random() * 160; particulas.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, vida: 0.6, cor, r: 3 + Math.random() * 3 }); } }
       function pontinho(x, y, texto, cor = '#fff') { particulas.push({ x, y, vx: 0, vy: -70, vida: 0.9, texto, cor }); }
 
+      function chamarHeroi() {
+        heroi = { t: M.calmo ? 13 : 11, x: -140, y: -60, anim: 0, recarga: 1.1, saindo: false };
+        presentesSemHeroi = 0;
+        clarao = 0.7;
+        som('nivel');
+        try { gritoHeroi.currentTime = 0; gritoHeroi.volume = M.calmo ? 0.6 : 1; gritoHeroi.play().catch(() => {}); } catch (e) {}
+        aviso('🦸 SUPER MIGUEL! Ele transforma os obstáculos em peixinhos!', 2800);
+        if (navigator.vibrate && !M.calmo) navigator.vibrate([60, 40, 120]);
+      }
+      // raio de estrelas: o obstáculo vira um peixinho no ar
+      function transformar(o) {
+        const cx = o.x + o.w / 2, cy = (o.voa ? o.yv : o.y) + o.h / 2;
+        raios.push({ x1: heroi.x + 36, y1: heroi.y - 34, x2: cx, y2: cy, vida: 0.35 });
+        Object.assign(o, { tipo: 'peixe', fig: '🐟', voa: false, w: 34, h: 34, x: cx - 17, y: Math.min(cy, CHAO - 70) - 17 });
+        brilho(cx, cy, '#ffd54f', 14); brilho(cx, cy, '#ff80ab', 8); brilho(cx, cy, '#80deea', 8);
+        pontinho(cx, cy - 20, '✨ +5', '#ffe082');
+        pontos += 5;
+        som('estrela');
+      }
       function ganharPoder() {
+        if (!heroi && (Math.random() < 0.4 || presentesSemHeroi >= 2)) { chamarHeroi(); return; }
+        presentesSemHeroi++;
         const p = M.sortear(['escudo', 'turbo', 'ima']);
         som('poder');
         miar('feliz');
@@ -283,6 +316,7 @@
 
       function bater(o) {
         if (jogador.turbo > 0) { o.morto = true; brilho(o.x + 25, o.y + 25, '#ffd54f', 12); som('estrela'); pontos += 5; return; }
+        if (heroiAtivo()) { transformar(o); return; }
         if (jogador.invencivel > 0) return;
         if (jogador.escudo) { jogador.escudo = false; jogador.invencivel = 1.2; som('escudo'); o.morto = true; brilho(o.x + 25, o.y + 25, '#80deea', 14); return; }
         vidas--;
@@ -352,6 +386,26 @@
           brilho(jogador.x + 34, jogador.y + 40, '#ffd54f', 24);
         }
         for (const p of ['invencivel', 'turbo', 'ima']) if (jogador[p] > 0) jogador[p] = Math.max(0, jogador[p] - dt);
+        if (heroi) {
+          heroi.anim += dt;
+          heroi.t -= dt;
+          if (heroi.t <= 0 && !heroi.saindo) { heroi.saindo = true; pontinho(heroi.x, heroi.y - 50, 'Tchau! 👋', '#fff'); }
+          if (heroi.saindo) { heroi.x += 560 * dt; heroi.y -= 320 * dt; if (heroi.y < -Math.max(0, sobraTopo) - 200) heroi = null; }
+          else {
+            const ax = jogador.x + 20, ay = Math.min(jogador.y, CHAO - jogador.h) - 95 + Math.sin(heroi.anim * 3) * 10;
+            heroi.x += (ax - heroi.x) * Math.min(1, dt * 3.5);
+            heroi.y += (ay - heroi.y) * Math.min(1, dt * 3.5);
+            heroi.recarga -= dt;
+            if (heroi.recarga <= 0) {
+              const alvo = coisas.filter(o => o.tipo === 'obst' && !o.morto && o.x > jogador.x + 50 && o.x < larguraMundo - 30).sort((a, b) => a.x - b.x)[0];
+              if (alvo) { transformar(alvo); heroi.recarga = 0.45; } else heroi.recarga = 0.15;
+            }
+          }
+          // rastro de estrelinhas coloridas
+          if (heroi && Math.random() < dt * 30) particulas.push({ x: heroi.x - 30, y: heroi.y + (Math.random() - 0.5) * 30, vx: -120 - Math.random() * 80, vy: (Math.random() - 0.5) * 40, vida: 0.6, cor: M.sortear(['#ffd54f', '#ff80ab', '#80deea', '#b388ff', '#a5d6a7']), r: 3 + Math.random() * 3 });
+        }
+        for (let i = raios.length - 1; i >= 0; i--) { raios[i].vida -= dt; raios[i].x2 -= velocidade * dt; if (raios[i].vida <= 0) raios.splice(i, 1); }
+        if (clarao > 0) clarao = Math.max(0, clarao - dt * 1.4);
 
         // jogador
         const antes = jogador.y + jogador.h;
@@ -378,7 +432,7 @@
           o.x -= dx;
           if (o.voa) { o.fase += dt * 4; o.yv = o.y + Math.sin(o.fase) * 14; }
           if (o.morto) continue;
-          if (jogador.ima > 0 && o.tipo === 'peixe' && o.x < jogador.x + 260 && o.x > jogador.x - 20) {
+          if ((jogador.ima > 0 || heroiAtivo()) && o.tipo === 'peixe' && o.x < jogador.x + 260 && o.x > jogador.x - 20) {
             o.x += (jogador.x + 20 - o.x) * Math.min(1, dt * 6);
             o.y += (jogador.y + 30 - o.y) * Math.min(1, dt * 6);
           }
@@ -483,6 +537,20 @@
         }
         if (j.escudo) { ctx.strokeStyle = 'rgba(128,222,234,.9)'; ctx.lineWidth = 4; ctx.fillStyle = 'rgba(128,222,234,.18)'; ctx.beginPath(); ctx.arc(j.x + j.w / 2, j.y + j.h / 2, 54, 0, 7); ctx.fill(); ctx.stroke(); }
         if (j.ima > 0) emoji('🧲', j.x + j.w + 6, j.y + 6, 22);
+        if (heroi) desenharHeroi();
+        for (const r of raios) {
+          const a = Math.max(0, r.vida / 0.35);
+          ctx.save();
+          ctx.globalAlpha = a;
+          const gr = ctx.createLinearGradient(r.x1, r.y1, r.x2, r.y2);
+          ['#ff5252', '#ffd740', '#69f0ae', '#40c4ff', '#e040fb'].forEach((cor, i) => gr.addColorStop(i / 4, cor));
+          ctx.lineCap = 'round';
+          ctx.shadowColor = '#fff59d'; ctx.shadowBlur = 18;
+          ctx.strokeStyle = gr; ctx.lineWidth = 12; ctx.beginPath(); ctx.moveTo(r.x1, r.y1); ctx.lineTo(r.x2, r.y2); ctx.stroke();
+          ctx.strokeStyle = '#fff'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(r.x1, r.y1); ctx.lineTo(r.x2, r.y2); ctx.stroke();
+          ctx.restore();
+          emoji('🌟', r.x2, r.y2, 30 * (1 + (1 - a)));
+        }
         // partículas
         for (const p of particulas) {
           ctx.globalAlpha = Math.max(0, Math.min(1, p.vida * 2));
@@ -490,6 +558,39 @@
           else { ctx.fillStyle = p.cor; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill(); }
         }
         ctx.globalAlpha = 1;
+        if (clarao > 0) { ctx.fillStyle = `rgba(255,243,190,${clarao * 0.7})`; ctx.fillRect(-20, -Math.max(0, sobraTopo) - 20, W + 40, ALTURA + Math.max(0, sobraTopo) + 100); }
+      }
+      function desenharHeroi() {
+        const H = 104, W = H * 0.756, t = heroi.anim;
+        ctx.save();
+        ctx.translate(heroi.x, heroi.y);
+        ctx.rotate(heroi.saindo ? -0.5 : -0.14 + Math.sin(t * 3) * 0.04);
+        // brilho dourado em volta
+        const aura = ctx.createRadialGradient(0, 0, 10, 0, 0, H * 0.75);
+        aura.addColorStop(0, 'rgba(255,236,130,.55)'); aura.addColorStop(1, 'rgba(255,236,130,0)');
+        ctx.fillStyle = aura; ctx.beginPath(); ctx.arc(0, 0, H * 0.75, 0, 7); ctx.fill();
+        // capa vermelha balançando no vento
+        const onda = (k) => Math.sin(t * 9 + k) * 7;
+        const capa = ctx.createLinearGradient(0, -H * 0.1, -W * 1.1, H * 0.3);
+        capa.addColorStop(0, '#e53935'); capa.addColorStop(1, '#b71c1c');
+        ctx.fillStyle = capa; ctx.strokeStyle = '#7f0000'; ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(-W * 0.12, -H * 0.14);
+        ctx.quadraticCurveTo(-W * 0.6, -H * 0.12 + onda(0), -W * 1.15, -H * 0.02 + onda(1));
+        ctx.lineTo(-W * 1.25, H * 0.12 + onda(1.6));
+        ctx.lineTo(-W * 1.05, H * 0.2 + onda(2.2));
+        ctx.lineTo(-W * 1.12, H * 0.34 + onda(2.8));
+        ctx.quadraticCurveTo(-W * 0.55, H * 0.32 + onda(1.5), W * 0.12, -H * 0.06);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+        // o Miguel virado para a frente, com o dedo apontando o caminho
+        if (imgHeroi.complete && imgHeroi.naturalWidth) {
+          ctx.save(); ctx.scale(-1, 1);
+          ctx.drawImage(imgHeroi, -W / 2, -H / 2, W, H);
+          ctx.restore();
+        } else emoji('🦸', 0, 0, 70);
+        // broche de estrela da capa
+        emoji('⭐', -W * 0.02, -H * 0.12, 16);
+        ctx.restore();
       }
       function roundRect(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); ctx.fill(); }
 
