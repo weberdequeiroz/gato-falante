@@ -170,6 +170,7 @@
 
   .vozes {
     display: flex;
+    flex-wrap: wrap;
     width: 100%;
     justify-content: center;
     gap: 8px;
@@ -248,13 +249,14 @@
     color: var(--texto);
     box-shadow: 0 4px 0 rgba(0,0,0,.18);
     cursor: pointer;
-    flex: 1 1 0;
+    flex: 0 1 calc(25% - 6px);
     min-width: 0;
     max-width: 110px;
   }
   .vozes button:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,.18); }
   .vozes button[aria-pressed="true"] { background: var(--botao-ativo); color: #3a2400; }
   .vozes .emoji { display: block; font-size: 24px; line-height: 1.1; }
+  .vozes .nome { display: block; font-size: .85em; line-height: 1.15; overflow-wrap: anywhere; }
 </style>
 </head>
 <body>
@@ -352,10 +354,13 @@
   </div>
 
   <div class="vozes" id="vozes">
-    <button data-voz="esquilo" aria-pressed="true"><span class="emoji">🐿️</span>Fininha</button>
-    <button data-voz="gatinho" aria-pressed="false"><span class="emoji">🐱</span>Gatinho</button>
-    <button data-voz="monstro" aria-pressed="false"><span class="emoji">👹</span>Monstro</button>
-    <button data-voz="robo" aria-pressed="false"><span class="emoji">🤖</span>Robô</button>
+    <button data-voz="esquilo" aria-pressed="true"><span class="emoji">🐭</span><span class="nome">Fininha</span></button>
+    <button data-voz="dani" aria-pressed="false"><span class="emoji">🐿️</span><span class="nome">Tia Dani</span></button>
+    <button data-voz="bob" aria-pressed="false"><span class="emoji">🧽</span><span class="nome">Bob Esponja</span></button>
+    <button data-voz="pirata" aria-pressed="false"><span class="emoji">🏴‍☠️</span><span class="nome">Pirata</span></button>
+    <button data-voz="gatinho" aria-pressed="false"><span class="emoji">🐱</span><span class="nome">Gatinho</span></button>
+    <button data-voz="monstro" aria-pressed="false"><span class="emoji">👹</span><span class="nome">Monstro</span></button>
+    <button data-voz="robo" aria-pressed="false"><span class="emoji">🤖</span><span class="nome">Robô</span></button>
   </div>
   <footer>DESENVOLVIDO POR VINI &amp; WEBER</footer>
 </main>
@@ -378,9 +383,14 @@
   const bocaFechada = document.getElementById('boca-fechada');
   const bracoEIn = document.querySelector('.braco-e-in');
 
-  // Vozes: velocidade de reprodução (muda o tom) e efeito robô opcional
+  // Vozes: velocidade de reprodução (muda o tom) e efeitos opcionais
+  //   tremido: voz tremendo   nasal: voz pelo nariz   rouco: voz arranhada
+  //   eco: repete no fundo    brilho: mais agudos      robo: voz metálica
   const VOZES = {
-    esquilo: { velocidade: 1.7 },
+    esquilo: { velocidade: 1.6 },
+    dani:    { velocidade: 2.0, brilho: true, frases: ['Hihihi! Oi, eu sou a tia Dani! 🐿️', 'Tia Dani na área! 🐿️'] },
+    bob:     { velocidade: 1.3, nasal: true, tremido: { hz: 7, forca: 0.05 }, frases: ['Estou pronto! Estou pronto! 🧽', 'Ahahahaha! 🧽'] },
+    pirata:  { velocidade: 0.82, rouco: true, eco: true, tremido: { hz: 3, forca: 0.03 }, frases: ['Arrr, marujo! 🏴‍☠️', 'Ahoy! Ao mar! ☠️'] },
     gatinho: { velocidade: 1.35 },
     monstro: { velocidade: 0.7 },
     robo:    { velocidade: 1.1, robo: true },
@@ -517,24 +527,77 @@
     const analisador = ctx.createAnalyser();
     analisador.fftSize = 512;
     let saida = fonte;
+    const osciladores = [];
+    const ligar = (no) => { saida.connect(no); saida = no; };
 
-    let oscilador = null;
+    if (voz.tremido) {
+      const lfo = ctx.createOscillator();
+      const forca = ctx.createGain();
+      lfo.frequency.value = voz.tremido.hz;
+      forca.gain.value = voz.velocidade * voz.tremido.forca;
+      lfo.connect(forca);
+      forca.connect(fonte.playbackRate);
+      osciladores.push(lfo);
+    }
     if (voz.robo) {
       const modulador = ctx.createGain();
       modulador.gain.value = 0;
-      oscilador = ctx.createOscillator();
-      oscilador.type = 'square';
-      oscilador.frequency.value = 60;
-      oscilador.connect(modulador.gain);
-      oscilador.start();
-      fonte.connect(modulador);
-      saida = modulador;
+      const osc = ctx.createOscillator();
+      osc.type = 'square';
+      osc.frequency.value = 60;
+      osc.connect(modulador.gain);
+      osciladores.push(osc);
+      ligar(modulador);
     }
+    if (voz.nasal) {
+      const grave = ctx.createBiquadFilter();
+      grave.type = 'highpass';
+      grave.frequency.value = 450;
+      ligar(grave);
+      const nariz = ctx.createBiquadFilter();
+      nariz.type = 'peaking';
+      nariz.frequency.value = 1500;
+      nariz.Q.value = 2;
+      nariz.gain.value = 14;
+      ligar(nariz);
+    }
+    if (voz.brilho) {
+      const agudo = ctx.createBiquadFilter();
+      agudo.type = 'highshelf';
+      agudo.frequency.value = 3000;
+      agudo.gain.value = 6;
+      ligar(agudo);
+    }
+    if (voz.rouco) {
+      const arranhado = ctx.createWaveShaper();
+      arranhado.curve = curvaRouca(25);
+      arranhado.oversample = '4x';
+      ligar(arranhado);
+      const abafado = ctx.createBiquadFilter();
+      abafado.type = 'lowpass';
+      abafado.frequency.value = 2800;
+      ligar(abafado);
+      const volume = ctx.createGain();
+      volume.gain.value = 0.6;
+      ligar(volume);
+    }
+    if (voz.eco) {
+      const atraso = ctx.createDelay(1);
+      const volta = ctx.createGain();
+      atraso.delayTime.value = 0.22;
+      volta.gain.value = 0.35;
+      saida.connect(atraso);
+      atraso.connect(volta);
+      volta.connect(atraso);
+      volta.connect(analisador);
+    }
+    for (const osc of osciladores) osc.start();
     saida.connect(analisador);
     analisador.connect(ctx.destination);
 
     setEstado('falando');
-    falar(['Hihihi! 😹', 'Olha eu falando! 😸', 'Miau! 🎶', 'Eu sou o Miguel! 😺'][Math.floor(Math.random() * 4)]);
+    const frases = voz.frases || ['Hihihi! 😹', 'Olha eu falando! 😸', 'Miau! 🎶', 'Eu sou o Miguel! 😺'];
+    falar(frases[Math.floor(Math.random() * frases.length)]);
 
     const amostras = new Float32Array(analisador.fftSize);
     let animando = true;
@@ -552,11 +615,20 @@
 
     fonte.onended = () => {
       animando = false;
-      if (oscilador) oscilador.stop();
+      for (const osc of osciladores) osc.stop();
       setEstado('parado');
       falar('Fala mais comigo! Toque no Miguel! 😺');
     };
     fonte.start();
+  }
+
+  function curvaRouca(k) {
+    const n = 1024, curva = new Float32Array(n);
+    for (let i = 0; i < n; i++) {
+      const x = (i * 2) / n - 1;
+      curva[i] = ((1 + k) * x) / (1 + k * Math.abs(x));
+    }
+    return curva;
   }
 
   function soltarNota() {
@@ -590,7 +662,7 @@
     for (const outro of document.querySelectorAll('.vozes button')) {
       outro.setAttribute('aria-pressed', String(outro === b));
     }
-    falar('Voz ' + b.textContent.trim().replace(/^\S+\s*/, '') + '! Toque em mim e fale.');
+    falar('Voz ' + b.querySelector('.nome').textContent + '! Toque em mim e fale.');
   });
 
   // piscar de vez em quando
@@ -609,7 +681,7 @@
     { texto: 'Oi! Eu sou o Miguel, o gato falante! 😺' },
     { texto: 'Toque em mim e fale alguma coisa. 👆' },
     { texto: 'Quando você parar de falar, eu repito com uma voz engraçada! 😹' },
-    { texto: 'Aqui embaixo você escolhe a minha voz: fininha, gatinho, monstro ou robô! 👇', vozes: true },
+    { texto: 'Aqui embaixo você escolhe a minha voz: tem tia Dani, Bob Esponja, pirata, monstro, robô e muito mais! 👇', vozes: true },
     { texto: 'Vamos brincar? Toque em mim! 🐾' },
   ];
   const vozesBarra = document.getElementById('vozes');
