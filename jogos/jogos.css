@@ -477,17 +477,29 @@
 }
 .botao-vestir span { font-size: 26px; line-height: 1.1; margin-top: 4px; }
 .botao-vestir:active { transform: translateY(3px); }
+/* botão de conversar sem tocar: grande, colorido e com ondinhas de som quando está ligado */
 .botao-auto {
   position: absolute; z-index: 3; right: 0; bottom: 8px;
-  display: flex; flex-direction: column; align-items: center; gap: 0;
-  width: 64px; height: 64px; border: 3px solid #fff; border-radius: 50%;
-  background: linear-gradient(#b9c4d0, #8d99a8); color: #fff; font-weight: 900; font-size: 11px;
-  box-shadow: 0 4px 0 #66727f, 0 8px 16px rgba(31,45,61,.18);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;
+  width: 76px; height: 76px; border: 4px solid #fff; border-radius: 50%; padding: 0;
+  background: radial-gradient(circle at 35% 30%, #c9a7ff, #8b5cf6 60%, #6d3fe0); color: #fff;
+  font: inherit; font-weight: 900; font-size: 11px; letter-spacing: .2px;
+  box-shadow: 0 5px 0 #5631b8, 0 10px 18px rgba(31,45,61,.22);
+  animation: auto-chama 2.4s ease-in-out infinite;
 }
-.botao-auto span { font-size: 24px; line-height: 1.1; margin-top: 4px; }
-.botao-auto:active { transform: translateY(3px); }
-.botao-auto.ligado { background: linear-gradient(#6fdc8c, #2fa84f); box-shadow: 0 4px 0 #1f7a38, 0 0 0 5px rgba(47,168,79,.25), 0 8px 16px rgba(31,45,61,.18); animation: auto-pulsa 1.8s ease-in-out infinite; }
-@keyframes auto-pulsa { 50% { box-shadow: 0 4px 0 #1f7a38, 0 0 0 10px rgba(47,168,79,.12), 0 8px 16px rgba(31,45,61,.18); } }
+.botao-auto .auto-icone { font-size: 30px; line-height: 1; margin-top: 2px; filter: drop-shadow(0 2px 0 rgba(0,0,0,.15)); }
+.botao-auto .auto-rotulo { text-shadow: 0 1px 0 rgba(0,0,0,.25); }
+.botao-auto:active { transform: translateY(4px); box-shadow: 0 1px 0 #5631b8, 0 4px 10px rgba(31,45,61,.2); }
+.botao-auto .auto-ondas { position: absolute; inset: -4px; pointer-events: none; }
+.botao-auto .auto-ondas i { position: absolute; inset: 0; border-radius: 50%; border: 4px solid rgba(52,178,90,.55); opacity: 0; }
+.botao-auto.ligado { background: radial-gradient(circle at 35% 30%, #9ef0b4, #34b25a 60%, #22863f); box-shadow: 0 5px 0 #1b6e33, 0 10px 18px rgba(31,45,61,.22); animation: none; }
+.botao-auto.ligado .auto-icone { animation: auto-fala .9s ease-in-out infinite; }
+.botao-auto.ligado .auto-ondas i { animation: auto-onda 1.6s ease-out infinite; }
+.botao-auto.ligado .auto-ondas i:last-child { animation-delay: .8s; }
+@keyframes auto-chama { 0%, 85%, 100% { transform: scale(1); } 90% { transform: scale(1.08) rotate(-4deg); } 95% { transform: scale(1.04) rotate(4deg); } }
+@keyframes auto-fala { 50% { transform: scale(1.15); } }
+@keyframes auto-onda { 0% { transform: scale(1); opacity: .9; } 100% { transform: scale(1.55); opacity: 0; } }
+.calmo .botao-auto, .calmo .botao-auto.ligado .auto-icone { animation: none; }
 .app.vestindo .botao-auto { display: none; }
 .app.vestindo .acoes, .app.vestindo .painel-vozes, .app.vestindo footer, .app.vestindo .estado, .app.vestindo .botao-vestir { display: none; }
 .app.vestindo { padding-bottom: calc(48vh + 8px); }

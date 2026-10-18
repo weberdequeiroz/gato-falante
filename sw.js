@@ -1,5 +1,5 @@
 // Guarda o jogo no celular para abrir rápido; sempre tenta buscar a versão nova primeiro
-const CACHE = 'miguel-v17';
+const CACHE = 'miguel-v18';
 const ARQUIVOS = ['./', 'index.html', 'manifest.webmanifest', 'icones/icone-192.png', 'icones/icone-512.png', 'icones/apple-touch-icon.png', 'icones/miguel.png',
   'jogos/jogos.css', 'jogos/nucleo.js', 'jogos/aprender.js', 'jogos/idiomas.js', 'jogos/musica.js', 'jogos/colorir.js', 'jogos/pontos.js', 'jogos/memoria.js', 'jogos/bolhas.js',
   'jogos/sons.js', 'jogos/mercadinho.js', 'jogos/sombras.js', 'jogos/diferente.js', 'jogos/quebracabeca.js',
@@ -28,8 +28,10 @@ self.addEventListener('fetch', (e) => {
   }
   // a página sempre confere no servidor se mudou (sem esperar o cache de 10 minutos)
   const pagina = e.request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname.endsWith('/');
+  // código e estilos também conferem no servidor (pergunta rápida "mudou?"), para nunca misturar versões
+  const codigo = /\.(js|css|json)$/.test(url.pathname);
   e.respondWith(
-    fetch(e.request, pagina ? { cache: 'no-cache' } : undefined)
+    fetch(e.request, pagina || codigo ? { cache: 'no-cache' } : undefined)
       .then((resposta) => {
         if (resposta.status !== 200) return resposta;
         const copia = resposta.clone();
@@ -37,6 +39,6 @@ self.addEventListener('fetch', (e) => {
         caches.open(CACHE).then((c) => c.put(chave, copia));
         return resposta;
       })
-      .catch(() => caches.match(pagina ? new Request(url.origin + url.pathname) : e.request))
+      .catch(() => caches.match(pagina ? new Request(url.origin + url.pathname) : e.request, { ignoreSearch: !pagina }))
   );
 });
