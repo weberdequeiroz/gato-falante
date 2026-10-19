@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap">
 <title>Miguel, o Gato Falante</title>
-<link rel="stylesheet" href="jogos/jogos.css?v=202610191341">
+<link rel="stylesheet" href="jogos/jogos.css?v=202610191347">
 <style>
   /* Uma tela só, de cima para baixo: topo com ajuda → aviso do que está acontecendo → Miguel → ações grandes → vozes.
      Cores calmas e sempre iguais, botões grandes com ícone + palavra, um estado de cada vez. */
@@ -215,6 +215,33 @@
   #gato.rezando #braco-e, #gato.rezando #braco-d, #gato.rezando #roupa-mangas { display: none; }
   @keyframes orar { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
   @keyframes balanca { 25% { transform: rotate(-3deg); } 75% { transform: rotate(3deg); } }
+  /* expressões ao falar: alegre, pergunta, triste e surpresa */
+  #sobrancelhas, #sobr-e, #sobr-d { transition: opacity .25s, transform .3s ease; }
+  #sobr-e { transform-origin: 148px 154px; } #sobr-d { transform-origin: 252px 154px; }
+  #gato .olho-aberto { transform-origin: 200px 214px; transition: transform .25s ease; }
+  #orelha-e, #orelha-d { transition: transform .3s ease; }
+  #gato[class*="expr-"] #sobrancelhas { opacity: 1; }
+  #gato.expr-feliz #sobrancelhas { transform: translateY(-7px); }
+  #gato.expr-feliz .olho-aberto { transform: scaleY(.86); }
+  #gato.expr-feliz.falando #cabeca { animation: aceno .5s ease-in-out infinite; }
+  #gato.expr-pergunta #sobr-d { transform: translateY(-10px) rotate(-6deg); }
+  #gato.expr-pergunta.falando #cabeca { animation: inclina 1.2s ease-in-out infinite; }
+  #gato.expr-pergunta #orelha-d { transform: rotate(-8deg); }
+  #gato.expr-triste #sobr-e { transform: rotate(14deg) translateY(2px); }
+  #gato.expr-triste #sobr-d { transform: rotate(-14deg) translateY(2px); }
+  #gato.expr-triste .olho-aberto { transform: scaleY(.92); }
+  #gato.expr-triste #orelha-e { transform: rotate(-12deg); }
+  #gato.expr-triste #orelha-d { transform: rotate(12deg); }
+  #gato.expr-triste.falando #cabeca { animation: none; transform: rotate(-4deg) translateY(4px); }
+  #gato.expr-surpreso #sobrancelhas { transform: translateY(-13px); }
+  #gato.expr-surpreso .olho-aberto { transform: scale(1.07); }
+  #gato.expr-surpreso #orelha-e { transform: rotate(6deg); }
+  #gato.expr-surpreso #orelha-d { transform: rotate(-6deg); }
+  #gato.falando #pupilas { animation: olhar 3s ease-in-out infinite; }
+  @keyframes aceno { 50% { transform: translateY(-5px) rotate(2deg); } }
+  @keyframes inclina { 0%, 100% { transform: rotate(7deg); } 50% { transform: rotate(10deg); } }
+  @keyframes olhar { 0%, 100% { transform: translateX(0); } 30% { transform: translateX(-3px); } 65% { transform: translateX(3px); } }
+  .calmo #gato.falando #pupilas, .calmo #gato.expr-feliz.falando #cabeca, .calmo #gato.expr-pergunta.falando #cabeca { animation: none; }
   #gato.cutucado #corpo-todo { animation: pulinho .35s ease-out; }
   #gato.ronronando #corpo-todo { animation: ronrom 1.6s ease-in-out infinite; transform-origin: 50% 90%; }
   @keyframes ronrom { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.025, 1.015); } }
@@ -801,6 +828,11 @@
               <path d="M226 196 Q 236 180 254 178" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".45"/>
             </g>
             <!-- olhos fechados (piscar e rezar) -->
+            <!-- sobrancelhas: invisíveis no desenho normal, aparecem nas expressões ao falar -->
+            <g id="sobrancelhas" opacity="0" fill="none" stroke="#a24e0c" stroke-width="7" stroke-linecap="round">
+              <path id="sobr-e" d="M120 160 Q 148 148 176 156"/>
+              <path id="sobr-d" d="M224 156 Q 252 148 280 160"/>
+            </g>
             <g class="olho-fechado" fill="none" stroke="#2a1a10" stroke-width="6" stroke-linecap="round">
               <path d="M116 220 Q 150 246 184 220"/>
               <path d="M216 220 Q 250 246 284 220"/>
@@ -1802,6 +1834,15 @@
     proxima();
   }
 
+  // a cara do Miguel acompanha o jeito da frase
+  function expressaoDa(texto) {
+    const t = texto.toLowerCase();
+    if (/\b(uau|nossa|olha só|que legal|incrível)\b/.test(t)) return 'surpreso';
+    if (/\b(ops|ai|ui|não é|tente de novo|errou|que pena|faltam?|desculpa|dodói|medo)\b/.test(t)) return 'triste';
+    if (/\?\s*\S*\s*$/.test(t) || /\?/.test(t) && !/!/.test(t)) return 'pergunta';
+    if (/!/.test(t)) return 'feliz';
+    return null;
+  }
   function falarPartes(partes, { jeito = VOZ_MIGUEL, pronto = () => {}, forcar = false, devagar = false } = {}) {
     if (typeof partes === 'string') partes = [{ t: partes }];
     if (colhendoFalas) for (const p of partes) falasColhidas.set(chaveFala(p.t, p.lang), { t: p.t, lang: p.lang || 'pt-BR' });
@@ -1811,15 +1852,29 @@
     const vaiFalar = !colhendoFalas && (!mudo || forcar) && ('speechSynthesis' in window || usarVozNatural());
     let acabou = false;
     clearInterval(mexendoBoca);
-    const boca = vaiFalar ? setInterval(() => abrirBoca(0.25 + Math.random() * 0.75), 110) : null;
+    // a boca abre e fecha no ritmo das sílabas e fecha nas pausas entre as frases
+    let fase = 0, forca = 0.8, antes = performance.now();
+    const boca = vaiFalar ? setInterval(() => {
+      const agora = performance.now(), dt = (agora - antes) / 1000; antes = agora;
+      const soando = (audioFala && !audioFala.paused && !audioFala.ended) || ('speechSynthesis' in window && speechSynthesis.speaking);
+      if (!soando) { abrirBoca(0); return; }
+      const ritmo = 4.4 * (audioFala && !audioFala.paused ? audioFala.playbackRate : 1);
+      const antesFase = Math.floor(fase);
+      fase += dt * ritmo;
+      if (Math.floor(fase) !== antesFase) forca = 0.5 + Math.random() * 0.5;
+      abrirBoca(0.08 + forca * Math.abs(Math.sin(Math.PI * fase)));
+    }, 40) : null;
     mexendoBoca = boca;
+    const expressao = vaiFalar ? expressaoDa(texto) : null;
+    gato.classList.remove('expr-feliz', 'expr-pergunta', 'expr-triste', 'expr-surpreso');
+    if (expressao) gato.classList.add('expr-' + expressao);
     const fim = () => {
       if (acabou) return;
       acabou = true;
       // se a voz do aparelho falhar (ou estiver desligada), ainda dá tempo de ler o balão
       setTimeout(() => {
         clearInterval(boca);
-        if (mexendoBoca === boca) abrirBoca(0);
+        if (mexendoBoca === boca) { abrirBoca(0); gato.classList.remove('expr-feliz', 'expr-pergunta', 'expr-triste', 'expr-surpreso'); }
         pronto();
       }, Math.max(0, minimo - (performance.now() - inicio)));
     };
@@ -2579,7 +2634,7 @@
 
   // ---------- Atualizações ----------
   // o app instalado fica aberto em segundo plano; ao voltar para ele, confere se tem versão nova
-  const VERSAO = '202610191341';
+  const VERSAO = '202610191347';
   const avisoAtualizar = document.getElementById('atualizar');
   let registro = null;
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
@@ -2616,22 +2671,22 @@
   }
 })();
 </script>
-<script src="jogos/roupas.js?v=202610191341" defer></script>
-<script src="jogos/nucleo.js?v=202610191341" defer></script>
-<script src="jogos/aprender.js?v=202610191341" defer></script>
-<script src="jogos/idiomas.js?v=202610191341" defer></script>
-<script src="jogos/musica.js?v=202610191341" defer></script>
-<script src="jogos/colorir.js?v=202610191341" defer></script>
-<script src="jogos/pontos.js?v=202610191341" defer></script>
-<script src="jogos/memoria.js?v=202610191341" defer></script>
-<script src="jogos/bolhas.js?v=202610191341" defer></script>
-<script src="jogos/sons.js?v=202610191341" defer></script>
-<script src="jogos/mercadinho.js?v=202610191341" defer></script>
-<script src="jogos/sombras.js?v=202610191341" defer></script>
-<script src="jogos/diferente.js?v=202610191341" defer></script>
-<script src="jogos/quebracabeca.js?v=202610191341" defer></script>
+<script src="jogos/roupas.js?v=202610191347" defer></script>
+<script src="jogos/nucleo.js?v=202610191347" defer></script>
+<script src="jogos/aprender.js?v=202610191347" defer></script>
+<script src="jogos/idiomas.js?v=202610191347" defer></script>
+<script src="jogos/musica.js?v=202610191347" defer></script>
+<script src="jogos/colorir.js?v=202610191347" defer></script>
+<script src="jogos/pontos.js?v=202610191347" defer></script>
+<script src="jogos/memoria.js?v=202610191347" defer></script>
+<script src="jogos/bolhas.js?v=202610191347" defer></script>
+<script src="jogos/sons.js?v=202610191347" defer></script>
+<script src="jogos/mercadinho.js?v=202610191347" defer></script>
+<script src="jogos/sombras.js?v=202610191347" defer></script>
+<script src="jogos/diferente.js?v=202610191347" defer></script>
+<script src="jogos/quebracabeca.js?v=202610191347" defer></script>
 <script src="jogos/penelope3d.js?v=202610181757" defer></script>
-<script src="jogos/corrida.js?v=202610191341" defer></script>
-<script src="jogos/mundo.js?v=202610191341" defer></script>
+<script src="jogos/corrida.js?v=202610191347" defer></script>
+<script src="jogos/mundo.js?v=202610191347" defer></script>
 </body>
 </html>
