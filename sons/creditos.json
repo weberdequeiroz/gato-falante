@@ -358,5 +358,13 @@
   "url": "http://www.freesound.org/people/InDaHouse20/sounds/114587/",
   "autor": "InDaHouse20",
   "licenca": "CC0"
+ },
+ {
+  "som": "miado-abertura",
+  "clipe": "2-110011-A",
+  "original": "cat meow",
+  "url": "https://github.com/karolpiczak/ESC-50",
+  "autor": "tuberatanka",
+  "licenca": "CC0"
  }
 ]
