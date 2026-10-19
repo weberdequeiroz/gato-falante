@@ -630,13 +630,14 @@
         if (penelopeAtiva() && jog.ultimoSeguro) {
           const o = jog.ultimoSeguro;
           jog.pos.set(o.x, o.y + 0.01, o.z); jog.vel.set(0, 0, 0);
-          latir(); som('mola');
+          latir(); som('mola'); M.vibrar && M.vibrar(40);
           for (let k = 0; k < 14; k++) brilho(o.x + (Math.random() - 0.5) * 2, o.y + Math.random() * 2, o.z + (Math.random() - 0.5) * 2, 0xffd23f);
           aviso('🐶 A Penélope te salvou!', 1600);
           return;
         }
         som(motivo === 'lava' ? 'cair' : 'voltar');
         M.miar('ai');
+        M.vibrar && M.vibrar(motivo === 'lava' ? [80, 50, 80, 50, 120] : [150, 60, 80]);
         aviso(motivo === 'lava' ? '🔥 Ui! Chão quente! Volte para a bandeira.' : motivo === 'giro' ? '💫 A barra te pegou! Tente de novo.' : '🌀 Caiu! Tente de novo.', 1600);
         irParaBandeira();
       }
@@ -699,7 +700,7 @@
           if (!sobrepoe(jog.pos.x, jog.pos.y, jog.pos.z, o)) continue;
           if (jog.vel.y <= 0 && jog.pos.y > o.y - 0.6) {
             jog.pos.y = o.y; jog.vel.y = 0; jog.noChao = true; jog.apoio = o;
-          } else if (jog.vel.y > 0) { jog.pos.y = o.y - o.h - ALTURA - 0.001; jog.vel.y = 0; }
+          } else if (jog.vel.y > 0) { jog.pos.y = o.y - o.h - ALTURA - 0.001; jog.vel.y = 0; M.vibrar && M.vibrar(50); }
         }
         const a = jog.apoio;
         if (a && !a.lava && !a.some && !a.move) jog.ultimoSeguro = a;

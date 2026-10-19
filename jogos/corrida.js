@@ -338,7 +338,7 @@
         som('nivel');
         try { gritoHeroi.currentTime = 0; gritoHeroi.volume = M.calmo ? 0.6 : 1; gritoHeroi.play().catch(() => {}); } catch (e) {}
         aviso('🦸 SUPER MIGUEL! Ele transforma os obstáculos em peixinhos!', 2800);
-        if (navigator.vibrate && !M.calmo) navigator.vibrate([60, 40, 120]);
+        M.vibrar && M.vibrar([60, 40, 120]);
       }
       // raio de estrelas: o obstáculo vira um peixinho no ar
       function transformar(o) {
@@ -375,7 +375,7 @@
         jogador.invencivel = 1.8;
         jogador.vy = -420; jogador.noChao = false;
         tremor = 0.35;
-        if (navigator.vibrate && !M.calmo) navigator.vibrate(120);
+        M.vibrar && M.vibrar([150, 60, 80]);
         if (vidas <= 0) fimDeJogo();
       }
       let tremor = 0;
