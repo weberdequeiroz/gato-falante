@@ -702,11 +702,11 @@
         parte(olhosFechados ? partes.piscando : partes.cabeca, 200, 330, cab, 0, chao ? Math.abs(Math.sin(ph + 0.5)) * 6 : 0);
       }
       // desenha uma imagem em pedacinhos, cada um deslocado por campo(u, v): dá movimento a uma figura parada
-      function desenharMalha(im, x, y, w, h, campo, nx = 9, ny = 13) {
+      function desenharMalha(im, x, y, w, h, campo, nx = 9, ny = 18) {
         const iw = im.naturalWidth, ih = im.naturalHeight, cw = w / nx, ch = h / ny;
         for (let i = 0; i < nx; i++) for (let k = 0; k < ny; k++) {
           const [dx, dy] = campo((i + 0.5) / nx, (k + 0.5) / ny);
-          ctx.drawImage(im, i * iw / nx, k * ih / ny, iw / nx, ih / ny, x + i * cw + dx - 0.4, y + k * ch + dy - 0.4, cw + 0.8, ch + 0.8);
+          ctx.drawImage(im, i * iw / nx, k * ih / ny, iw / nx, ih / ny, x + i * cw + dx - 0.8, y + k * ch + dy - 0.8, cw + 1.6, ch + 1.6);
         }
       }
       function desenharPenelope() {
@@ -753,12 +753,11 @@
           desenharMalha(imgHeroi, -W / 2, -H / 2, W, H, (u, v) => {
             // (u, v) na imagem original: o braço esticado fica à esquerda (vira a frente no espelho)
             let dx = 0, dy = 0;
-            // pernas batendo como quem nada no ar (uma para cada lado, sem rasgar no meio)
-            if (v > 0.6) {
-              const k = (v - 0.6) / 0.4, lado = Math.min(1, Math.max(0, (u - 0.38) / 0.24));
-              const a = t * 8;
-              dx += k * 9 * Math.sin(a) * (1 - 2 * lado);
-              dy += k * 5 * Math.cos(a) * (1 - 2 * lado);
+            // pernas balançando juntas, como quem voa (sem separar uma da outra, para a imagem não abrir)
+            if (v > 0.55) {
+              const k = (v - 0.55) / 0.45;
+              dx += k * k * 8 * Math.sin(t * 6);
+              dy += k * k * 2 * Math.cos(t * 6);
             }
             // cabeça balançando de alegria
             if (v < 0.45) { const k = (0.45 - v) / 0.45; dx += k * Math.sin(t * 4) * 2.5; dy += k * Math.sin(t * 6) * 1.5; }
