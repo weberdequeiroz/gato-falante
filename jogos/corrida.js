@@ -110,18 +110,18 @@
             <span>🐟 Peixes: <strong>${d.peixes}</strong></span>
             <span>🚩 Nível: <strong>${d.nivelMax}</strong></span>
           </div>
-          <div class="como-jogar">
-            <p><strong>Como jogar</strong></p>
+          ${d.nivelMax > 1 ? `<button class="botao-pronto" data-nivel="${d.nivelMax}">🚩 Continuar do nível ${d.nivelMax}<small class="corrida-lugar">${CENARIOS[(d.nivelMax - 1) % CENARIOS.length].nome}</small></button>
+          <button class="botao-largo" data-nivel="1">▶ Correr do começo</button>` : `<button class="botao-pronto" data-nivel="1">▶ Correr!</button>`}
+          <button class="botao-largo" data-tutorial>❓ Como jogar</button>
+          <details class="como-jogar">
+            <summary><strong>📖 Ler as regras</strong></summary>
             <p>👆 Toque na tela para <strong>pular</strong>. Toque de novo no ar para pular <strong>mais alto</strong>!</p>
             <p>🐟 Pegue peixinhos, ⭐ estrelas e 🎁 presentes. Desvie das pedras e dos bichinhos!</p>
             <p>🛡️ Passe uma fase <strong>sem se machucar</strong> e ganhe <strong>5 moedas</strong> de bônus!</p>
             <p>🦴 O <strong>osso dourado</strong> chama a cachorrinha <strong>Penélope</strong>: ela late e assopra os obstáculos para longe!</p>
             <p>🦸 Às vezes o presente chama o <strong>Super Miguel</strong>, que voa com você e transforma os obstáculos em peixinhos!</p>
             <p>❤️ Você tem 3 vidas. A cada nível o lugar muda e fica mais rápido.</p>
-          </div>
-          <button class="botao-pronto" data-nivel="1">▶ Correr do começo</button>
-          <button class="botao-largo" data-tutorial>❓ Como jogar</button>
-          ${d.nivelMax > 1 ? `<button class="modo" data-nivel="${d.nivelMax}"><span class="simbolo">🚩</span><span><strong>Continuar do nível ${d.nivelMax}</strong><small>${CENARIOS[(d.nivelMax - 1) % CENARIOS.length].nome}</small></span></button>` : ''}
+          </details>
         </div>`;
       M.falar('Corrida do Miguel! Toque na tela para pular. Pegue os peixinhos e desvie dos obstáculos!');
       c.onclick = (e) => {

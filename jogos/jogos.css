@@ -560,12 +560,14 @@
 /* corrida do Miguel */
 .corrida-capa { display: flex; flex-direction: column; gap: 10px; align-items: stretch; text-align: center; }
 .corrida-titulo { font-size: 30px; font-weight: 900; color: #ff5722; text-shadow: 0 3px 0 #fff, 0 6px 0 rgba(31,45,61,.12); }
-.corrida-miguel { width: 150px; align-self: center; animation: pula-corrida 0.9s ease-in-out infinite; filter: drop-shadow(0 10px 6px rgba(31,45,61,.2)); }
+.corrida-miguel { width: 120px; align-self: center; animation: pula-corrida 0.9s ease-in-out infinite; filter: drop-shadow(0 10px 6px rgba(31,45,61,.2)); }
 @keyframes pula-corrida { 50% { transform: translateY(-16px) rotate(-4deg); } }
 .corrida-recordes { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
 .corrida-recordes span { background: var(--cartao); border-radius: 999px; padding: 6px 12px; box-shadow: var(--sombra); font-size: 14px; }
 .como-jogar { background: var(--cartao); border-radius: 18px; padding: 10px 14px; text-align: left; box-shadow: var(--sombra); font-size: 15px; }
 .como-jogar p { margin: 4px 0; }
+.como-jogar summary { cursor: pointer; padding: 6px 0; font-size: 16px; }
+.corrida-lugar { display: block; font-size: 14px; font-weight: 700; opacity: .9; }
 .corrida { position: relative; flex: 1; min-height: 0; width: 100%; touch-action: none; user-select: none; }
 .corrida-tela { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .corrida-hud { position: absolute; top: 8px; left: 8px; right: 8px; display: flex; align-items: center; gap: 6px; pointer-events: none; }
