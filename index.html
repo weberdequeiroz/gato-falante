@@ -1493,7 +1493,7 @@
     miadoPronto.then((buffer) => {
       const f = ac.createBufferSource(), g = ac.createGain();
       f.buffer = buffer;
-      g.gain.value = calmo ? 0.6 : 1;
+      g.gain.value = calmo ? 0.55 : 0.85;
       f.connect(g); g.connect(ac.destination);
       f.start(Math.max(quando, ac.currentTime + 0.02));
     }).catch(() => {
