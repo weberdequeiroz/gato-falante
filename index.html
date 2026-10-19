@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap">
 <title>Miguel, o Gato Falante</title>
-<link rel="stylesheet" href="jogos/jogos.css?v=202610190207">
+<link rel="stylesheet" href="jogos/jogos.css?v=202610191240">
 <style>
   /* Uma tela só, de cima para baixo: topo com ajuda → aviso do que está acontecendo → Miguel → ações grandes → vozes.
      Cores calmas e sempre iguais, botões grandes com ícone + palavra, um estado de cada vez. */
@@ -634,313 +634,208 @@
         <span class="auto-ondas" aria-hidden="true"><i></i><i></i></span><span class="auto-icone" aria-hidden="true">🎤</span><span class="auto-rotulo">Conversar</span>
       </button>
       <svg id="gato" viewBox="0 0 400 500" role="button" tabindex="0" aria-label="Miguel, o gato: toque para falar">
-  <defs>
-  <clipPath id="mg-clip-cab"><path d="M200 98 C 240 98 274 108 296 130 C 318 152 334 196 341 240 C 346 266 348 290 341 306 C 330 330 272 342 200 342 C 128 342 70 330 59 306 C 52 290 54 266 59 240 C 66 196 82 152 104 130 C 126 108 160 98 200 98 Z"/></clipPath>
-  <clipPath id="mg-clip-corpo"><path d="M118 474 C 100 424 100 372 122 352 C 144 336 176 334 200 334 C 224 334 256 336 278 352 C 300 372 300 424 282 474 C 274 488 250 492 200 492 C 150 492 126 488 118 474 Z"/></clipPath>
-  <clipPath id="mg-clip-rabo"><path d="M262 470 C 312 482 368 462 386 414 C 396 386 388 352 372 330 L 340 336 C 354 358 360 386 350 408 C 338 434 300 442 264 436 Z"/></clipPath>
-  <clipPath id="mg-clip-braco-e"><path d="M118 364 C 112 384 124 402 128 420 C 131 436 136 450 152 454 C 170 458 186 450 184 436 C 182 418 174 400 178 382 C 181 362 170 346 150 346 C 134 346 122 352 118 364 Z"/></clipPath>
-  <clipPath id="mg-clip-braco-d"><path d="M282 364 C 288 384 276 402 272 420 C 269 436 264 450 248 454 C 230 458 214 450 216 436 C 218 418 226 400 222 382 C 219 362 230 346 250 346 C 266 346 278 352 282 364 Z"/></clipPath>
-  <clipPath id="mg-clip-olhos"><ellipse cx="150" cy="228" rx="32" ry="34"/><ellipse cx="250" cy="228" rx="32" ry="34"/></clipPath>
-  <clipPath id="mg-clip-palp"><ellipse cx="150" cy="228" rx="39" ry="41"/><ellipse cx="250" cy="228" rx="39" ry="41"/></clipPath>
-  <clipPath id="mg-clip-boca"><path d="M178 278 C 186 281 194 280 200 277 C 206 280 214 281 222 278 C 226 296 216 315 200 316 C 184 315 174 296 178 278 Z"/></clipPath>
-  <radialGradient id="mg-cab" gradientUnits="userSpaceOnUse" cx="178" cy="172" r="200">
-    <stop offset="0" stop-color="#ffc07a"/><stop offset=".42" stop-color="#fb9c44"/><stop offset=".75" stop-color="#f2822c"/><stop offset="1" stop-color="#d4621a"/>
-  </radialGradient>
-  <radialGradient id="mg-corpo" gradientUnits="userSpaceOnUse" cx="182" cy="376" r="150">
-    <stop offset="0" stop-color="#ffb867"/><stop offset=".5" stop-color="#f78e3a"/><stop offset="1" stop-color="#cf621a"/>
-  </radialGradient>
-  <radialGradient id="mg-membro" cx="38%" cy="25%" r="85%">
-    <stop offset="0" stop-color="#ffbd6e"/><stop offset=".55" stop-color="#f68c35"/><stop offset="1" stop-color="#d0641b"/>
-  </radialGradient>
-  <radialGradient id="mg-creme" cx="42%" cy="32%" r="75%">
-    <stop offset="0" stop-color="#fffcf4"/><stop offset=".6" stop-color="#fde8c8"/><stop offset="1" stop-color="#efc490"/>
-  </radialGradient>
-  <radialGradient id="mg-peito" cx="50%" cy="42%" r="50%">
-    <stop offset="0" stop-color="#fffaf0"/><stop offset=".55" stop-color="#fdebcd" stop-opacity=".95"/><stop offset=".8" stop-color="#fbd9a8" stop-opacity=".55"/><stop offset="1" stop-color="#f8c588" stop-opacity="0"/>
-  </radialGradient>
-  <radialGradient id="mg-esclera" cx="50%" cy="62%" r="62%">
-    <stop offset="0" stop-color="#ffffff"/><stop offset=".75" stop-color="#f1f4f8"/><stop offset="1" stop-color="#c9d2de"/>
-  </radialGradient>
-  <radialGradient id="mg-iris" cx="50%" cy="68%" r="62%">
-    <stop offset="0" stop-color="#8fe3ff"/><stop offset=".5" stop-color="#2a9fd6"/><stop offset=".82" stop-color="#1676bd"/><stop offset="1" stop-color="#0d5f9e"/>
-  </radialGradient>
-  <radialGradient id="mg-pupila" cx="45%" cy="38%" r="70%">
-    <stop offset="0" stop-color="#2d2c36"/><stop offset="1" stop-color="#06060a"/>
-  </radialGradient>
-  <radialGradient id="mg-nariz" cx="42%" cy="30%" r="80%">
-    <stop offset="0" stop-color="#ffcbd4"/><stop offset=".6" stop-color="#f6909f"/><stop offset="1" stop-color="#d9627a"/>
-  </radialGradient>
-  <linearGradient id="mg-boca" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#4c111b"/><stop offset="1" stop-color="#9c3341"/>
-  </linearGradient>
-  <radialGradient id="mg-lingua" cx="50%" cy="35%" r="70%">
-    <stop offset="0" stop-color="#ffb3c0"/><stop offset="1" stop-color="#ee6f88"/>
-  </radialGradient>
-  <linearGradient id="mg-palpebra" gradientUnits="userSpaceOnUse" x1="0" y1="188" x2="0" y2="232"><stop offset="0" stop-color="#ee8a3a"/><stop offset=".75" stop-color="#fbb26a"/><stop offset="1" stop-color="#f3a058"/></linearGradient>
-  <radialGradient id="mg-focinho" cx="45%" cy="38%" r="55%">
-    <stop offset="0" stop-color="#fffbf2"/><stop offset=".6" stop-color="#fde8c8"/><stop offset=".85" stop-color="#f7dab2"/><stop offset="1" stop-color="#f5d3a6" stop-opacity="0"/>
-  </radialGradient>
-  <linearGradient id="mg-dobra" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#a84a16" stop-opacity=".1"/><stop offset=".6" stop-color="#a84a16" stop-opacity=".5"/><stop offset="1" stop-color="#7a3010" stop-opacity=".8"/>
-  </linearGradient>
-  <radialGradient id="mg-sombra">
-    <stop offset="0" stop-color="#5a3414" stop-opacity=".38"/><stop offset="1" stop-color="#5a3414" stop-opacity="0"/>
-  </radialGradient><clipPath id="mg-clip-mao"><path d="M136 378 C 78 354 30 282 42 204 C 46 182 78 174 86 194 C 78 262 108 332 166 366 Z"/></clipPath><radialGradient id="mg-s0"><stop offset="0" stop-color="#b5561a"/><stop offset=".45" stop-color="#b5561a" stop-opacity=".82"/><stop offset=".75" stop-color="#b5561a" stop-opacity=".33"/><stop offset="1" stop-color="#b5561a" stop-opacity="0"/></radialGradient><radialGradient id="mg-s1"><stop offset="0" stop-color="#ffd08e"/><stop offset=".45" stop-color="#ffd08e" stop-opacity=".82"/><stop offset=".75" stop-color="#ffd08e" stop-opacity=".33"/><stop offset="1" stop-color="#ffd08e" stop-opacity="0"/></radialGradient><radialGradient id="mg-s2"><stop offset="0" stop-color="#e0611f"/><stop offset=".45" stop-color="#e0611f" stop-opacity=".82"/><stop offset=".75" stop-color="#e0611f" stop-opacity=".33"/><stop offset="1" stop-color="#e0611f" stop-opacity="0"/></radialGradient><radialGradient id="mg-s3"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#ffffff" stop-opacity=".82"/><stop offset=".75" stop-color="#ffffff" stop-opacity=".33"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient><radialGradient id="mg-s4"><stop offset="0" stop-color="#e0b080"/><stop offset=".45" stop-color="#e0b080" stop-opacity=".82"/><stop offset=".75" stop-color="#e0b080" stop-opacity=".33"/><stop offset="1" stop-color="#e0b080" stop-opacity="0"/></radialGradient><radialGradient id="mg-s5"><stop offset="0" stop-color="#b4531a"/><stop offset=".45" stop-color="#b4531a" stop-opacity=".82"/><stop offset=".75" stop-color="#b4531a" stop-opacity=".33"/><stop offset="1" stop-color="#b4531a" stop-opacity="0"/></radialGradient><radialGradient id="mg-s6"><stop offset="0" stop-color="#9c4614"/><stop offset=".45" stop-color="#9c4614" stop-opacity=".82"/><stop offset=".75" stop-color="#9c4614" stop-opacity=".33"/><stop offset="1" stop-color="#9c4614" stop-opacity="0"/></radialGradient><radialGradient id="mg-s7"><stop offset="0" stop-color="#7a3510"/><stop offset=".45" stop-color="#7a3510" stop-opacity=".82"/><stop offset=".75" stop-color="#7a3510" stop-opacity=".33"/><stop offset="1" stop-color="#7a3510" stop-opacity="0"/></radialGradient><radialGradient id="mg-s8"><stop offset="0" stop-color="#6a3a16"/><stop offset=".45" stop-color="#6a3a16" stop-opacity=".82"/><stop offset=".75" stop-color="#6a3a16" stop-opacity=".33"/><stop offset="1" stop-color="#6a3a16" stop-opacity="0"/></radialGradient><radialGradient id="mg-s9"><stop offset="0" stop-color="#c98a52"/><stop offset=".45" stop-color="#c98a52" stop-opacity=".82"/><stop offset=".75" stop-color="#c98a52" stop-opacity=".33"/><stop offset="1" stop-color="#c98a52" stop-opacity="0"/></radialGradient><radialGradient id="mg-s10"><stop offset="0" stop-color="#f78e3a"/><stop offset=".45" stop-color="#f78e3a" stop-opacity=".82"/><stop offset=".75" stop-color="#f78e3a" stop-opacity=".33"/><stop offset="1" stop-color="#f78e3a" stop-opacity="0"/></radialGradient><radialGradient id="mg-s11"><stop offset="0" stop-color="#8a3e12"/><stop offset=".45" stop-color="#8a3e12" stop-opacity=".82"/><stop offset=".75" stop-color="#8a3e12" stop-opacity=".33"/><stop offset="1" stop-color="#8a3e12" stop-opacity="0"/></radialGradient><radialGradient id="mg-s12"><stop offset="0" stop-color="#fff0d4"/><stop offset=".45" stop-color="#fff0d4" stop-opacity=".82"/><stop offset=".75" stop-color="#fff0d4" stop-opacity=".33"/><stop offset="1" stop-color="#fff0d4" stop-opacity="0"/></radialGradient><radialGradient id="mg-s13"><stop offset="0" stop-color="#ffd9a0"/><stop offset=".45" stop-color="#ffd9a0" stop-opacity=".82"/><stop offset=".75" stop-color="#ffd9a0" stop-opacity=".33"/><stop offset="1" stop-color="#ffd9a0" stop-opacity="0"/></radialGradient><radialGradient id="mg-s14"><stop offset="0" stop-color="#ff8584"/><stop offset=".45" stop-color="#ff8584" stop-opacity=".82"/><stop offset=".75" stop-color="#ff8584" stop-opacity=".33"/><stop offset="1" stop-color="#ff8584" stop-opacity="0"/></radialGradient><radialGradient id="mg-s15"><stop offset="0" stop-color="#c45f1c"/><stop offset=".45" stop-color="#c45f1c" stop-opacity=".82"/><stop offset=".75" stop-color="#c45f1c" stop-opacity=".33"/><stop offset="1" stop-color="#c45f1c" stop-opacity="0"/></radialGradient><radialGradient id="mg-s16"><stop offset="0" stop-color="#ffe2b4"/><stop offset=".45" stop-color="#ffe2b4" stop-opacity=".82"/><stop offset=".75" stop-color="#ffe2b4" stop-opacity=".33"/><stop offset="1" stop-color="#ffe2b4" stop-opacity="0"/></radialGradient><radialGradient id="mg-s17"><stop offset="0" stop-color="#d08a50"/><stop offset=".45" stop-color="#d08a50" stop-opacity=".82"/><stop offset=".75" stop-color="#d08a50" stop-opacity=".33"/><stop offset="1" stop-color="#d08a50" stop-opacity="0"/></radialGradient><radialGradient id="mg-s18"><stop offset="0" stop-color="#ff6f80"/><stop offset=".45" stop-color="#ff6f80" stop-opacity=".82"/><stop offset=".75" stop-color="#ff6f80" stop-opacity=".33"/><stop offset="1" stop-color="#ff6f80" stop-opacity="0"/></radialGradient><radialGradient id="mg-s19"><stop offset="0" stop-color="#3a2010"/><stop offset=".45" stop-color="#3a2010" stop-opacity=".82"/><stop offset=".75" stop-color="#3a2010" stop-opacity=".33"/><stop offset="1" stop-color="#3a2010" stop-opacity="0"/></radialGradient><radialGradient id="mg-s20"><stop offset="0" stop-color="#fbb066"/><stop offset=".45" stop-color="#fbb066" stop-opacity=".82"/><stop offset=".75" stop-color="#fbb066" stop-opacity=".33"/><stop offset="1" stop-color="#fbb066" stop-opacity="0"/></radialGradient><radialGradient id="mg-s21"><stop offset="0" stop-color="#6a2e0e"/><stop offset=".45" stop-color="#6a2e0e" stop-opacity=".82"/><stop offset=".75" stop-color="#6a2e0e" stop-opacity=".33"/><stop offset="1" stop-color="#6a2e0e" stop-opacity="0"/></radialGradient><radialGradient id="mg-s22"><stop offset="0" stop-color="#a9501a"/><stop offset=".45" stop-color="#a9501a" stop-opacity=".82"/><stop offset=".75" stop-color="#a9501a" stop-opacity=".33"/><stop offset="1" stop-color="#a9501a" stop-opacity="0"/></radialGradient><radialGradient id="mg-s23"><stop offset="0" stop-color="#ffd08a"/><stop offset=".45" stop-color="#ffd08a" stop-opacity=".82"/><stop offset=".75" stop-color="#ffd08a" stop-opacity=".33"/><stop offset="1" stop-color="#ffd08a" stop-opacity="0"/></radialGradient><radialGradient id="mg-s24"><stop offset="0" stop-color="#ffe0ac"/><stop offset=".45" stop-color="#ffe0ac" stop-opacity=".82"/><stop offset=".75" stop-color="#ffe0ac" stop-opacity=".33"/><stop offset="1" stop-color="#ffe0ac" stop-opacity="0"/></radialGradient>
-  </defs>
-  <defs id="roupa-defs"></defs>
-  <g id="corpo-todo">
-  <ellipse id="sombra-chao" cx="200" cy="482" rx="150" ry="18" fill="url(#mg-sombra)"/>
-  <g id="roupa-costas"></g>
-  <g id="rabo">
-    <path d="M262 470 268 472 268 471 269 473 275 472 278 476 281 473 286 475 287 473 291 476 294 473 298 476 300 473 301 476 306 472 311 474 312 471 312 474 318 470 322 472 324 469 331 470 330 467 334 467 336 465 342 466 342 462 346 463 347 459 354 459 352 456 355 457 357 453 360 454 362 449 364 449 366 445 369 445 370 440 375 440 374 436 380 432 378 431 379 430 381 425 384 424 384 420 386 420 386 414 389 415 387 410 389 410 388 407 392 404 389 403 391 403 390 400 392 399 390 396 392 395 390 392 392 390 390 388 393 388 390 385 394 383 390 381 393 378 390 377 392 375 389 373 391 370 389 370 392 368 388 366 391 365 387 362 389 361 386 359 387 357 385 355 387 351 384 352 384 348 382 348 383 347 381 345 382 345 379 342 382 340 378 339 380 337 376 336 376 333 374 333 373 329 372 330 368 327 368 331 363 328 364 332 362 329 360 332 359 331 356 333 356 332 352 334 351 331 348 334 345 332 344 335 343 333 340 336 338 338 342 339 343 346 345 345 345 348 348 350 349 357 350 356 350 364 352 363 353 369 353 369 353 376 354 375 352 380 355 381 353 382 355 388 353 391 354 394 352 398 353 399 349 403 351 405 349 404 348 411 345 414 346 414 344 415 344 417 342 414 342 420 337 419 339 422 334 422 337 424 334 423 334 426 330 426 330 428 328 426 327 430 325 429 323 431 320 429 320 433 317 432 316 434 314 432 312 435 310 433 308 436 307 435 304 437 299 434 300 437 295 435 295 438 295 434 291 438 291 435 287 438 284 436 282 438 277 435 278 438 277 435 273 437 273 435 269 437 267 434 264 436 261 438 264 440 261 441 263 445 261 444 263 449 261 451 263 453 261 456 263 457 261 458 263 461 260 462 262 465 261 468 262 469 259 470Z" fill="url(#mg-membro)"/>
-    <path d="M262 469l0.1 3.8M268 470l-1.1 3.6M275 471l1.1 5.3M281 472l-1.1 5.8M287 472l-2.2 6.2M294 472l0.6 5.4M300 472l2.7 5.6M306 471l-0.8 6M312 471l2.4 5.9M318 469l2 5.6M324 468l4.9 4.8M330 466l5.3 3.9M336 464l1.5 6M341 461l1.5 5.5M346 458l3.3 1.8M351 455l2.1 6.5M361 448l1.9 2.4M365 444l7.3 1.5M369 440l4.6 4.5M373 435l2.2 3M377 430l4.5 1.5M380 425l3 1.5M385 414l4.3 1.9M387 407l2.8 1.4M389 399l3.2 -0.5M389 396l4.7 -2M389 388l5.5 -1.2M389 381l5.4 -0.8M388 374l4.4 -4.4M387 366l4.5 -5.4M385 359l4.7 -3.3M383 352l5.9 -1.2M380 346l2.2 -2.4M377 339l4.2 -3.2M373 333l3.8 -3.1M372 331l0.3 -4.8M366 332l0.2 -3.1M358 334l-0.7 -4.1M352 335l-1.7 -3.3M347 336l0.3 -3.4M342 335l-2 2.3M344 341l-6.4 0.8M347 347l-5.3 2.1M350 353l-3.2 3.9M352 359l-6.2 -0.6M354 366l-6.7 0.2M355 372l-5.2 1.1M356 378l-2.9 -0.4M356 384l-5.8 2.3M356 391l-4 1.4M355 397l-5.6 -1.7M353 403l-4.1 -1.9M351 408l-4.3 -0.1M347 415l-6.2 -2.1M343 420l-5.1 -1.8M337 425l-5.9 -3.3M331 429l-6.1 -3.4M324 432l-1.4 -5.3M316 435l-1.1 -5.4M308 437l0.4 -6.2M300 438l-2.6 -5.8M291 439l-0.9 -5.9M286 439l-3.1 -5.9M282 439l0.5 -2.9M273 438l1.6 -3.4M265 436l-5.1 2.3M265 441l-5.3 2.6M264 449l-6.3 2.9M264 453l-3.6 0.6M264 461l-4.5 -0.1M263 468l-5 1.9" fill="none" stroke="url(#mg-membro)" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
-    <g clip-path="url(#mg-clip-rabo)">
-      <ellipse cx="316" cy="474" rx="70" ry="22" fill="url(#mg-s0)" opacity="0.6" transform="rotate(-20 316 474)"/>
-      <ellipse cx="384" cy="404" rx="16" ry="56" fill="url(#mg-s0)" opacity="0.55" transform="rotate(10 384 404)"/>
-      <ellipse cx="330" cy="430" rx="34" ry="12" fill="url(#mg-s1)" opacity="0.6" transform="rotate(-40 330 430)"/>
-      <ellipse cx="300" cy="448" rx="18" ry="9" fill="url(#mg-s2)" opacity="0.85" transform="rotate(82 300 448)"/><ellipse cx="301" cy="466" rx="18" ry="9" fill="url(#mg-s2)" opacity="0.85" transform="rotate(92 301 466)"/>
-      <ellipse cx="336" cy="440" rx="20" ry="9" fill="url(#mg-s2)" opacity="0.85" transform="rotate(55 336 440)"/><ellipse cx="347" cy="457" rx="20" ry="9" fill="url(#mg-s2)" opacity="0.85" transform="rotate(59 347 457)"/>
-      <ellipse cx="361" cy="407" rx="20" ry="9" fill="url(#mg-s2)" opacity="0.85" transform="rotate(19 361 407)"/><ellipse cx="380" cy="414" rx="20" ry="9" fill="url(#mg-s2)" opacity="0.85" transform="rotate(21 380 414)"/>
-      <ellipse cx="361" cy="372" rx="19" ry="8" fill="url(#mg-s2)" opacity="0.8" transform="rotate(-3 361 372)"/><ellipse cx="380" cy="370" rx="19" ry="8" fill="url(#mg-s2)" opacity="0.8" transform="rotate(-9 380 370)"/>
-    </g>
-    <!-- pompom creme felpudo na ponta -->
-    <path d="M356 292 358 289 363 292 364 289 369 293 375 292 375 296 377 294 380 299 385 299 384 304 390 304 387 309 391 311 389 314 393 318 390 320 394 321 389 326 391 326 388 331 388 335 385 335 385 341 381 339 381 342 376 342 377 345 371 344 371 346 365 346 363 349 358 346 354 347 352 345 348 348 346 344 340 343 341 341 338 342 337 338 335 339 333 334 330 335 331 329 327 327 330 324 326 319 330 318 328 312 331 312 327 311 333 307 332 301 336 302 336 296 341 297 339 292 346 294 344 289 353 292 353 291Z" fill="url(#mg-creme)"/>
-    <path d="M356 293l1.4 -6.1M362 293l-0.9 -7.6M367 294l0.7 -4.4M372 296l4.2 -7.3M377 299l7.9 -5.5M382 303l3.7 -2M385 307l4.8 -5M388 312l7.2 2.6M389 320l6.1 -0.3M388 325l3.2 2.3M387 330l5.8 2.2M383 336l8 4.2M379 339l0.7 9.7M374 342l-0.5 9.4M368 344l-3.1 8.1M362 345l-1.7 5.1M356 345l1.6 6.5M350 344l-0.3 4.3M344 342l-2.5 2.9M340 340l-2.5 3.3M335 335l-5.8 0.8M332 329l-4.6 1.5M331 324l-7.8 -3.6M331 320l-6.9 -5.5M331 316l-4.4 -0.7M333 311l-5.9 -3.2M335 305l-5.3 -4.5M338 301l-0.9 -7.9M344 297l-2.7 -8.1M350 294l3 -6.2M356 292l0 0" fill="none" stroke="url(#mg-creme)" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
-    <ellipse cx="352" cy="308" rx="18" ry="12" fill="url(#mg-s3)" opacity="0.85"/>
-    <ellipse cx="362" cy="340" rx="26" ry="8" fill="url(#mg-s4)" opacity="0.55"/>
-  </g>
-  <path d="M118 474 116 467 116 468 111 464 114 461 110 458 112 455 108 456 111 449 108 447 109 443 105 438 108 437 104 433 107 431 106 429 106 425 103 422 106 419 104 415 105 413 101 414 105 407 101 403 105 402 103 396 105 396 102 391 106 391 105 387 106 386 105 382 107 381 106 379 108 377 107 375 110 372 108 371 111 368 109 368 113 365 112 362 115 361 114 356 117 358 117 356 119 355 119 351 122 352 121 351 125 350 123 348 128 348 129 346 131 347 133 344 134 345 134 341 137 344 138 342 140 342 140 339 143 341 143 339 147 340 146 338 150 339 150 338 153 338 155 335 157 338 160 336 160 337 160 336 164 336 166 333 167 336 169 333 171 335 170 332 174 335 174 333 177 335 179 333 184 334 183 333 191 334 194 333 197 334 197 330 203 334 207 332 209 334 216 333 216 334 221 332 223 335 225 331 226 335 227 334 229 335 230 333 233 336 234 335 236 336 239 333 240 337 243 335 243 338 246 335 247 338 248 338 250 339 253 336 253 340 257 338 257 341 260 340 260 342 262 341 263 344 265 344 266 345 268 345 269 347 272 345 272 348 274 348 275 350 278 350 278 352 279 351 281 355 285 354 283 358 288 359 285 361 289 362 287 365 291 364 289 368 293 368 290 372 292 371 292 377 293 376 293 381 294 384 294 386 297 386 294 391 295 391 295 396 298 402 295 402 299 407 295 407 299 412 295 413 297 417 294 419 295 421 294 425 296 428 293 431 295 435 292 437 294 440 291 443 294 445 289 449 293 449 288 455 288 460 286 461 290 463 284 468 285 469 282 474 281 475 280 477 278 479 277 480 273 483 273 483 269 485 268 485 266 486 263 487 262 487 257 488 257 488 253 489 251 489 250 489 247 490 246 490 246 490 242 490 241 491 237 491 238 491 233 491 230 491 228 491 225 492 223 492 220 492 218 492 211 492 212 492 206 492 206 492 207 492 200 492 197 492 194 492 194 492 188 492 187 492 182 492 179 492 177 492 176 492 172 491 172 491 167 491 168 491 163 491 159 491 158 490 154 490 154 490 152 490 150 489 150 489 147 489 146 489 143 488 139 487 137 487 138 487 132 485 127 483 127 483 125 481 123 480 122 479 120 477 118 475 118 474 118 474Z" fill="url(#mg-corpo)"/>
-    <path d="M117 467l-3.9 -0.8M115 461l-4.8 0.1M113 455l-5.2 0.6M111 449l-4.8 3.2M110 443l-5.2 -2M109 437l-5.1 -1.3M107 424l-4.8 2.2M107 419l-4.9 -0.2M106 413l-7.2 -0.5M106 407l-4.5 0.6M106 396l-3.2 -0.5M107 391l-6.2 -0.5M108 382l-7.3 -0.6M110 373l-2.8 -3.5M114 365l-2.8 -6.1M118 358l-2.1 -7.4M123 353l-3 -3.7M128 349l-3 -4.1M134 346l-0.4 -6.5M140 343l0.6 -5M147 341l2.3 -6.2M154 339l0.8 -3.3M160 338l0.8 -6M167 337l-0.2 -4.2M174 336l4.3 -6.8M181 336l1.3 -5.6M187 335l-1.3 -6.3M194 335l0.1 -5.4M200 335l2.8 -6.8M206 335l-0.9 -6.9M213 335l3.7 -6M219 336l1.3 -3M226 336l3.2 -6.3M233 337l-0.1 -2.9M240 338l2.5 -4.9M246 339l0.2 -2.9M253 341l3.5 -5.9M260 343l2.2 -2.9M266 346l0.7 -6M272 349l2.5 -4.7M277 353l3.2 -2.8M282 358l5.1 -1.9M286 365l5.5 -3.6M289 373l6.9 -0.9M292 382l5.5 2.4M293 391l5.9 2.9M294 402l3.5 2.1M294 407l3.2 1.5M294 413l4.6 -0.3M293 424l5.2 1.8M292 430l6.2 -0.8M291 436l6.6 1.6M290 443l5.5 4.6M289 449l5.3 3M287 455l7 0.2M285 461l3.9 4.2M283 467l5.8 1.5" fill="none" stroke="url(#mg-corpo)" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
-  <g clip-path="url(#mg-clip-corpo)">
-    <ellipse cx="100" cy="430" rx="46" ry="92" fill="url(#mg-s5)" opacity="0.55"/>
-    <ellipse cx="300" cy="430" rx="46" ry="92" fill="url(#mg-s5)" opacity="0.55"/>
-    <ellipse cx="200" cy="498" rx="140" ry="34" fill="url(#mg-s6)" opacity="0.5"/>
-    <ellipse cx="112" cy="386" rx="17" ry="10" fill="url(#mg-s2)" opacity="0.8" transform="rotate(-22 112 386)"/><ellipse cx="128" cy="383" rx="17" ry="10" fill="url(#mg-s2)" opacity="0.8" transform="rotate(2 128 383)"/><ellipse cx="288" cy="386" rx="17" ry="10" fill="url(#mg-s2)" opacity="0.8" transform="rotate(-158 288 386)"/><ellipse cx="272" cy="383" rx="17" ry="10" fill="url(#mg-s2)" opacity="0.8" transform="rotate(178 272 383)"/>
-    <ellipse cx="110" cy="414" rx="17" ry="11" fill="url(#mg-s2)" opacity="0.8" transform="rotate(-22 110 414)"/><ellipse cx="126" cy="411" rx="17" ry="11" fill="url(#mg-s2)" opacity="0.8" transform="rotate(2 126 411)"/><ellipse cx="290" cy="414" rx="17" ry="11" fill="url(#mg-s2)" opacity="0.8" transform="rotate(-158 290 414)"/><ellipse cx="274" cy="411" rx="17" ry="11" fill="url(#mg-s2)" opacity="0.8" transform="rotate(178 274 411)"/>
-    <ellipse cx="113" cy="445" rx="15" ry="9" fill="url(#mg-s2)" opacity="0.75" transform="rotate(-20 113 445)"/><ellipse cx="127" cy="443" rx="15" ry="9" fill="url(#mg-s2)" opacity="0.75" transform="rotate(4 127 443)"/><ellipse cx="287" cy="445" rx="15" ry="9" fill="url(#mg-s2)" opacity="0.75" transform="rotate(-160 287 445)"/><ellipse cx="273" cy="443" rx="15" ry="9" fill="url(#mg-s2)" opacity="0.75" transform="rotate(176 273 443)"/>
-    <ellipse cx="200" cy="336" rx="130" ry="26" fill="url(#mg-s7)" opacity="0.6"/>
-    <!-- peito creme em forma de babador/coração -->
-    <ellipse cx="200" cy="356" rx="84" ry="30" fill="url(#mg-peito)"/>
-    <ellipse cx="200" cy="402" rx="62" ry="68" fill="url(#mg-peito)"/>
-    <ellipse cx="200" cy="392" rx="30" ry="38" fill="url(#mg-s3)" opacity="0.55"/>
-  </g>
-  <!-- tufos do peito -->
-  <path d="M150 352 153 358 156 354 157 359 163 356 167 362 171 358 174 363 180 359 189 365 190 359 198 363 200 360 208 365 210 359 213 363 220 359 223 362 229 358 237 361 237 356 244 358 244 354 246 358 250 352 206 349" fill="none" stroke="#fff3df" stroke-width="2" stroke-linejoin="round" opacity=".55"/>
-  <g id="roupa-baixo"></g>
-  <g id="patas-tras">
-    <ellipse cx="148" cy="488" rx="40" ry="8" fill="url(#mg-s8)" opacity="0.5"/>
-    <ellipse cx="148" cy="472" rx="33" ry="21" fill="url(#mg-creme)" opacity=".55"/>
-    <ellipse cx="148" cy="472" rx="31" ry="19" fill="url(#mg-creme)"/>
-    <ellipse cx="148" cy="486" rx="32" ry="8" fill="url(#mg-s9)" opacity="0.55"/>
-    <ellipse cx="141" cy="463" rx="18" ry="8" fill="url(#mg-s3)" opacity="0.9"/>
-    <ellipse cx="252" cy="488" rx="40" ry="8" fill="url(#mg-s8)" opacity="0.5"/>
-    <ellipse cx="252" cy="472" rx="33" ry="21" fill="url(#mg-creme)" opacity=".55"/>
-    <ellipse cx="252" cy="472" rx="31" ry="19" fill="url(#mg-creme)"/>
-    <ellipse cx="252" cy="486" rx="32" ry="8" fill="url(#mg-s9)" opacity="0.55"/>
-    <ellipse cx="245" cy="463" rx="18" ry="8" fill="url(#mg-s3)" opacity="0.9"/>
-  </g>
-  <g id="patas-tras-dedos" fill="none" stroke="#cf9866" stroke-width="2.2" stroke-linecap="round" opacity=".7">
-    <path d="M140 476 Q 139 480 140 486 M156 476 Q 157 480 156 486"/>
-    <path d="M244 476 Q 243 480 244 486 M260 476 Q 261 480 260 486"/>
-  </g>
-  <g id="roupa-pes"></g>
-  <g id="roupa-tronco"></g>
-  <g id="braco-e">
-    <path d="M118 364 115 367 117 369 115 370 116 374 115 374 116 379 115 384 117 383 115 386 118 388 116 389 119 393 119 396 121 397 121 401 122 402 122 404 124 406 124 410 125 411 124 412 127 415 126 420 128 420 126 422 129 424 127 429 130 428 129 432 131 432 129 432 132 435 131 439 133 438 134 441 135 442 134 444 137 444 138 446 139 447 139 448 142 449 142 452 145 451 145 452 148 453 149 454 152 454 155 456 156 455 157 456 161 455 165 457 165 455 166 456 169 454 172 454 172 453 174 455 176 452 177 452 180 449 181 450 182 445 185 443 184 441 185 438 184 436 186 433 183 432 185 429 183 427 185 426 182 423 183 421 181 418 181 414 180 413 181 413 179 409 180 410 178 405 179 402 177 400 179 399 177 396 178 392 177 391 179 390 177 387 179 385 178 382 181 382 178 377 179 373 178 372 180 369 178 368 179 365 177 364 177 361 175 360 174 358 173 357 172 356 170 353 167 351 167 351 167 351 163 349 162 348 159 347 155 346 155 346 154 346 150 346 150 346 146 346 145 346 142 347 140 347 139 347 136 348 135 348 131 350 131 350 130 350 127 352 126 353 123 355 120 359 121 359 120 360 119 363 117 364Z" fill="url(#mg-membro)"/>
-    <path d="M119 364l-3 -0.7M118 369l-5.1 2.7M117 376l-2.1 1.2M118 383l-2.6 1.9M119 388l-2.8 2.4M120 392l-4 1.4M122 399l-4.5 1.5M125 406l-2.4 1.3M126 411l-2.7 3M128 415l-4.5 2.2M129 422l-4.6 2.2M130 426l-4.9 0M132 433l-3.9 4.2M134 436l-4.1 0.6M136 441l-2.5 4.6M140 446l-0.9 3.4M144 449l-0.7 2.6M148 452l-2 3.8M154 453l1.4 3.6M159 454l1.1 4.5M163 454l1.9 2.8M168 453l1.8 2.7M173 452l1.1 5.2M179 448l2.1 1M182 444l3.2 0.4M183 438l3.9 -2.6M182 432l3.1 -0.5M182 427l4.1 0.3M181 423l2.5 -1.3M179 416l2.2 -0.4M178 409l3.6 0.2M177 402l3.6 -0.5M176 395l5.2 -1.2M176 389l3.7 1M177 384l3.7 0.8M177 377l4.6 0.5M177 373l4.6 0.4M177 368l1.9 -1.7M118 364l0 0" fill="none" stroke="url(#mg-membro)" stroke-width="1" stroke-linecap="round" opacity="0.35"/>
-    <g clip-path="url(#mg-clip-braco-e)">
-      <ellipse cx="133" cy="383" rx="28" ry="6" fill="url(#mg-s2)" opacity="0.8" transform="rotate(-8 133 383)"/><ellipse cx="161" cy="383" rx="28" ry="6" fill="url(#mg-s2)" opacity="0.8" transform="rotate(8 161 383)"/>
-      <ellipse cx="136" cy="407" rx="27" ry="7" fill="url(#mg-s2)" opacity="0.8" transform="rotate(-9 136 407)"/><ellipse cx="163" cy="407" rx="27" ry="7" fill="url(#mg-s2)" opacity="0.8" transform="rotate(8 163 407)"/>
-      <ellipse cx="138" cy="430" rx="27" ry="6" fill="url(#mg-s2)" opacity="0.8" transform="rotate(-7 138 430)"/><ellipse cx="165" cy="430" rx="27" ry="6" fill="url(#mg-s2)" opacity="0.8" transform="rotate(6 165 430)"/>
-      <ellipse cx="150" cy="344" rx="46" ry="16" fill="url(#mg-s10)"/>
-      <ellipse cx="186" cy="410" rx="12" ry="52" fill="url(#mg-s22)" opacity="0.55"/>
-      <ellipse cx="116" cy="400" rx="12" ry="40" fill="url(#mg-s23)" opacity="0.55"/>
-    </g>
-    <ellipse cx="163" cy="462" rx="30" ry="7" fill="url(#mg-s8)" opacity="0.45"/>
-    <ellipse cx="163" cy="450" rx="25" ry="17" fill="url(#mg-creme)" opacity=".5"/>
-    <ellipse cx="163" cy="450" rx="23" ry="15.5" fill="url(#mg-creme)"/>
-    <ellipse cx="157" cy="443" rx="13" ry="6" fill="url(#mg-s3)" opacity="0.9"/>
-    <path d="M156 452 Q 155 456 156 461 M170 452 Q 171 456 170 461" fill="none" stroke="#cf9866" stroke-width="2.2" stroke-linecap="round" opacity=".8"/>
-  </g>
-  <g id="braco-d">
-    <path d="M282 364 285 366 283 369 285 371 284 374 285 374 284 379 285 384 283 383 284 385 282 388 283 391 281 393 282 393 279 397 280 400 278 402 278 402 276 406 276 412 275 411 276 414 273 415 275 418 272 420 274 421 271 424 273 426 270 428 271 432 269 432 270 434 268 435 268 439 267 438 268 439 265 442 264 446 263 444 264 445 261 447 261 448 258 449 258 451 255 451 252 454 252 453 248 456 248 454 248 455 244 455 243 456 239 455 238 456 235 455 231 456 231 454 229 454 228 453 224 453 225 452 223 452 221 449 218 446 218 445 216 445 216 441 215 437 216 436 215 435 217 432 216 430 217 427 217 424 218 423 217 423 219 418 218 415 220 413 218 411 221 409 220 407 222 405 222 400 223 400 220 399 223 396 222 394 223 391 222 390 223 387 221 383 222 382 220 382 222 377 221 374 222 372 220 369 222 368 222 365 223 364 223 364 225 360 227 358 227 357 229 355 230 353 233 351 233 351 234 350 237 349 240 348 241 347 240 347 245 346 248 346 250 346 253 346 254 346 255 346 258 347 258 347 261 347 262 347 265 348 268 349 269 350 269 350 273 352 275 354 277 355 278 356 279 359 281 361 281 363 284 362Z" fill="url(#mg-membro)"/>
-    <path d="M281 364l2.5 -0.1M282 371l4.4 -1.3M283 376l2.9 1.8M282 383l5.3 -0.6M280 390l4.5 0M279 395l2.7 1.5M277 402l4 1.8M274 408l4.1 0.9M273 413l4.2 0.5M272 418l4.1 4.5M270 424l2 1.3M269 429l4.3 -0.1M267 435l4.9 1.6M264 441l3.7 2.6M260 446l2.9 2M256 449l1.3 2.2M252 452l-0.6 5M243 454l0.6 2.7M239 454l0.9 4.8M233 454l-2 2.2M230 453l-2.2 2.4M225 451l-3.3 1.8M220 447l-3.2 0.1M217 442l-3.5 -1.6M217 436l-3.7 -0.1M218 432l-2.8 -0.3M219 425l-4.6 -0.6M220 418l-2.6 -1.3M222 411l-4.2 0M223 405l-2.4 -0.6M224 400l-2.5 -0.3M224 396l-4.2 -2M224 391l-3.7 -1.9M223 384l-4.3 0.5M223 377l-2.3 -0.6M223 370l-2.7 -1.9M224 364l-3.4 -2.6" fill="none" stroke="url(#mg-membro)" stroke-width="1" stroke-linecap="round" opacity="0.35"/>
-    <g clip-path="url(#mg-clip-braco-d)">
-      <ellipse cx="267" cy="383" rx="28" ry="6" fill="url(#mg-s2)" opacity="0.8" transform="rotate(-172 267 383)"/><ellipse cx="239" cy="383" rx="28" ry="6" fill="url(#mg-s2)" opacity="0.8" transform="rotate(172 239 383)"/>
-      <ellipse cx="264" cy="407" rx="27" ry="7" fill="url(#mg-s2)" opacity="0.8" transform="rotate(-171 264 407)"/><ellipse cx="237" cy="407" rx="27" ry="7" fill="url(#mg-s2)" opacity="0.8" transform="rotate(172 237 407)"/>
-      <ellipse cx="262" cy="430" rx="27" ry="6" fill="url(#mg-s2)" opacity="0.8" transform="rotate(-173 262 430)"/><ellipse cx="235" cy="430" rx="27" ry="6" fill="url(#mg-s2)" opacity="0.8" transform="rotate(174 235 430)"/>
-      <ellipse cx="250" cy="344" rx="46" ry="16" fill="url(#mg-s10)"/>
-      <ellipse cx="214" cy="410" rx="12" ry="52" fill="url(#mg-s22)" opacity="0.55"/>
-      <ellipse cx="284" cy="400" rx="12" ry="40" fill="url(#mg-s23)" opacity="0.55"/>
-    </g>
-    <ellipse cx="237" cy="462" rx="30" ry="7" fill="url(#mg-s8)" opacity="0.45"/>
-    <ellipse cx="237" cy="450" rx="25" ry="17" fill="url(#mg-creme)" opacity=".5"/>
-    <ellipse cx="237" cy="450" rx="23" ry="15.5" fill="url(#mg-creme)"/>
-    <ellipse cx="243" cy="443" rx="13" ry="6" fill="url(#mg-s3)" opacity="0.9"/>
-    <path d="M244 452 Q 245 456 244 461 M230 452 Q 229 456 230 461" fill="none" stroke="#cf9866" stroke-width="2.2" stroke-linecap="round" opacity=".8"/>
-  </g>
-  <g id="roupa-mangas"></g>
-  <g id="maos-orar">
-    <path d="M130 364 C 114 398 130 432 174 428 C 190 426 198 416 196 402 C 178 404 164 396 164 370 Z" fill="url(#mg-membro)"/><path d="M270 364 C 286 398 270 432 226 428 C 210 426 202 416 204 402 C 222 404 236 396 236 370 Z" fill="url(#mg-membro)"/>
-    <ellipse cx="147" cy="360" rx="30" ry="10" fill="url(#mg-s10)"/><ellipse cx="253" cy="360" rx="30" ry="10" fill="url(#mg-s10)"/>
-    <ellipse cx="138" cy="389" rx="17" ry="6" fill="url(#mg-s2)" opacity="0.8" transform="rotate(-14 138 389)"/><ellipse cx="154" cy="389" rx="17" ry="6" fill="url(#mg-s2)" opacity="0.8" transform="rotate(14 154 389)"/><ellipse cx="262" cy="389" rx="17" ry="6" fill="url(#mg-s2)" opacity="0.8" transform="rotate(-166 262 389)"/><ellipse cx="246" cy="389" rx="17" ry="6" fill="url(#mg-s2)" opacity="0.8" transform="rotate(166 246 389)"/>
-    <ellipse cx="146" cy="410" rx="16" ry="6" fill="url(#mg-s2)" opacity="0.8" transform="rotate(-20 146 410)"/><ellipse cx="161" cy="409" rx="16" ry="6" fill="url(#mg-s2)" opacity="0.8" transform="rotate(14 161 409)"/><ellipse cx="254" cy="410" rx="16" ry="6" fill="url(#mg-s2)" opacity="0.8" transform="rotate(-160 254 410)"/><ellipse cx="239" cy="409" rx="16" ry="6" fill="url(#mg-s2)" opacity="0.8" transform="rotate(166 239 409)"/>
-    <ellipse cx="200" cy="406" rx="40" ry="18" fill="url(#mg-s11)" opacity="0.4"/>
-    <ellipse cx="190" cy="380" rx="14" ry="32" transform="rotate(-8 190 380)" fill="url(#mg-creme)"/>
-    <ellipse cx="210" cy="380" rx="14" ry="32" transform="rotate(8 210 380)" fill="url(#mg-creme)"/>
-    <path d="M200 354 L 200 408" stroke="#d6a26b" stroke-width="2" stroke-linecap="round" opacity=".8"/>
-    <ellipse cx="189" cy="368" rx="7" ry="14" fill="url(#mg-s3)" opacity="0.8"/>
-  </g>
-  <g id="roupa-pescoco"></g>
-  <g id="cabeca">
-    <g id="orelha-e">
-      <path d="M172 112 171 110 169 109 169 107 167 107 165 104 164 104 165 103 161 102 162 102 158 100 156 97 155 98 153 95 152 96 150 93 148 94 145 90 145 93 145 90 141 91 141 89 138 90 138 87 135 89 132 87 131 88 131 86 127 87 127 84 124 86 122 84 120 86 121 85 117 85 115 83 114 85 114 83 110 85 106 85 103 86 101 85 97 87 97 86 92 89 90 87 87 91 82 93 82 94 77 95 78 97 73 100 74 101 70 104 71 105 67 109 67 110 63 115 65 115 60 117 62 120 57 125 60 125 57 130 58 131 57 130 57 137 54 137 56 142 55 144 56 146 54 148 57 150 58 155 59 154 61 158 62 156 61 157 66 156 67 157 70 155 71 156 74 153 77 153 77 150 80 149 81 148 85 145 84 145 90 144 88 142 92 142 92 139 95 140 96 137 99 136 101 134 103 135 105 131 105 132 110 128 111 129 115 126 118 126 121 123 123 125 124 122 125 123 129 121 133 122 134 120 139 120 139 119 142 120 145 118 145 120 151 116 151 118 157 115 157 117 162 114 167 114 167 113 167 114 171 112 172 115Z" fill="url(#mg-membro)"/>
-    <path d="M171 113l2.8 -2.9M166 108l3.2 -3.5M160 103l0.2 -4.2M154 99l0 -3.2M148 95l1.4 -3.9M141 92l0.3 -3.5M134 90l-1.4 -5.4M127 88l-0.2 -2.9M120 87l0.1 -4.9M114 86l-0.9 -4.6M107 86l-1.3 -4.9M100 87l-1.9 -3.9M94 89l-0.8 -2.1M87 92l-3.6 -2.5M83 95l-2 -4.2M77 100l-4 -1M71 106l-2.4 -2.9M67 113l-4.9 0.2M64 118l-2.6 -0.8M62 123l-3.8 -3.2M60 129l-5.1 -0.4M58 134l-4.5 -1.6M57 140l-3 0.4M57 146l-2.1 1.1M58 151l-2.4 1.9M62 155l-1.9 5M67 155l2 2.5M73 152l2.5 2.7M78 148l1.5 1.7M84 144l2.8 2.6M90 140l2.6 2.3M94 137l3.1 1.6M98 134l1.5 1.7M102 132l3.2 3.5M107 129l3.3 3.7M112 126l3 3.4M118 124l0.7 2.4M124 121l1.7 3M129 120l2 3.4M136 118l2.8 4.2M142 117l0.4 3.3M148 116l1.2 4.8M154 115l0.2 2.3M159 114l1.1 2.6M166 112l0.4 2.2M171 111l1.8 3.1" fill="none" stroke="url(#mg-membro)" stroke-width="1" stroke-linecap="round" opacity="0.35"/>
-      <path d="M56 140 C 62 126 76 114 96 110 C 114 106 140 108 160 114 C 150 116 136 118 124 122 C 100 132 86 144 72 154 C 62 160 54 154 56 140 Z" fill="url(#mg-dobra)"/>
-      <path d="M58 148 C 62 134 76 124 96 120 C 90 130 84 142 76 152 C 68 158 58 156 58 148 Z" fill="#f4ab94" opacity=".9"/>
-      <path d="M64 148 C 68 140 76 134 86 130 C 82 138 78 144 74 150 C 70 152 64 152 64 148 Z" fill="#e57f7c" opacity=".7"/>
-      <ellipse cx="112" cy="96" rx="40" ry="12" fill="url(#mg-s24)" opacity="0.8" transform="rotate(-18 112 96)"/>
-      <ellipse cx="102" cy="95" rx="14" ry="5" fill="url(#mg-s2)" opacity="0.7" transform="rotate(74 102 95)"/><ellipse cx="106" cy="109" rx="14" ry="5" fill="url(#mg-s2)" opacity="0.7" transform="rotate(74 106 109)"/>
-    </g>
-    <g id="orelha-d">
-      <path d="M228 112 230 109 231 109 231 106 233 107 233 105 236 104 237 102 239 102 240 98 242 100 245 97 245 98 248 95 248 96 248 94 252 94 252 93 255 93 256 90 259 91 259 89 262 90 265 88 266 89 267 87 269 88 272 85 273 87 275 86 276 86 275 85 280 86 279 85 283 85 283 83 287 85 288 83 290 85 292 85 297 86 298 84 303 87 308 87 308 89 311 89 313 91 313 90 318 94 320 95 322 97 323 96 326 101 329 104 329 105 331 103 333 110 335 108 335 115 337 117 338 120 339 120 340 125 344 130 342 131 345 135 343 137 346 140 344 142 346 142 344 146 345 147 343 150 342 154 341 154 342 156 338 156 334 159 334 156 330 158 330 155 326 154 326 153 323 151 323 150 322 152 319 148 316 146 316 145 311 145 312 142 310 144 308 139 306 139 304 137 299 135 299 134 294 133 295 131 292 133 290 128 288 129 285 126 282 127 279 123 276 123 276 122 274 124 271 121 265 122 266 120 260 120 261 119 256 120 255 118 253 119 249 116 242 116 243 115 240 115 238 114 234 115 233 113 231 115 229 112 228 114Z" fill="url(#mg-membro)"/>
-    <path d="M229 113l-2 -2.1M231 110l-1.2 -3.8M237 105l-0.3 -5.8M243 101l-1.6 -3.4M249 97l-0.5 -2.3M256 94l-0.7 -2.1M262 91l-0.9 -4.1M266 90l1.3 -4.6M273 88l0.8 -4.8M280 87l0.3 -3.8M286 86l1.1 -4.1M293 86l0.5 -2.9M300 87l2 -3.2M306 89l0.3 -3.4M310 91l2.2 -3.7M317 95l5.8 -1.6M321 98l5.8 -1.3M325 102l2.8 -1.6M330 108l3.6 -3.6M333 113l4.3 -1.6M336 118l2.9 -1.8M339 126l5.4 0M341 131l3.2 -1.5M342 137l2.3 0.7M343 143l3.9 1.8M343 147l3.5 1.6M341 152l1.2 2.1M338 155l-2 4.7M332 155l-0.5 3.8M329 153l-3.5 1.4M323 149l-3 2.7M320 147l-1.9 1.8M314 143l-1.9 2.5M310 140l-4.5 2.3M306 137l-3.5 2.4M300 133l-2.1 2M293 129l-3.4 3.7M288 126l-2.1 2M282 124l-2.6 2.2M276 121l-2 2.5M269 119l-0.5 2.9M264 118l-0.8 5.1M258 117l-1.3 2.4M252 116l-1.4 2.6M243 114l-2.9 3.7M236 113l0.7 4.9M229 111l-0.1 3.8" fill="none" stroke="url(#mg-membro)" stroke-width="1" stroke-linecap="round" opacity="0.35"/>
-      <path d="M344 140 C 338 126 324 114 304 110 C 286 106 260 108 240 114 C 250 116 264 118 276 122 C 300 132 314 144 328 154 C 338 160 346 154 344 140 Z" fill="url(#mg-dobra)"/>
-      <path d="M342 148 C 338 134 324 124 304 120 C 310 130 316 142 324 152 C 332 158 342 156 342 148 Z" fill="#f4ab94" opacity=".9"/>
-      <path d="M336 148 C 332 140 324 134 314 130 C 318 138 322 144 326 150 C 330 152 336 152 336 148 Z" fill="#e57f7c" opacity=".7"/>
-      <ellipse cx="288" cy="96" rx="40" ry="12" fill="url(#mg-s24)" opacity="0.8" transform="rotate(18 288 96)"/>
-      <ellipse cx="298" cy="95" rx="14" ry="5" fill="url(#mg-s2)" opacity="0.7" transform="rotate(106 298 95)"/><ellipse cx="294" cy="109" rx="14" ry="5" fill="url(#mg-s2)" opacity="0.7" transform="rotate(106 294 109)"/>
-    </g>
-    <path d="M200 98 199 95 205 98 207 96 210 98 212 96 215 98 216 95 219 99 225 98 224 99 228 96 229 100 231 96 233 101 235 99 238 101 242 101 242 102 248 100 246 103 249 102 251 104 253 102 255 106 259 106 259 107 261 105 263 109 265 109 267 110 268 109 270 112 274 110 274 114 275 110 277 116 281 114 281 118 282 115 284 120 288 120 287 122 292 123 290 125 292 124 293 127 294 127 296 130 301 131 299 133 302 135 301 136 304 135 304 139 306 139 306 143 310 142 309 146 312 147 311 150 313 150 314 154 318 158 316 159 319 157 318 163 322 164 320 167 324 169 322 172 325 177 324 177 328 177 326 182 331 186 328 187 330 190 329 192 333 193 331 197 334 201 333 202 338 206 334 207 339 212 335 213 338 214 337 218 338 220 338 224 339 223 339 229 344 233 340 235 345 240 341 240 344 244 342 246 346 252 343 253 345 253 344 259 349 265 345 265 351 265 345 271 353 273 346 277 350 281 345 282 348 288 345 288 348 287 345 293 346 295 344 297 349 300 343 302 347 307 341 306 339 312 337 312 339 314 335 314 338 321 332 317 334 319 328 319 328 321 324 322 322 325 320 324 318 328 316 326 315 328 311 328 307 331 305 330 305 331 299 331 296 333 293 333 293 336 287 334 285 338 280 336 281 337 273 337 267 339 266 338 259 342 259 339 253 343 251 340 250 341 243 340 242 342 235 341 227 344 226 341 223 343 218 342 213 345 209 342 200 343 200 342 198 344 191 342 190 344 182 342 176 344 174 341 166 344 165 341 165 342 157 340 156 342 149 340 142 343 141 339 134 339 134 338 125 341 127 337 121 340 120 336 115 338 113 334 109 337 107 333 105 336 101 331 99 333 95 330 91 331 89 328 89 330 84 326 83 327 80 324 78 327 76 322 71 322 72 319 71 321 68 317 60 320 65 314 59 319 63 312 60 312 61 309 58 309 58 304 52 304 57 300 54 299 56 295 52 293 55 290 48 288 55 285 53 280 54 280 52 276 55 274 51 274 55 268 49 263 56 262 53 257 56 256 54 255 57 250 55 243 58 243 58 236 60 235 58 231 61 229 59 224 62 224 62 219 63 218 61 212 65 213 65 206 66 207 64 201 67 202 66 200 69 197 66 194 71 192 70 185 72 187 70 182 74 182 73 181 76 177 73 174 78 172 78 169 80 167 80 163 82 163 80 162 84 159 83 155 86 154 85 154 89 150 89 146 91 146 90 141 94 143 92 141 96 139 94 136 99 136 98 135 101 133 101 129 104 130 103 127 107 127 105 125 110 125 112 121 113 122 113 119 116 120 118 116 119 118 118 116 123 116 125 111 126 114 126 110 130 112 129 109 133 110 136 106 137 109 137 106 141 107 145 103 145 106 146 103 149 104 152 100 154 103 154 102 158 102 161 99 162 101 166 98 167 101 169 97 171 100 172 97 176 99 176 96 181 99 184 97 185 98 189 97 190 98 194 95 195 98 196 95 200 98 200 98Z" fill="url(#mg-cab)"/>
-    <path d="M200 99l1.3 -6.6M205 99l1.9 -7M215 99l5.3 -6.7M224 100l2 -4.5M233 102l1.2 -2.7M242 103l3 -4.9M246 104l4.8 -4.9M254 107l2.4 -3.5M262 110l0.3 -6.1M266 111l3.1 -3.1M273 115l1.5 -6.4M280 119l2.6 -4.8M287 123l8.5 -2.4M292 128l5.4 -1.6M298 133l5.7 -2.9M303 140l5.1 -2.9M308 147l6.6 -0.6M313 155l4.5 -0.3M317 163l7.2 1.2M321 172l4.9 -4.1M323 177l4.3 0.7M327 187l3.1 -1.5M329 192l6.7 1.9M332 202l3.2 -2M335 213l5 1.6M336 218l4.3 0.8M337 224l4.3 0.5M338 229l3.7 0.8M340 240l5.9 -3.6M341 247l6.7 -2.4M342 253l6.7 0.4M343 259l3.5 -0.1M344 265l8.6 -3.1M344 271l8.8 3.5M345 277l4.5 -0.8M344 282l7.5 1.8M344 287l5.2 4.1M343 295l6.6 3.3M342 301l7.8 13.1M339 308l3.8 12.1M334 314l4.5 5.9M328 319l3 3.8M320 323l4.4 4.9M315 325l-0.5 3.8M305 329l-0.8 6.8M299 330l2.9 4.4M293 332l-0.5 3.9M287 333l0.5 4.2M280 335l-2 6.1M273 336l-0.3 4.6M266 337l0.6 4.3M259 338l0.7 4.1M251 339l0.4 6.7M243 339l-3.5 5.7M235 340l-3.2 5.3M226 340l-3.8 6.1M218 341l1.2 4.1M209 341l0.7 6.8M200 341l-3 6.7M191 341l1.4 4.9M182 341l-2.5 6.3M174 340l-3.1 7.1M165 340l-3 5.4M157 339l1.5 6.6M149 339l-0.1 3.8M142 338l-0.8 4M134 337l-2 6.4M127 336l0.1 3.3M120 335l-0.1 3.5M113 333l0.7 6.5M107 332l-0.7 2.8M101 330l-0.3 3.6M95 329l-4.6 4.2M85 325l-3.9 6.1M80 323l-0.8 3.8M76 321l-1.5 5M69 316l-3.9 7.8M66 314l-4.3 2.1M62 308l-7.1 4.7M59 304l-6.9 1.3M58 299l-12.2 2M57 295l-9.3 4M56 288l-8.8 -4M56 282l-7.5 -4.8M55 277l-8.2 2.3M56 271l-9 -8.1M56 265l-11 -8.5M57 259l-5.8 0.1M58 253l-3.6 0.2M59 247l-4.3 0.4M60 240l-3 -1.4M61 235l-4.4 -4.4M63 224l-7.6 1.2M64 218l-7.2 0.4M65 213l-5.7 -3.2M68 202l-3.2 -0.9M71 192l-6.7 -0.2M73 187l-3.1 -0.3M77 177l-5.2 -2.7M81 168l-3.2 -1.1M83 163l-4.1 -1.8M85 159l-3.2 -5.2M87 155l-3.8 -1.2M90 151l-6 -2.9M94 143l-6 -2.9M97 140l-3.5 -5.5M102 134l-1.6 -3.7M107 128l-1.9 -2.2M113 123l-0.6 -6.2M120 119l-5.6 -5.1M127 115l-1.2 -2.7M130 113l-1.4 -5.8M138 110l-1.2 -5.5M146 107l0.6 -3.9M154 104l0.1 -5.6M158 103l1.9 -5.6M162 102l1.6 -7.3M167 102l1.1 -3.9M171 101l-2.5 -6.2M176 100l2.2 -4.9M185 99l3.4 -5.5M195 99l-1.9 -5.4M201 97l-7.8 1.4" fill="none" stroke="url(#mg-cab)" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
-    <g clip-path="url(#mg-clip-cab)">
-      <ellipse cx="200" cy="304" rx="140" ry="78" fill="url(#mg-s12)"/>
-      <ellipse cx="178" cy="136" rx="96" ry="42" fill="url(#mg-s13)" opacity="0.75"/>
-      <!-- sombra projetada das orelhas dobradas e vinco no topo -->
-      <ellipse cx="116" cy="140" rx="44" ry="16" fill="url(#mg-s6)" opacity="0.5" transform="rotate(-28 116 140)"/>
-      <ellipse cx="284" cy="140" rx="44" ry="16" fill="url(#mg-s6)" opacity="0.5" transform="rotate(28 284 140)"/>
-      <ellipse cx="112" cy="274" rx="56" ry="42" fill="url(#mg-s14)" opacity="0.75"/>
-      <ellipse cx="288" cy="274" rx="56" ry="42" fill="url(#mg-s14)" opacity="0.75"/>
-      <ellipse cx="150" cy="228" rx="54" ry="56" fill="url(#mg-s15)" opacity="0.4"/>
-      <ellipse cx="250" cy="228" rx="54" ry="56" fill="url(#mg-s15)" opacity="0.4"/>
-      <ellipse cx="200" cy="244" rx="28" ry="40" fill="url(#mg-s16)" opacity="0.85"/>
-      <!-- listras: 3 em V na testa, 3 nas laterais do rosto -->
-      <ellipse cx="200" cy="109" rx="20" ry="8" fill="url(#mg-s2)" opacity="0.85" transform="rotate(91 200 109)"/><ellipse cx="200" cy="128" rx="20" ry="11" fill="url(#mg-s2)" opacity="0.85" transform="rotate(90 200 128)"/><ellipse cx="200" cy="149" rx="20" ry="8" fill="url(#mg-s2)" opacity="0.85" transform="rotate(89 200 149)"/>
-      <ellipse cx="172" cy="112" rx="16" ry="7" fill="url(#mg-s2)" opacity="0.8" transform="rotate(78 172 112)"/><ellipse cx="176" cy="128" rx="16" ry="10" fill="url(#mg-s2)" opacity="0.8" transform="rotate(74 176 128)"/><ellipse cx="181" cy="144" rx="16" ry="7" fill="url(#mg-s2)" opacity="0.8" transform="rotate(69 181 144)"/><ellipse cx="229" cy="112" rx="16" ry="7" fill="url(#mg-s2)" opacity="0.8" transform="rotate(102 229 112)"/><ellipse cx="225" cy="128" rx="16" ry="10" fill="url(#mg-s2)" opacity="0.8" transform="rotate(106 225 128)"/><ellipse cx="219" cy="144" rx="16" ry="7" fill="url(#mg-s2)" opacity="0.8" transform="rotate(111 219 144)"/>
-      <ellipse cx="145" cy="125" rx="21" ry="6" fill="url(#mg-s2)" opacity="0.6" transform="rotate(57 145 125)"/><ellipse cx="158" cy="142" rx="21" ry="6" fill="url(#mg-s2)" opacity="0.6" transform="rotate(49 158 142)"/><ellipse cx="255" cy="125" rx="21" ry="6" fill="url(#mg-s2)" opacity="0.6" transform="rotate(123 255 125)"/><ellipse cx="242" cy="142" rx="21" ry="6" fill="url(#mg-s2)" opacity="0.6" transform="rotate(131 242 142)"/>
-      <ellipse cx="131" cy="184" rx="26" ry="5" fill="url(#mg-s2)" opacity="0.55" transform="rotate(-22 131 184)"/><ellipse cx="156" cy="179" rx="26" ry="5" fill="url(#mg-s2)" opacity="0.55" transform="rotate(-1 156 179)"/><ellipse cx="269" cy="184" rx="26" ry="5" fill="url(#mg-s2)" opacity="0.55" transform="rotate(-158 269 184)"/><ellipse cx="244" cy="179" rx="26" ry="5" fill="url(#mg-s2)" opacity="0.55" transform="rotate(-179 244 179)"/>
-      <ellipse cx="68" cy="214" rx="20" ry="8" fill="url(#mg-s2)" opacity="0.8" transform="rotate(1 68 214)"/><ellipse cx="88" cy="217" rx="20" ry="8" fill="url(#mg-s2)" opacity="0.8" transform="rotate(15 88 217)"/><ellipse cx="332" cy="214" rx="20" ry="8" fill="url(#mg-s2)" opacity="0.8" transform="rotate(179 332 214)"/><ellipse cx="312" cy="217" rx="20" ry="8" fill="url(#mg-s2)" opacity="0.8" transform="rotate(165 312 217)"/>
-      <ellipse cx="65" cy="244" rx="18" ry="8" fill="url(#mg-s2)" opacity="0.75" transform="rotate(0 65 244)"/><ellipse cx="83" cy="246" rx="18" ry="8" fill="url(#mg-s2)" opacity="0.75" transform="rotate(13 83 246)"/><ellipse cx="335" cy="244" rx="18" ry="8" fill="url(#mg-s2)" opacity="0.75" transform="rotate(-180 335 244)"/><ellipse cx="317" cy="246" rx="18" ry="8" fill="url(#mg-s2)" opacity="0.75" transform="rotate(167 317 246)"/>
-      <ellipse cx="83" cy="172" rx="15" ry="6" fill="url(#mg-s2)" opacity="0.6" transform="rotate(21 83 172)"/><ellipse cx="97" cy="179" rx="15" ry="6" fill="url(#mg-s2)" opacity="0.6" transform="rotate(31 97 179)"/><ellipse cx="317" cy="172" rx="15" ry="6" fill="url(#mg-s2)" opacity="0.6" transform="rotate(159 317 172)"/><ellipse cx="303" cy="179" rx="15" ry="6" fill="url(#mg-s2)" opacity="0.6" transform="rotate(149 303 179)"/>
-    </g>
-    <!-- focinho fofo -->
-    <ellipse cx="200" cy="304" rx="56" ry="18" fill="url(#mg-s17)" opacity="0.45"/>
-    <ellipse cx="177" cy="284" rx="32" ry="23" fill="url(#mg-focinho)"/>
-    <ellipse cx="223" cy="284" rx="32" ry="23" fill="url(#mg-focinho)"/>
-    <ellipse cx="200" cy="296" rx="24" ry="17" fill="url(#mg-focinho)"/>
-    <ellipse cx="172" cy="276" rx="18" ry="9" fill="url(#mg-s3)" opacity="0.85"/><ellipse cx="228" cy="276" rx="18" ry="9" fill="url(#mg-s3)" opacity="0.85"/>
-    <g fill="#c98c5a" opacity=".55"><circle cx="170" cy="284" r="1.6"/><circle cx="162" cy="290" r="1.6"/><circle cx="172" cy="294" r="1.6"/><circle cx="230" cy="284" r="1.6"/><circle cx="238" cy="290" r="1.6"/><circle cx="228" cy="294" r="1.6"/></g>
-    <!-- #bochechas: rubor extra, oculto; cada lado pulsa a partir do próprio centro -->
-    <g id="bochechas" style="opacity:0">
-      <g id="bochecha-e" style="transform-origin:112px 278px"><ellipse cx="112" cy="278" rx="42" ry="30" fill="url(#mg-s18)" opacity="0.45"/></g>
-      <g id="bochecha-d" style="transform-origin:288px 278px"><ellipse cx="288" cy="278" rx="42" ry="30" fill="url(#mg-s18)" opacity="0.45"/></g>
-    </g>
-    <g class="olho-aberto">
-      <g clip-path="url(#mg-clip-olhos)">
-        <ellipse cx="150" cy="228" rx="32" ry="34" fill="url(#mg-esclera)"/><ellipse cx="250" cy="228" rx="32" ry="34" fill="url(#mg-esclera)"/>
-        <g id="pupilas">
-          <circle cx="152" cy="231" r="31" fill="url(#mg-iris)"/>
-      <circle cx="152" cy="231" r="30" fill="none" stroke="#0a4a86" stroke-width="2.2" opacity=".75"/>
-      <circle cx="152" cy="232" r="19" fill="url(#mg-pupila)"/>
-      <ellipse cx="162" cy="220" rx="9" ry="8" fill="#fff"/>
-      <circle cx="142" cy="244" r="3.6" fill="#fff" opacity=".9"/>
-      <circle cx="167" cy="235" r="1.8" fill="#fff" opacity=".7"/>
-          <circle cx="248" cy="231" r="31" fill="url(#mg-iris)"/>
-      <circle cx="248" cy="231" r="30" fill="none" stroke="#0a4a86" stroke-width="2.2" opacity=".75"/>
-      <circle cx="248" cy="232" r="19" fill="url(#mg-pupila)"/>
-      <ellipse cx="258" cy="220" rx="9" ry="8" fill="#fff"/>
-      <circle cx="238" cy="244" r="3.6" fill="#fff" opacity=".9"/>
-      <circle cx="263" cy="235" r="1.8" fill="#fff" opacity=".7"/>
+        <defs>
+          <radialGradient id="g-pelo" cx="38%" cy="28%" r="78%">
+            <stop offset="0" stop-color="#ffd59a"/>
+            <stop offset=".42" stop-color="#f8a54c"/>
+            <stop offset=".85" stop-color="#e07f22"/>
+            <stop offset="1" stop-color="#c2620f"/>
+          </radialGradient>
+          <radialGradient id="g-pelo-corpo" cx="42%" cy="20%" r="85%">
+            <stop offset="0" stop-color="#ffcf8c"/>
+            <stop offset=".5" stop-color="#f39a3b"/>
+            <stop offset="1" stop-color="#bd5e0e"/>
+          </radialGradient>
+          <radialGradient id="g-creme" cx="50%" cy="32%" r="72%">
+            <stop offset="0" stop-color="#fffdf8"/>
+            <stop offset=".65" stop-color="#fde8cc"/>
+            <stop offset="1" stop-color="#eec393"/>
+          </radialGradient>
+          <radialGradient id="g-orelha" cx="50%" cy="75%" r="75%">
+            <stop offset="0" stop-color="#ffd3de"/>
+            <stop offset="1" stop-color="#ea8099"/>
+          </radialGradient>
+          <radialGradient id="g-iris" cx="50%" cy="62%" r="62%">
+            <stop offset="0" stop-color="#d9f78f"/>
+            <stop offset=".5" stop-color="#7cc23e"/>
+            <stop offset="1" stop-color="#2d6a17"/>
+          </radialGradient>
+          <radialGradient id="g-pupila" cx="45%" cy="40%" r="65%">
+            <stop offset="0" stop-color="#2a2622"/>
+            <stop offset="1" stop-color="#050404"/>
+          </radialGradient>
+          <radialGradient id="g-nariz" cx="40%" cy="30%" r="75%">
+            <stop offset="0" stop-color="#ffc0cf"/>
+            <stop offset="1" stop-color="#dc4f75"/>
+          </radialGradient>
+          <radialGradient id="g-bochecha">
+            <stop offset="0" stop-color="#ff7f9c" stop-opacity=".6"/>
+            <stop offset="1" stop-color="#ff7f9c" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="g-brilho">
+            <stop offset="0" stop-color="#fff" stop-opacity=".6"/>
+            <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="g-sombra">
+            <stop offset="0" stop-color="#3a2410" stop-opacity=".35"/>
+            <stop offset="1" stop-color="#3a2410" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="g-boca" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#4a0f1a"/>
+            <stop offset="1" stop-color="#93303f"/>
+          </linearGradient>
+        </defs>
+        <defs id="roupa-defs"></defs>
+
+        <g id="corpo-todo">
+          <!-- sombra no chão -->
+          <ellipse id="sombra-chao" cx="200" cy="482" rx="150" ry="18" fill="url(#g-sombra)"/>
+          <!-- roupas: cada parte fica numa camada, na ordem certa (ver jogos/roupas.js) -->
+          <g id="roupa-costas"></g>
+
+          <!-- rabo -->
+          <g id="rabo">
+            <path d="M268 458 C 345 470, 392 400, 364 326 C 355 302, 334 292, 320 302 C 307 312, 314 328, 324 336 C 346 362, 338 420, 266 424 Z"
+                  fill="url(#g-pelo-corpo)" stroke="#b85a0d" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M352 352 Q 362 360 360 372 M355 395 Q 345 402 340 414 M322 438 Q 312 432 306 444" fill="none" stroke="#c9671a" stroke-width="7" stroke-linecap="round" opacity=".55"/>
+          </g>
+
+          <!-- corpo -->
+          <path d="M118 470 C 102 408, 124 342, 200 335 C 276 342, 298 408, 282 470 C 262 490, 138 490, 118 470 Z"
+                fill="url(#g-pelo-corpo)" stroke="#b85a0d" stroke-width="2.5"/>
+          <ellipse cx="200" cy="428" rx="56" ry="58" fill="url(#g-creme)"/>
+          <ellipse cx="200" cy="346" rx="96" ry="22" fill="url(#g-sombra)"/>
+          <g id="roupa-baixo"></g>
+
+          <!-- patinhas de trás -->
+          <g id="patas-tras" fill="url(#g-creme)" stroke="#d6a26b" stroke-width="2">
+            <ellipse cx="148" cy="472" rx="36" ry="19"/>
+            <ellipse cx="252" cy="472" rx="36" ry="19"/>
+          </g>
+          <g id="patas-tras-dedos" fill="none" stroke="#d6a26b" stroke-width="2.5" stroke-linecap="round">
+            <path d="M136 466 L 136 476 M150 465 L 150 477 M164 466 L 164 476"/>
+            <path d="M236 466 L 236 476 M250 465 L 250 477 M264 466 L 264 476"/>
+          </g>
+          <g id="roupa-pes"></g>
+          <g id="roupa-tronco"></g>
+
+          <!-- braços -->
+          <g id="braco-e">
+            <path d="M136 368 C 116 400, 120 442, 150 454 C 168 460, 182 450, 178 434 C 172 410, 162 392, 160 372 Z"
+                  fill="url(#g-pelo-corpo)" stroke="#b85a0d" stroke-width="2.5"/>
+            <ellipse cx="163" cy="447" rx="21" ry="14" fill="url(#g-creme)" stroke="#d6a26b" stroke-width="2"/>
+          </g>
+          <g id="braco-d">
+            <path d="M264 368 C 284 400, 280 442, 250 454 C 232 460, 218 450, 222 434 C 228 410, 238 392, 240 372 Z"
+                  fill="url(#g-pelo-corpo)" stroke="#b85a0d" stroke-width="2.5"/>
+            <ellipse cx="237" cy="447" rx="21" ry="14" fill="url(#g-creme)" stroke="#d6a26b" stroke-width="2"/>
+          </g>
+          <g id="roupa-mangas"></g>
+          <!-- patinhas juntas na hora da oração -->
+          <g id="maos-orar">
+            <path d="M136 366 C 120 398, 134 428, 176 424 C 190 422, 196 414, 194 402 C 176 404, 160 398, 160 372 Z"
+                  fill="url(#g-pelo-corpo)" stroke="#b85a0d" stroke-width="2.5"/>
+            <path d="M264 366 C 280 398, 266 428, 224 424 C 210 422, 204 414, 206 402 C 224 404, 240 398, 240 372 Z"
+                  fill="url(#g-pelo-corpo)" stroke="#b85a0d" stroke-width="2.5"/>
+            <ellipse cx="190" cy="378" rx="13" ry="32" transform="rotate(-7 190 378)" fill="url(#g-creme)" stroke="#d6a26b" stroke-width="2"/>
+            <ellipse cx="210" cy="378" rx="13" ry="32" transform="rotate(7 210 378)" fill="url(#g-creme)" stroke="#d6a26b" stroke-width="2"/>
+            <path d="M200 352 L 200 408" stroke="#d6a26b" stroke-width="2" stroke-linecap="round"/>
+          </g>
+          <g id="roupa-pescoco"></g>
+
+          <g id="cabeca">
+            <!-- orelhas -->
+            <g id="orelha-e">
+              <path d="M86 196 C 70 140, 78 84, 100 50 C 108 38, 124 38, 134 50 C 158 78, 182 106, 192 128 Z"
+                    fill="url(#g-pelo)" stroke="#b85a0d" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="M100 160 C 94 124, 100 90, 114 70 C 136 92, 154 112, 166 130 Z" fill="url(#g-orelha)"/>
+              <path d="M108 128 Q 116 108 128 102 M112 142 Q 124 126 138 120" fill="none" stroke="#fff6ea" stroke-width="2.5" stroke-linecap="round" opacity=".9"/>
+            </g>
+            <g id="orelha-d">
+              <path d="M314 196 C 330 140, 322 84, 300 50 C 292 38, 276 38, 266 50 C 242 78, 218 106, 208 128 Z"
+                    fill="url(#g-pelo)" stroke="#b85a0d" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="M300 160 C 306 124, 300 90, 286 70 C 264 92, 246 112, 234 130 Z" fill="url(#g-orelha)"/>
+              <path d="M292 128 Q 284 108 272 102 M288 142 Q 276 126 262 120" fill="none" stroke="#fff6ea" stroke-width="2.5" stroke-linecap="round" opacity=".9"/>
+            </g>
+
+            <!-- cabeça fofinha com tufos nas bochechas -->
+            <path d="M200 98 C 292 98, 342 152, 338 218 C 336 246, 330 262, 346 274 C 330 278, 324 284, 318 290 C 292 322, 246 334, 200 334 C 154 334, 108 322, 82 290 C 76 284, 70 278, 54 274 C 70 262, 64 246, 62 218 C 58 152, 108 98, 200 98 Z"
+                  fill="url(#g-pelo)" stroke="#b85a0d" stroke-width="2.5" stroke-linejoin="round"/>
+            <!-- topete -->
+            <path d="M186 102 Q 192 80 202 98 Q 208 82 216 102" fill="url(#g-pelo)" stroke="#b85a0d" stroke-width="2.5" stroke-linejoin="round"/>
+            <!-- listrinhas -->
+            <g fill="none" stroke="#cf6e18" stroke-width="7" stroke-linecap="round" opacity=".6">
+              <path d="M200 108 L 200 138"/>
+              <path d="M176 112 Q 178 126 182 136"/>
+              <path d="M224 112 Q 222 126 218 136"/>
+              <path d="M70 230 Q 84 228 92 234"/>
+              <path d="M330 230 Q 316 228 308 234"/>
+            </g>
+            <!-- brilho da luz na cabeça -->
+            <ellipse cx="160" cy="142" rx="62" ry="30" fill="url(#g-brilho)"/>
+
+            <!-- focinho -->
+            <ellipse cx="200" cy="270" rx="60" ry="42" fill="url(#g-creme)"/>
+            <ellipse cx="160" cy="276" rx="34" ry="26" fill="url(#g-creme)"/>
+            <ellipse cx="240" cy="276" rx="34" ry="26" fill="url(#g-creme)"/>
+            <!-- bochechas rosadas -->
+            <ellipse cx="116" cy="262" rx="28" ry="18" fill="url(#g-bochecha)"/>
+            <ellipse cx="284" cy="262" rx="28" ry="18" fill="url(#g-bochecha)"/>
+
+            <!-- olhos abertos -->
+            <g class="olho-aberto">
+              <ellipse cx="150" cy="214" rx="37" ry="41" fill="#1f1610"/>
+              <ellipse cx="250" cy="214" rx="37" ry="41" fill="#1f1610"/>
+              <ellipse cx="150" cy="215" rx="33" ry="37" fill="url(#g-iris)"/>
+              <ellipse cx="250" cy="215" rx="33" ry="37" fill="url(#g-iris)"/>
+              <g id="pupilas">
+                <ellipse cx="152" cy="220" rx="19" ry="25" fill="url(#g-pupila)"/>
+                <ellipse cx="248" cy="220" rx="19" ry="25" fill="url(#g-pupila)"/>
+                <ellipse cx="163" cy="200" rx="10" ry="11" fill="#fff"/>
+                <ellipse cx="259" cy="200" rx="10" ry="11" fill="#fff"/>
+                <circle cx="141" cy="234" r="4.5" fill="#fff" opacity=".9"/>
+                <circle cx="237" cy="234" r="4.5" fill="#fff" opacity=".9"/>
+              </g>
+              <!-- reflexo da luz no olho -->
+              <path d="M126 196 Q 136 180 154 178" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".45"/>
+              <path d="M226 196 Q 236 180 254 178" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".45"/>
+            </g>
+            <!-- olhos fechados (piscar e rezar) -->
+            <g class="olho-fechado" fill="none" stroke="#2a1a10" stroke-width="6" stroke-linecap="round">
+              <path d="M116 220 Q 150 246 184 220"/>
+              <path d="M216 220 Q 250 246 284 220"/>
+              <path d="M120 222 L 110 230 M184 220 L 192 228 M216 220 L 208 228 M280 222 L 290 230" stroke-width="4"/>
+            </g>
+
+            <!-- nariz -->
+            <path d="M184 250 Q 200 242 216 250 Q 214 263 200 268 Q 186 263 184 250 Z" fill="url(#g-nariz)" stroke="#b83d5e" stroke-width="1.5"/>
+            <ellipse cx="195" cy="251" rx="6" ry="2.6" fill="#fff" opacity=".8"/>
+            <!-- boca fechada -->
+            <path id="boca-fechada" d="M200 268 L 200 276 M200 276 Q 190 288 177 280 M200 276 Q 210 288 223 280"
+                  fill="none" stroke="#4a2a1e" stroke-width="4" stroke-linecap="round"/>
+            <!-- boca aberta -->
+            <g id="boca-aberta">
+              <path d="M176 280 Q 200 272 224 280 Q 226 312 200 318 Q 174 312 176 280 Z" fill="url(#g-boca)" stroke="#4a2a1e" stroke-width="3"/>
+              <ellipse cx="200" cy="306" rx="14" ry="8" fill="#ff7d96"/>
+            </g>
+            <!-- bigodes -->
+            <g fill="none" stroke="#fffaf2" stroke-width="2.6" stroke-linecap="round" opacity=".95">
+              <path d="M132 268 Q 96 256 58 254"/><path d="M132 278 Q 94 278 56 284"/><path d="M134 288 Q 100 298 66 312"/>
+              <path d="M268 268 Q 304 256 342 254"/><path d="M268 278 Q 306 278 344 284"/><path d="M266 288 Q 300 298 334 312"/>
+            </g>
+            <g id="roupa-rosto"></g>
+            <g id="roupa-cabeca"></g>
+          </g>
+
+          <!-- mão na orelha (quando está ouvindo) -->
+          <g id="mao-orelha">
+            <path d="M136 374 C 80 346, 38 272, 50 200 C 54 180, 80 176, 86 194 C 80 262, 110 330, 162 362 Z"
+                  fill="url(#g-pelo-corpo)" stroke="#b85a0d" stroke-width="2.5"/>
+            <ellipse cx="68" cy="186" rx="23" ry="19" fill="url(#g-creme)" stroke="#d6a26b" stroke-width="2"/>
+            <path d="M58 176 L 56 166 M68 174 L 68 164 M78 176 L 80 166" stroke="#d6a26b" stroke-width="2.5" stroke-linecap="round"/>
+          </g>
         </g>
-        <ellipse cx="150" cy="192" rx="48" ry="18" fill="url(#mg-s19)" opacity="0.4"/><ellipse cx="250" cy="192" rx="48" ry="18" fill="url(#mg-s19)" opacity="0.4"/>
-      </g>
-      <g fill="none" stroke="#3b2214" stroke-linecap="round">
-        <path d="M116.5 230 A 33.5 39 0 0 1 183.5 230 A 32 34 0 0 0 116.5 230 Z" fill="#3b2214" stroke="#3b2214" stroke-width="1"/><path d="M216.5 230 A 33.5 39 0 0 1 283.5 230 A 32 34 0 0 0 216.5 230 Z" fill="#3b2214" stroke="#3b2214" stroke-width="1"/>
-      </g>
-    </g>
-    <!-- #palpebras: pálpebra superior; escale em Y (0..1) a partir do topo do olho (transform-origin já definido) -->
-    <g clip-path="url(#mg-clip-palp)">
-      <g id="palpebras" style="opacity:0;transform-origin:200px 184px">
-        <path d="M110 182 L 190 182 L 190 222 C 170 232 130 232 110 222 Z M210 182 L 290 182 L 290 222 C 270 232 230 232 212 222 Z" fill="url(#mg-palpebra)"/>
-        <path d="M116 224 C 132 232 168 232 184 224 M216 224 C 232 232 268 232 284 224" fill="none" stroke="#3b2214" stroke-width="4" stroke-linecap="round"/>
-      </g>
-    </g>
-    <g class="olho-fechado">
-      <ellipse cx="150" cy="222" rx="46" ry="40" fill="url(#mg-s20)"/><ellipse cx="250" cy="222" rx="46" ry="40" fill="url(#mg-s20)"/>
-      <g fill="none" stroke="#3b2214" stroke-width="5" stroke-linecap="round">
-        <path d="M120 226 Q 150 248 180 226"/>
-        <path d="M220 226 Q 250 248 280 226"/>
-        <path d="M122 229 L 113 236 M128 235 L 122 243 M278 229 L 287 236 M272 235 L 278 243" stroke-width="3"/>
-      </g>
-    </g>
-    <g id="olhos-felizes" style="opacity:0">
-      <ellipse cx="150" cy="228" rx="46" ry="46" fill="url(#mg-s20)"/><ellipse cx="250" cy="228" rx="46" ry="46" fill="url(#mg-s20)"/>
-      <g fill="none" stroke="#3b2214" stroke-width="5.5" stroke-linecap="round">
-        <path d="M124 238 Q 150 208 176 238"/><path d="M224 238 Q 250 208 276 238"/>
-      </g>
-    </g>
-    <!-- #sobrancelhas: tufos; cada lado tem transform-origin no centro do tufo -->
-    <g id="sobrancelhas" style="opacity:0" fill="#c85a16">
-      <g id="sobrancelha-e" style="transform-origin:149px 176px"><path d="M128 180 Q148.7 177 170 176 Q147.3 163 128 180Z"/></g>
-      <g id="sobrancelha-d" style="transform-origin:251px 176px"><path d="M272 180 Q251.3 177 230 176 Q252.7 163 272 180Z"/></g>
-    </g>
-    <path d="M190 260 C 194 256 206 256 210 260 C 213 264 205 271 200 272 C 195 271 187 264 190 260 Z" fill="url(#mg-nariz)"/>
-    <ellipse cx="196" cy="261" rx="5" ry="2.2" fill="#fff" opacity=".85"/>
-    <!-- #boca-fechada: sorrisinho levemente aberto (fresta escura + linguinha) -->
-    <g id="boca-fechada">
-      <path d="M184 282 C 190 285 196 284 200 279 C 204 284 210 285 216 282 C 213 289 207 292 200 292 C 193 292 187 289 184 282 Z" fill="url(#mg-boca)"/>
-      <ellipse cx="200" cy="291.5" rx="7.5" ry="3.2" fill="#f3859b"/>
-    </g>
-    <g id="boca-aberta">
-      <path d="M177 280 C 186 283 194 282 200 278 C 206 282 214 283 223 280 C 226 297 216 316 200 317 C 184 316 174 297 177 280 Z" fill="url(#mg-boca)"/>
-      <g clip-path="url(#mg-clip-boca)">
-        <ellipse cx="200" cy="317" rx="18" ry="13" fill="url(#mg-lingua)"/>
-        <ellipse cx="195" cy="310" rx="6" ry="2.5" fill="#fff" opacity=".45"/>
-      </g>
-      <path d="M177 280 C 174 297 184 316 200 317 C 216 316 226 297 223 280" fill="none" stroke="#6b2a22" stroke-width="2.2" stroke-linejoin="round" opacity=".8"/>
-    </g>
-    <g id="boca-o" style="opacity:0">
-      <ellipse cx="200" cy="288" rx="11.5" ry="13.5" fill="url(#mg-boca)" stroke="#6b2a22" stroke-width="2.4"/>
-      <ellipse cx="200" cy="295" rx="7" ry="4.5" fill="#ff8fa3"/>
-    </g>
-    <!-- #labio: lábio superior em "w" + dentinhos; fica sempre visível e liga a boca fechada à aberta -->
-    <g id="labio">
-      <g id="dentinhos" fill="#fffaf4"><path d="M186 282.5 L 190.5 290 L 192.5 283.6 Z M214 282.5 L 209.5 290 L 207.5 283.6 Z"/></g>
-      <path d="M200 272 L 200 279 M200 279 C 196 285 186 286 177 280 M200 279 C 204 285 214 286 223 280" fill="none" stroke="#7a3a28" stroke-width="3" stroke-linecap="round"/>
-    </g>
-    <g fill="none" stroke="#fffaf0" stroke-linecap="round" opacity=".85">
-      <path d="M156 282 Q 120 270 80 268M244 282 Q 280 270 320 268" stroke-width="1.8"/>
-      <path d="M156 290 Q 118 288 78 294M244 290 Q 282 288 322 294" stroke-width="1.8"/>
-      <path d="M158 298 Q 124 304 90 318M242 298 Q 276 304 310 318" stroke-width="1.6"/>
-    </g>
-    <g id="roupa-rosto"></g>
-    <g id="roupa-cabeca"></g>
-  </g>
-  <g id="mao-orelha">
-    <ellipse cx="84" cy="202" rx="26" ry="18" fill="url(#mg-s21)" opacity="0.45"/>
-    <path d="M136 378 C 78 354 30 282 42 204 C 46 182 78 174 86 194 C 78 262 108 332 166 366 Z" fill="url(#mg-membro)"/>
-    <g clip-path="url(#mg-clip-mao)">
-      <ellipse cx="56" cy="248" rx="20" ry="6" fill="url(#mg-s2)" opacity="0.8" transform="rotate(-7 56 248)"/><ellipse cx="76" cy="249" rx="20" ry="6" fill="url(#mg-s2)" opacity="0.8" transform="rotate(13 76 249)"/>
-      <ellipse cx="68" cy="287" rx="20" ry="6" fill="url(#mg-s2)" opacity="0.8" transform="rotate(-10 68 287)"/><ellipse cx="87" cy="288" rx="20" ry="6" fill="url(#mg-s2)" opacity="0.8" transform="rotate(17 87 288)"/>
-      <ellipse cx="92" cy="322" rx="18" ry="6" fill="url(#mg-s2)" opacity="0.8" transform="rotate(-17 92 322)"/><ellipse cx="109" cy="322" rx="18" ry="6" fill="url(#mg-s2)" opacity="0.8" transform="rotate(16 109 322)"/>
-    </g>
-    <ellipse cx="66" cy="186" rx="25" ry="21" fill="url(#mg-creme)" opacity=".5"/>
-    <ellipse cx="66" cy="186" rx="23" ry="19" fill="url(#mg-creme)"/>
-    <ellipse cx="60" cy="180" rx="12" ry="8" fill="url(#mg-s3)" opacity="0.85"/>
-    <path d="M56 178 Q 55 172 57 166 M68 176 Q 68 170 69 164 M78 178 Q 79 172 77 166" fill="none" stroke="#cf9866" stroke-width="2.4" stroke-linecap="round"/>
-  </g>
-  </g>
-</svg>
+      </svg>
     </div>
   </main>
 
@@ -2684,7 +2579,7 @@
 
   // ---------- Atualizações ----------
   // o app instalado fica aberto em segundo plano; ao voltar para ele, confere se tem versão nova
-  const VERSAO = '202610190207';
+  const VERSAO = '202610191240';
   const avisoAtualizar = document.getElementById('atualizar');
   let registro = null;
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
@@ -2721,22 +2616,22 @@
   }
 })();
 </script>
-<script src="jogos/roupas.js?v=202610190207" defer></script>
-<script src="jogos/nucleo.js?v=202610190207" defer></script>
-<script src="jogos/aprender.js?v=202610190207" defer></script>
-<script src="jogos/idiomas.js?v=202610190207" defer></script>
-<script src="jogos/musica.js?v=202610190207" defer></script>
-<script src="jogos/colorir.js?v=202610190207" defer></script>
-<script src="jogos/pontos.js?v=202610190207" defer></script>
-<script src="jogos/memoria.js?v=202610190207" defer></script>
-<script src="jogos/bolhas.js?v=202610190207" defer></script>
-<script src="jogos/sons.js?v=202610190207" defer></script>
-<script src="jogos/mercadinho.js?v=202610190207" defer></script>
-<script src="jogos/sombras.js?v=202610190207" defer></script>
-<script src="jogos/diferente.js?v=202610190207" defer></script>
-<script src="jogos/quebracabeca.js?v=202610190207" defer></script>
+<script src="jogos/roupas.js?v=202610191240" defer></script>
+<script src="jogos/nucleo.js?v=202610191240" defer></script>
+<script src="jogos/aprender.js?v=202610191240" defer></script>
+<script src="jogos/idiomas.js?v=202610191240" defer></script>
+<script src="jogos/musica.js?v=202610191240" defer></script>
+<script src="jogos/colorir.js?v=202610191240" defer></script>
+<script src="jogos/pontos.js?v=202610191240" defer></script>
+<script src="jogos/memoria.js?v=202610191240" defer></script>
+<script src="jogos/bolhas.js?v=202610191240" defer></script>
+<script src="jogos/sons.js?v=202610191240" defer></script>
+<script src="jogos/mercadinho.js?v=202610191240" defer></script>
+<script src="jogos/sombras.js?v=202610191240" defer></script>
+<script src="jogos/diferente.js?v=202610191240" defer></script>
+<script src="jogos/quebracabeca.js?v=202610191240" defer></script>
 <script src="jogos/penelope3d.js?v=202610181757" defer></script>
-<script src="jogos/corrida.js?v=202610190207" defer></script>
-<script src="jogos/mundo.js?v=202610190207" defer></script>
+<script src="jogos/corrida.js?v=202610191240" defer></script>
+<script src="jogos/mundo.js?v=202610191240" defer></script>
 </body>
 </html>
