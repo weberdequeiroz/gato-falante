@@ -165,6 +165,9 @@
     ],
   };
 
+  // as peças originais são de graça; as especiais (abaixo) custam moedas do cofrinho
+  const GRATIS = new Set(Object.entries(PECAS).flatMap(([c, l]) => l.map(p => c + ':' + p.id)));
+  const PRECO_CATEGORIA = { cabeca: 20, rosto: 10, pescoco: 10, blusa: 20, baixo: 15, pes: 15, costas: 25 };
   // ---------- peças novas (desenhadas e revisadas em imagens) ----------
   PECAS.cabeca.push(...[
   { id: 'chapeu-cauboi', nome: 'Chapéu de caubói', icone: '🤠', camadas: (c) => {
@@ -1003,6 +1006,7 @@
     M.falar?.('Vamos trocar a minha roupa? Escolha uma parte, um modelo e uma cor!');
   }
   function fechar() {
+    desfazerProva();
     painel.hidden = true;
     document.querySelector('.app').classList.remove('vestindo');
     M.falar?.(M.sortear ? M.sortear(['Adorei a minha roupa!', 'Fiquei lindo!', 'Que estiloso!', 'Obrigado pela roupa nova!']) : 'Adorei!');
@@ -1016,6 +1020,23 @@
     document.body.appendChild(painel);
     painel.addEventListener('click', aoClicar);
   }
+  // ---------- loja: roupas especiais custam moedas ----------
+  let compradas;
+  try { compradas = new Set(JSON.parse(localStorage.getItem('miguel-roupas-compradas') || '[]')); } catch (e) { compradas = new Set(); }
+  const guardarCompradas = () => { try { localStorage.setItem('miguel-roupas-compradas', JSON.stringify([...compradas])); } catch (e) {} };
+  const preco = (cat, id) => (GRATIS.has(cat + ':' + id) || compradas.has(cat + ':' + id) ? 0 : PRECO_CATEGORIA[cat] || 15);
+  const saldo = () => (M.jogos?.moedas ? M.jogos.moedas() : parseInt(localStorage.getItem('miguel-moedas'), 10) || 0);
+  // quem já estava usando uma peça especial antes da loja fica com ela
+  for (const [cat, esc] of Object.entries(roupa)) if (esc && !GRATIS.has(cat + ':' + esc.id)) compradas.add(cat + ':' + esc.id);
+  guardarCompradas();
+  let provando = null; // { cat, antes, peca, valor }
+  function desfazerProva() {
+    if (!provando) return;
+    roupa[provando.cat] = provando.antes;
+    provando = null;
+    vestir(document.getElementById('gato'));
+  }
+
   function desenharPainel() {
     const escolha = roupa[categoria];
     const pecas = PECAS[categoria];
@@ -1024,7 +1045,7 @@
     const posicao = rolagemAntes && rolagemAntes.dataset.cat === categoria ? rolagemAntes.scrollTop : 0;
     painel.innerHTML = `
       <div class="gr-topo">
-        <strong>👕 Roupas</strong>
+        <strong>👕 Roupas</strong><span class="gr-saldo" aria-label="Moedas no cofrinho">🪙 ${saldo()}</span>
         <div class="gr-acoes">
           <button data-acao="sortear" aria-label="Sortear uma roupa">🎲</button>
           <button data-acao="tirar" aria-label="Tirar todas as roupas">🧼</button>
@@ -1038,9 +1059,16 @@
       <div class="gr-rolagem" data-cat="${categoria}">
         <div class="gr-pecas">
           <button data-peca="" aria-pressed="${!escolha}"><span>🚫</span><small>Nenhum</small></button>
-          ${pecas.map(p => `<button data-peca="${p.id}" aria-pressed="${escolha?.id === p.id}"><span>${p.icone}</span><small>${p.nome}</small></button>`).join('')}
+          ${pecas.map(p => { const v = preco(categoria, p.id); return `<button data-peca="${p.id}" class="${v ? 'gr-trancada' : ''}" aria-pressed="${escolha?.id === p.id}" aria-label="${p.nome}${v ? ', custa ' + v + ' moedas' : ''}"><span>${p.icone}</span><small>${p.nome}</small>${v ? `<i class="gr-preco">🔒 🪙${v}</i>` : ''}</button>`; }).join('')}
         </div>
-      </div>`;
+      </div>
+      ${provando ? (() => { const falta = provando.valor - saldo(); return `<div class="gr-comprar" role="dialog" aria-label="Comprar roupa">
+        <div class="gr-comprar-cartao"><span class="gr-comprar-icone">${provando.peca.icone}</span>
+          <strong>${provando.peca.nome}</strong>
+          <p>Custa <b>🪙 ${provando.valor}</b> · você tem <b>🪙 ${saldo()}</b></p>
+          ${falta > 0 ? `<p class="gr-falta">Faltam 🪙 ${falta}. Termine jogos para ganhar moedas!</p>` : ''}
+          <div class="gr-comprar-botoes"><button data-acao="nao-comprar" class="gr-nao">Agora não</button>
+          ${falta > 0 ? '<button data-acao="ir-jogos" class="gr-sim">🎮 Ganhar moedas</button>' : '<button data-acao="comprar" class="gr-sim">🪙 Comprar</button>'}</div></div></div>`; })() : ''}`;
     painel.querySelector('.gr-rolagem').scrollTop = posicao;
   }
   function aplicar(falarTexto) {
@@ -1054,32 +1082,63 @@
   function aoClicar(e) {
     const b = e.target.closest('button');
     if (!b) return;
-    if (b.dataset.cat) { categoria = b.dataset.cat; desenharPainel(); return; }
+    if (b.dataset.cat) { desfazerProva(); categoria = b.dataset.cat; desenharPainel(); return; }
     if (b.dataset.peca !== undefined) {
       if (!b.dataset.peca) { roupa[categoria] = null; aplicar('Sem nada aqui.'); }
       else {
         const peca = PECAS[categoria].find(p => p.id === b.dataset.peca);
-        roupa[categoria] = { id: peca.id, cor: roupa[categoria]?.cor || CORES[Math.floor(Math.random() * CORES.length)][0], estampa: roupa[categoria]?.estampa };
-        aplicar(`${peca.nome}!`);
+        const valor = preco(categoria, peca.id);
+        desfazerProva();
+        const nova = { id: peca.id, cor: roupa[categoria]?.cor || CORES[Math.floor(Math.random() * CORES.length)][0], estampa: roupa[categoria]?.estampa };
+        if (valor) {
+          // peça especial: o Miguel experimenta, mas só fica com ela depois de comprar
+          provando = { cat: categoria, antes: roupa[categoria], peca, valor };
+          roupa[categoria] = nova;
+          vestir(document.getElementById('gato'));
+          const falta = valor - saldo();
+          M.falar?.(falta > 0 ? `${peca.nome}! Custa ${valor} moedas. Faltam ${falta} moedas. Termine jogos para ganhar mais!` : `${peca.nome}! Custa ${valor} moedas. Quer comprar?`);
+        } else {
+          roupa[categoria] = nova;
+          aplicar(`${peca.nome}!`);
+        }
       }
       desenharPainel();
     } else if (b.dataset.cor && roupa[categoria]) {
       roupa[categoria].cor = b.dataset.cor;
-      aplicar(nomeCor(b.dataset.cor) + '!');
+      if (provando) { vestir(document.getElementById('gato')); M.falar?.(nomeCor(b.dataset.cor) + '!'); } else aplicar(nomeCor(b.dataset.cor) + '!');
       desenharPainel();
     } else if (b.dataset.estampa && roupa[categoria]) {
       roupa[categoria].estampa = b.dataset.estampa;
-      aplicar('Estampa ' + ESTAMPAS.find(x => x.id === b.dataset.estampa).nome + '!');
+      if (provando) vestir(document.getElementById('gato')); else aplicar('Estampa ' + ESTAMPAS.find(x => x.id === b.dataset.estampa).nome + '!');
       desenharPainel();
+    } else if (b.dataset.acao === 'comprar' && provando) {
+      if (M.jogos?.gastarMoedas?.(provando.valor)) {
+        compradas.add(provando.cat + ':' + provando.peca.id);
+        guardarCompradas();
+        provando = null;
+        aplicar('Comprei! Obrigado! Ficou lindo!');
+        M.festa?.(document.getElementById('gato'), 14);
+      }
+      desenharPainel();
+    } else if (b.dataset.acao === 'nao-comprar') {
+      desfazerProva();
+      desenharPainel();
+    } else if (b.dataset.acao === 'ir-jogos') {
+      desfazerProva();
+      fechar();
+      document.getElementById('abrir-jogos')?.click();
     } else if (b.dataset.acao === 'sortear') {
+      desfazerProva();
       const s = (l) => l[Math.floor(Math.random() * l.length)];
       for (const cat of Object.keys(PECAS)) {
         const usar = cat === 'blusa' || cat === 'baixo' || Math.random() < 0.5;
-        roupa[cat] = usar ? { id: s(PECAS[cat]).id, cor: s(CORES)[0], estampa: s(ESTAMPAS).id } : null;
+        const minhas = PECAS[cat].filter(p => !preco(cat, p.id));
+        roupa[cat] = usar ? { id: s(minhas).id, cor: s(CORES)[0], estampa: s(ESTAMPAS).id } : null;
       }
       aplicar('Roupa surpresa! Ficou demais!');
       desenharPainel();
     } else if (b.dataset.acao === 'tirar') {
+      desfazerProva();
       for (const cat of Object.keys(PECAS)) roupa[cat] = null;
       aplicar('Tirei tudo! Agora escolha uma roupa nova.');
       desenharPainel();
@@ -1095,7 +1154,8 @@
 
   M.catalogo?.push(() => [
     'Vamos trocar a minha roupa? Escolha uma parte, um modelo e uma cor!', 'Adorei a minha roupa!', 'Fiquei lindo!', 'Que estiloso!', 'Obrigado pela roupa nova!',
-    'Sem nada aqui.', 'Roupa surpresa! Ficou demais!', 'Tirei tudo! Agora escolha uma roupa nova.',
+    'Sem nada aqui.', 'Roupa surpresa! Ficou demais!', 'Tirei tudo! Agora escolha uma roupa nova.', 'Comprei! Obrigado! Ficou lindo!',
+    'Quer comprar?', 'Termine jogos para ganhar mais!',
     ...CORES.map(([, n]) => n + '!'),
     ...ESTAMPAS.map(e => 'Estampa ' + e.nome + '!'),
     ...Object.values(PECAS).flat().map(p => `${p.nome}!`),

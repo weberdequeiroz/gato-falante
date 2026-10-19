@@ -680,3 +680,20 @@ html.calmo .tutorial-ilustra * { animation-duration: 3.2s !important; }
 .cofrinho .grade-jogos { width: 100%; }
 @media (max-width: 400px) { .chip-moedas { padding: 0 9px; font-size: 16px; } }
 @media (max-width: 420px) { .jogos-topo h2 { font-size: 19px; } .jogos-topo { gap: 8px; } }
+
+/* loja do guarda-roupa: roupas especiais custam moedas */
+.gr-saldo { margin-left: 8px; padding: 3px 10px; border-radius: 999px; background: #fff8dc; border: 2px solid #f5b301; color: #8a5a00; font-weight: 900; font-size: 14px; }
+.gr-pecas button { position: relative; }
+.gr-pecas button.gr-trancada { background: #fffaf0; border-style: dashed; border-color: #f5b301; }
+.gr-pecas button.gr-trancada span { filter: saturate(.85); }
+.gr-preco { position: absolute; top: -7px; right: -4px; font-style: normal; font-size: 9.5px; font-weight: 900; color: #8a5a00; background: #ffe082; border: 1.5px solid #f5b301; border-radius: 999px; padding: 0 5px; line-height: 16px; white-space: nowrap; }
+.gr-comprar { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 14px; background: rgba(31,45,61,.35); border-radius: 26px 26px 0 0; animation: tutorial-aparece .2s ease; }
+.gr-comprar-cartao { width: 100%; max-width: 340px; background: #fff; border-radius: 22px; padding: 14px; text-align: center; box-shadow: var(--sombra); display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.gr-comprar-icone { font-size: 44px; line-height: 1; }
+.gr-comprar-cartao strong { font-size: 20px; font-weight: 900; }
+.gr-comprar-cartao p { margin: 0; font-size: 16px; }
+.gr-comprar-cartao .gr-falta { color: #c0392b; font-weight: 800; }
+.gr-comprar-botoes { display: flex; gap: 8px; width: 100%; margin-top: 8px; }
+.gr-comprar-botoes button { flex: 1; min-height: 48px; border: 0; border-radius: 16px; font: inherit; font-weight: 900; font-size: 16px; }
+.gr-nao { background: #eef2f6; color: #2b3a4a; }
+.gr-sim { background: linear-gradient(#ffd54f, #f5b301); color: #5a3b00; box-shadow: 0 4px 0 #c99400; }

@@ -119,6 +119,12 @@
     setTimeout(() => voa.remove(), 1600);
     try { M.tocarNota(1319, 0, 0.1, 0.08, 'square'); M.tocarNota(1760, 0.08, 0.18, 0.08, 'square'); } catch (e) {}
   }
+  function gastarMoedas(n) {
+    if (moedas() < n) return false;
+    M.guardar('miguel-moedas', String(moedas() - n));
+    mostrarMoedas();
+    return true;
+  }
   function cofrinho() {
     nav.ir('Cofrinho do Miguel', (c) => {
       const comTrofeu = jogos.filter(j => trofeus(j.id));
@@ -131,6 +137,7 @@
             <p>🏆 Terminar um jogo e ganhar um troféu: <strong>5 moedas</strong></p>
             <p>🐟 Corrida do Miguel: <strong>1 moeda</strong> a cada 5 peixinhos</p>
             <p>🚩 Mundo do Miguel: <strong>2 moedas</strong> em cada bandeira</p>
+            <p>👕 Use as moedas para comprar <strong>roupas especiais</strong> no Vestir!</p>
           </div>
           ${comTrofeu.length ? `<p class="titulo-lista">Seus troféus</p><div class="grade-jogos">${comTrofeu.map(j =>
             `<div class="cartao-jogo" style="--cor:${j.cor}"><span class="simbolo" aria-hidden="true">${j.simbolo}</span><span class="nome">${j.nome}</span><span class="selo">🏆${trofeus(j.id)}</span></div>`).join('')}</div>`
@@ -379,6 +386,7 @@
   M.jogos = {
     abrir,
     ganharMoedas,
+    gastarMoedas,
     moedas,
     tutorial,
     textoTutorial,
