@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap">
 <title>Miguel, o Gato Falante</title>
-<link rel="stylesheet" href="jogos/jogos.css?v=202610191407">
+<link rel="stylesheet" href="jogos/jogos.css?v=202610191420">
 <style>
   /* Uma tela só, de cima para baixo: topo com ajuda → aviso do que está acontecendo → Miguel → ações grandes → vozes.
      Cores calmas e sempre iguais, botões grandes com ícone + palavra, um estado de cada vez. */
@@ -347,10 +347,19 @@
     gap: 8px;
   }
   #instalar[hidden] { display: none; }
-  #instalar .texto { flex: 1 1 150px; min-width: 0; font-size: 16px; }
-  #instalar button { border: 0; border-radius: 14px; min-height: 44px; padding: 0 16px; }
-  #instalar-sim { background: var(--laranja); color: #fff; font-weight: 900; }
-  #instalar-nao { background: transparent; font-size: 20px; min-width: 44px; }
+  #instalar { border: 3px solid var(--laranja); background: linear-gradient(#fff8ec, #ffffff); animation: instalar-entra .5s ease-out; }
+  @keyframes instalar-entra { from { transform: translate(-50%, -30px); opacity: 0; } }
+  .instalar-icone { flex: none; width: 52px; height: 52px; border-radius: 14px; box-shadow: 0 2px 6px rgba(31,45,61,.2); }
+  #instalar .texto { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  #instalar .texto strong { font-size: 19px; font-weight: 900; line-height: 1.15; }
+  #instalar .texto small { font-size: 13px; line-height: 1.25; color: var(--tinta-suave); font-weight: 700; }
+  #instalar button { border: 0; border-radius: 14px; min-height: 44px; padding: 0 16px; font: inherit; }
+  #instalar-sim { flex-basis: 100%; min-height: 52px; background: linear-gradient(#ffa040, var(--laranja)); color: #fff; font-weight: 900; font-size: 18px; box-shadow: 0 4px 0 #c95a08; animation: instalar-chama 2s ease-in-out 3; }
+  @keyframes instalar-chama { 50% { transform: scale(1.03); } }
+  #instalar-nao { flex: none; align-self: flex-start; background: #eef2f6; font-size: 17px; min-width: 40px; min-height: 40px; border-radius: 50%; padding: 0; color: #5b6b7c; font-weight: 900; }
+  .calmo #instalar, .calmo #instalar-sim { animation: none; }
+  /* enquanto o aviso de instalar aparece, a tela desce um pouco para ele não cobrir o balão */
+  body.com-instalar .app { padding-top: 150px; transition: padding-top .3s; }
   #instalar-dica { flex-basis: 100%; margin: 0; font-size: 15px; color: var(--tinta-suave); }
 
   /* ouvindo: orelhona com ondas + bolinhas de som voando para a orelha do Miguel */
@@ -911,9 +920,10 @@
 </div>
 
 <div id="instalar" role="dialog" aria-label="Instalar o jogo" hidden>
-  <span class="texto">📲 Instale o Miguel no celular!</span>
-  <button id="instalar-sim">Instalar</button>
+  <img class="instalar-icone" src="icones/icone-192.png" alt="" width="52" height="52">
+  <span class="texto"><strong>Instale o Miguel!</strong><small>Abre mais rápido, em tela cheia e funciona sem internet</small></span>
   <button id="instalar-nao" aria-label="Agora não">✕</button>
+  <button id="instalar-sim">📲 Instalar no celular</button>
   <p id="instalar-dica" hidden></p>
 </div>
 
@@ -2442,7 +2452,7 @@
   // tudo o que o Miguel fala na tela principal (para gravar as falas com voz natural)
   window.Miguel.catalogo.push(() => [
     ...Object.values(SAUDACAO).flatMap(sau => frasesApresentacao(sau).map(f => f.texto)),
-    ...Object.values(SAUDACAO).map(sau => sau + '! Que bom te ver de novo! 😺'),
+    ...Object.values(SAUDACAO).flatMap(sau => [sau + '! Que bom te ver de novo! 😺', sau + '! Eu sou o Miguel, o gato falante! 😺']),
     'Voz Fininha!', 'Voz Tia Dani!', 'Voz Bob Esponja!', 'Voz Pirata!', 'Voz Gatinho!', 'Voz Monstro!', 'Voz Robô!',
     ...Object.values(SAUDACAO).flatMap(sau => passosTela(sau).map(p => p.texto)), ...PASSOS_CONVERSAR.map(p => p.texto),
     ...ORACOES.flatMap(o => [o.titulo, ...o.frases]),
@@ -2545,7 +2555,11 @@
 
   // ---------- Abertura ----------
   let aberturaFechada = false, instalarPendente = false;
+  // conta as visitas separadas no app instalado e no navegador (eles dividem a memória no celular)
+  const modoVisita = (matchMedia('(display-mode: standalone)').matches || navigator.standalone === true) ? 'app' : 'navegador';
+  const primeiraVisita = ler('miguel-visitou-' + modoVisita) !== '1';
   function entrarNoJogo() {
+    guardar('miguel-visitou-' + modoVisita, '1'); // só conta depois de entrar (recarregar a página não conta)
     if (aberturaFechada) return;
     aberturaFechada = true;
     // a musiquinha com o miadinho no fim toca na abertura: se ainda não tinha tocado (celular bloqueia som
@@ -2563,7 +2577,7 @@
       if (instalarPendente) mostrarInstalar();
       if (ler('miguel-apresentou') !== '1') apresentar();
       // uma instrução de cada vez: primeiro a saudação, e o "toque em mim" só quando ele termina de falar
-      else narrarSequencia('ajuda', [{ texto: SAUDACAO[periodoDoDia()] + '! Que bom te ver de novo! 😺' }], VOZ_MIGUEL, 300,
+      else narrarSequencia('ajuda', [{ texto: SAUDACAO[periodoDoDia()] + (primeiraVisita ? '! Eu sou o Miguel, o gato falante! 😺' : '! Que bom te ver de novo! 😺') }], VOZ_MIGUEL, 300,
         () => { if (estado === 'parado') falar('Toque em mim e fale! 😺'); });
     }, espera + 550);
   }
@@ -2611,6 +2625,8 @@
     if (!aberturaFechada) { instalarPendente = true; return; }
     caixaInstalar.hidden = false;
   }
+  // a tela abre espaço para o aviso só enquanto ele está visível
+  new MutationObserver(() => document.body.classList.toggle('com-instalar', !caixaInstalar.hidden)).observe(caixaInstalar, { attributes: true, attributeFilter: ['hidden'] });
   if (ehIphone) mostrarInstalar();
   // alguns navegadores Android não avisam que dá para instalar: mostra a dica mesmo assim
   if (!jaInstalado && /android/i.test(navigator.userAgent)) {
@@ -2637,7 +2653,7 @@
 
   // ---------- Atualizações ----------
   // o app instalado fica aberto em segundo plano; ao voltar para ele, confere se tem versão nova
-  const VERSAO = '202610191407';
+  const VERSAO = '202610191420';
   const avisoAtualizar = document.getElementById('atualizar');
   let registro = null;
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
@@ -2674,22 +2690,22 @@
   }
 })();
 </script>
-<script src="jogos/roupas.js?v=202610191407" defer></script>
-<script src="jogos/nucleo.js?v=202610191407" defer></script>
-<script src="jogos/aprender.js?v=202610191407" defer></script>
-<script src="jogos/idiomas.js?v=202610191407" defer></script>
-<script src="jogos/musica.js?v=202610191407" defer></script>
-<script src="jogos/colorir.js?v=202610191407" defer></script>
-<script src="jogos/pontos.js?v=202610191407" defer></script>
-<script src="jogos/memoria.js?v=202610191407" defer></script>
-<script src="jogos/bolhas.js?v=202610191407" defer></script>
-<script src="jogos/sons.js?v=202610191407" defer></script>
-<script src="jogos/mercadinho.js?v=202610191407" defer></script>
-<script src="jogos/sombras.js?v=202610191407" defer></script>
-<script src="jogos/diferente.js?v=202610191407" defer></script>
-<script src="jogos/quebracabeca.js?v=202610191407" defer></script>
+<script src="jogos/roupas.js?v=202610191420" defer></script>
+<script src="jogos/nucleo.js?v=202610191420" defer></script>
+<script src="jogos/aprender.js?v=202610191420" defer></script>
+<script src="jogos/idiomas.js?v=202610191420" defer></script>
+<script src="jogos/musica.js?v=202610191420" defer></script>
+<script src="jogos/colorir.js?v=202610191420" defer></script>
+<script src="jogos/pontos.js?v=202610191420" defer></script>
+<script src="jogos/memoria.js?v=202610191420" defer></script>
+<script src="jogos/bolhas.js?v=202610191420" defer></script>
+<script src="jogos/sons.js?v=202610191420" defer></script>
+<script src="jogos/mercadinho.js?v=202610191420" defer></script>
+<script src="jogos/sombras.js?v=202610191420" defer></script>
+<script src="jogos/diferente.js?v=202610191420" defer></script>
+<script src="jogos/quebracabeca.js?v=202610191420" defer></script>
 <script src="jogos/penelope3d.js?v=202610181757" defer></script>
-<script src="jogos/corrida.js?v=202610191407" defer></script>
-<script src="jogos/mundo.js?v=202610191407" defer></script>
+<script src="jogos/corrida.js?v=202610191420" defer></script>
+<script src="jogos/mundo.js?v=202610191420" defer></script>
 </body>
 </html>
