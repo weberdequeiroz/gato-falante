@@ -79,18 +79,18 @@
             <span>⭐ Estrelas: <strong>${d.estrelas}</strong></span>
             <span>🏆 Mais longe: <strong>${d.recorde}</strong></span>
           </div>
-          <div class="como-jogar">
-            <p><strong>Como jogar</strong></p>
+          <button class="botao-pronto" data-fase="${d.fase}">▶ ${d.fase > 1 ? `Continuar na fase ${d.fase}` : 'Começar a aventura'}</button>
+          ${d.fase > 1 ? '<button class="botao-largo" data-fase="1">🔁 Começar da fase 1 (sem perder estrelas)</button>' : ''}
+          <button class="botao-largo" data-tutorial>❓ Como jogar</button>
+          <details class="como-jogar">
+            <summary><strong>📖 Ler as regras</strong></summary>
             <p>🕹️ Use o <strong>círculo da esquerda</strong> para andar.</p>
             <p>⬆️ Toque no <strong>botão de pular</strong> (à direita).</p>
             <p>👉 Arraste o dedo no lado direito da tela para <strong>girar a câmera</strong>.</p>
             <p>🚩 Chegue nas <strong>bandeiras</strong>: o jogo salva sozinho. As fases não acabam nunca!</p>
             <p>🦴 Pegue o <strong>osso dourado</strong>: a cachorrinha <strong>Penélope</strong> vem ajudar com pulo duplo, ímã de estrelas e te salva se cair!</p>
             <p>🔥 Cuidado com o chão vermelho e com as barras que giram. Se cair, você volta para a última bandeira.</p>
-          </div>
-          <button class="botao-largo" data-tutorial>❓ Como jogar</button>
-          <button class="botao-pronto" data-fase="${d.fase}">▶ ${d.fase > 1 ? `Continuar na fase ${d.fase}` : 'Começar a aventura'}</button>
-          ${d.fase > 1 ? '<button class="botao-largo" data-fase="1">🔁 Começar da fase 1 (sem perder estrelas)</button>' : ''}
+          </details>
         </div>`;
       M.falar(d.fase > 1 ? [{ t: 'Mundo do Miguel!' }, { t: `Você parou na fase ${d.fase}.` }, { t: 'Vamos continuar?' }] : 'Mundo do Miguel! Ande, pule e chegue nas bandeiras. As fases não acabam nunca!');
       c.onclick = (e) => {
