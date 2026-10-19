@@ -46,11 +46,15 @@
       nav.ir(tituloTela, render, classe);
     },
     voltar() {
+      // jogos de ação (Corrida, Mundo) podem pausar em vez de sair, para um toque sem querer não fechar o jogo
+      const atual = pilha[pilha.length - 1];
+      if (atual && atual.aoVoltar && atual.aoVoltar()) return;
       M.calar();
       if (pilha.length <= 1) { fechar(); return; }
       pilha.pop();
       mostrarTopo();
     },
+    interceptarVoltar(fn) { const atual = pilha[pilha.length - 1]; if (atual) atual.aoVoltar = fn; },
     inicio() {
       pilha.length = 1;
       mostrarTopo();
@@ -135,7 +139,7 @@
           <div class="como-ganhar">
             <p><strong>Como ganhar moedas</strong></p>
             <p>🏆 Terminar um jogo e ganhar um troféu: <strong>5 moedas</strong></p>
-            <p>🐟 Corrida do Miguel: <strong>1 moeda</strong> a cada 5 peixinhos</p>
+            <p>🐟 Corrida do Miguel: <strong>1 moeda</strong> a cada 5 peixinhos e <strong>5 moedas</strong> por fase sem se machucar</p>
             <p>🚩 Mundo do Miguel: <strong>2 moedas</strong> em cada bandeira</p>
             <p>👕 Use as moedas para comprar <strong>roupas especiais</strong> no Vestir!</p>
           </div>
@@ -300,8 +304,8 @@
               ganharTrofeu(def.chave);
               rodada.acertos = 0;
               telaVitoria(c, {
-                sub: `Você ganhou ${ACERTOS_PARA_GANHAR} estrelas!`,
-                fala: 'Parabéns! Você ganhou cinco estrelas! Você é demais!',
+                sub: `Você acertou ${ACERTOS_PARA_GANHAR} perguntas!`,
+                fala: 'Parabéns! Você acertou cinco perguntas e ganhou cinco moedas! Você é demais!',
                 deNovo: nova,
                 outros: nav.voltar,
               });
@@ -322,7 +326,7 @@
 
   // todas as falas de um tema (para gravar com voz natural)
   function falasDoTema(def) {
-    const falas = ['Toque em cada um para ouvir!', 'Parabéns! Você ganhou cinco estrelas! Você é demais!'];
+    const falas = ['Toque em cada um para ouvir!', 'Parabéns! Você acertou cinco perguntas e ganhou cinco moedas! Você é demais!'];
     for (const it of def.itens) falas.push(def.fala(it), def.acerto(it), def.erro(it));
     for (let k = 0; k < 400; k++) { const p = M.sortear(def.perguntas)(def.itens); falas.push(p.fala || p.texto); }
     return falas;

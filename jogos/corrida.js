@@ -114,6 +114,7 @@
             <p><strong>Como jogar</strong></p>
             <p>👆 Toque na tela para <strong>pular</strong>. Toque de novo no ar para pular <strong>mais alto</strong>!</p>
             <p>🐟 Pegue peixinhos, ⭐ estrelas e 🎁 presentes. Desvie das pedras e dos bichinhos!</p>
+            <p>🛡️ Passe uma fase <strong>sem se machucar</strong> e ganhe <strong>5 moedas</strong> de bônus!</p>
             <p>🦴 O <strong>osso dourado</strong> chama a cachorrinha <strong>Penélope</strong>: ela late e assopra os obstáculos para longe!</p>
             <p>🦸 Às vezes o presente chama o <strong>Super Miguel</strong>, que voa com você e transforma os obstáculos em peixinhos!</p>
             <p>❤️ Você tem 3 vidas. A cada nível o lugar muda e fica mais rápido.</p>
@@ -201,6 +202,7 @@
       const jogador = { x: 96, y: CHAO - 84, w: 68, h: 84, vy: 0, noChao: true, pulos: 0, invencivel: 0, escudo: false, turbo: 0, ima: 0, esmaga: 0, passo: 0, giro: 0, piscar: 2.5 };
       let nivel = nivelInicial, tempoNivel = 0, velocidade = 0, distancia = 0, proximoSpawn = 500;
       let pontos = 0, peixes = 0, vidas = 3, rodando = true, pausado = false, acabou = false;
+      let machucouNoNivel = false, invictos = 0;
       let ultimoTempo = performance.now(), quadro = null, avisoTimer = null;
       const coisas = []; // obstáculos, prêmios, plataformas
       const particulas = [];
@@ -367,6 +369,7 @@
         if (jogador.invencivel > 0) return;
         if (jogador.escudo) { jogador.escudo = false; jogador.invencivel = 1.2; som('escudo'); o.morto = true; brilho(o.x + 25, o.y + 25, '#80deea', 14); return; }
         vidas--;
+        machucouNoNivel = true;
         som('batida');
         if (vidas <= 0) miar('triste'); else if (vidas > 0) miar('ai');
         jogador.invencivel = 1.8;
@@ -396,6 +399,7 @@
                 <img src="${img.src}" alt="">
                 <p>⭐ Pontos: <strong>${Math.floor(pontos)}</strong> · 🐟 Peixes: <strong>${peixes}</strong></p>
                 <p>🚩 Você chegou ao nível <strong>${nivel}</strong> (${cenario().nome})</p>
+                ${invictos ? `<p>🛡️ Fases sem se machucar: <strong>${invictos}</strong> (+${invictos * 5} 🪙)</p>` : ''}
                 ${Math.floor(peixes / 5) ? `<p class="vitoria-moedas">🪙 +${Math.floor(peixes / 5)} moedas no seu cofrinho!</p>` : ''}
                 <button class="botao-pronto" data-acao="denovo">🔁 Correr de novo</button>
                 ${nivel > 1 ? `<button class="botao-largo" data-acao="continuar-nivel">🚩 Continuar do nível ${nivel}</button>` : ''}
@@ -425,11 +429,21 @@
         pontos += dx / 40;
         tempoNivel += dt;
         if (tempoNivel >= SEGUNDOS_POR_NIVEL) {
+          // passou a fase sem se machucar? ganha moedas bônus
+          const foiInvicto = !machucouNoNivel;
+          if (foiInvicto) {
+            const bonus = 5;
+            M.jogos.ganharMoedas(bonus);
+            pontinho(jogador.x + 30, jogador.y - 30, `🛡️ Invicto! +${bonus} 🪙`, '#ffe082');
+            brilho(jogador.x + 34, jogador.y + 20, '#ffd54f', 20);
+            invictos++;
+          }
+          machucouNoNivel = false;
           nivel++;
           tempoNivel = 0;
           som('nivel');
           musica.tempo(nivel);
-          aviso(`🚩 Nível ${nivel}! ${cenario().nome}`, 2200);
+          aviso(foiInvicto ? `🛡️ Invicto! +5 🪙 · Nível ${nivel}: ${cenario().nome}` : `🚩 Nível ${nivel}! ${cenario().nome}`, 2600);
           miar('feliz');
           if (nivel > dados.nivelMax) { dados.nivelMax = nivel; guardarDados(dados); }
           brilho(jogador.x + 34, jogador.y + 40, '#ffd54f', 24);
@@ -802,6 +816,8 @@
       aviso(`🚩 Nível ${nivel}: ${cenario().nome}! Toque para pular!`, 2200);
       quadro = requestAnimationFrame(passo);
       const aoSumir = () => { if (document.hidden && !acabou && !pausado) c.querySelector('[data-acao="pausa"]').click(); };
+      // o botão Voltar do alto pausa a corrida (sair só pelo menu de pausa)
+      nav.interceptarVoltar(() => { if (!acabou && !pausado) { c.querySelector('[data-acao="pausa"]').click(); return true; } return false; });
       document.addEventListener('visibilitychange', aoSumir);
       return () => {
         rodando = false;

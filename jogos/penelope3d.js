@@ -104,7 +104,10 @@
   }
 
   // telinha 3D para jogos em 2D (a Corrida): desenha a Penélope de lado, correndo, num canvas pequeno
+  // uma telinha só, reaproveitada em todas as corridas (criar várias telas 3D pesa e pode fechar o app)
+  let telinhaPronta = null;
   function telinha(T, tam = 256) {
+    if (telinhaPronta) return telinhaPronta;
     const renderer = new T.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setSize(tam, tam, false);
     renderer.setClearColor(0x000000, 0);
@@ -117,11 +120,12 @@
     // virada para a direita da tela, um pouquinho de frente para mostrar o rostinho
     p.grupo.rotation.y = Math.PI / 2 - 0.55;
     cena.add(p.grupo);
-    return {
+    telinhaPronta = {
       canvas: renderer.domElement,
       desenhar(t, estado) { p.animar(t, estado); renderer.render(cena, camera); },
-      descartar() { renderer.dispose(); },
+      descartar() {},
     };
+    return telinhaPronta;
   }
 
   // carrega o three.js uma vez (o mesmo arquivo do Mundo do Miguel)

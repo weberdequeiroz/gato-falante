@@ -833,6 +833,7 @@
         else if (acao === 'sair') nav.voltar();
       };
       const aoSumir = () => { if (document.hidden && !pausado) c.querySelector('[data-acao="pausa"]').click(); };
+      nav.interceptarVoltar(() => { if (!pausado) { c.querySelector('[data-acao="pausa"]').click(); return true; } return false; });
       document.addEventListener('visibilitychange', aoSumir);
       return () => {
         rodando = false;
