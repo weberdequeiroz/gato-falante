@@ -92,7 +92,7 @@
             <p>🔥 Cuidado com o chão vermelho e com as barras que giram. Se cair, você volta para a última bandeira.</p>
           </details>
         </div>`;
-      M.falar(d.fase > 1 ? [{ t: 'Mundo do Miguel!' }, { t: `Você parou na fase ${d.fase}.` }, { t: 'Vamos continuar?' }] : 'Mundo do Miguel! Ande, pule e chegue nas bandeiras. As fases não acabam nunca!');
+      M.falar(d.fase > 1 ? (d.fase <= 60 ? `Mundo do Miguel! Você parou na fase ${d.fase}. Vamos continuar?` : 'Mundo do Miguel! Vamos continuar a aventura?') : 'Mundo do Miguel! Ande, pule e chegue nas bandeiras. As fases não acabam nunca!');
       c.onclick = (e) => {
         if (e.target.closest('[data-tutorial]')) { M.jogos.tutorial(TUTORIAL()); return; }
         const b = e.target.closest('[data-fase]');
@@ -852,7 +852,8 @@
 
   M.catalogo.push(() => {
     const f = ['Mundo do Miguel! Ande, pule e chegue nas bandeiras. As fases não acabam nunca!', 'Mundo do Miguel!', 'Vamos continuar?', ...M.jogos.textoTutorial(TUTORIAL())];
-    for (let n = 1; n <= 60; n++) f.push(`Você parou na fase ${n}.`);
+    f.push('Mundo do Miguel! Vamos continuar a aventura?');
+    for (let n = 2; n <= 60; n++) f.push(`Mundo do Miguel! Você parou na fase ${n}. Vamos continuar?`);
     return f;
   });
   M.jogos.registrar({ id: 'mundo', nome: 'Mundo do Miguel', simbolo: '🌍', cor: '#2f9be8', secao: 'aventura', abrir: inicio });
