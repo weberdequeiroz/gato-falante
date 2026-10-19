@@ -220,7 +220,7 @@
       function chamarPenelope() {
         penelope = { t: M.calmo ? 14 : 12, x: -120, anim: 0, latido: 1.0, saindo: false, ossos: 0.6 };
         clarao = 0.4;
-        M.penelope3d.latir();
+        M.penelope3d.gritar();
         som('poder');
         aviso('🐶 PENÉLOPE! Ela late e assopra os obstáculos para longe! Pegue os ossinhos!', 2800);
       }

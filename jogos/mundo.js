@@ -544,9 +544,8 @@
       const brilhos = [];
       const penelopeAtiva = () => penelope && !penelope.saindo;
       function chamarPenelope() {
-        latir();
         som('estrela');
-        if (penelope && !penelope.saindo) { penelope.t = 15; aviso('🐶 Mais tempo com a Penélope!', 1800); return; }
+        if (penelope && !penelope.saindo) { latir(); penelope.t = 15; aviso('🐶 Mais tempo com a Penélope!', 1800); return; }
         if (penelope) { cena.remove(penelope.modelo.grupo); cena.remove(penelope.halo); }
         // a Penélope de verdade em 3D (dá para ver de todos os lados)
         const modelo = M.penelope3d.criar(T);
@@ -565,6 +564,7 @@
         halo.scale.set(3.2, 3.2, 1);
         cena.add(halo);
         penelope = { modelo, halo, t: 15, anim: 0, saindo: false, sumindo: 1 };
+        M.penelope3d.gritar();
         aviso('🐶 Penélope chegou! Pulo duplo, ímã de estrelas e ela te salva se cair!', 3200);
       }
       if (/teste/.test(location.search)) window.__chamarPenelope = chamarPenelope; // só para testes automáticos

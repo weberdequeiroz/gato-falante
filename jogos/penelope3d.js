@@ -141,5 +141,13 @@
   const latido = new Audio('sons/latido-fraquinho.mp3');
   function latir() { try { const a = latido.cloneNode(); a.volume = M.calmo ? 0.35 : 0.55; a.play().catch(() => {}); } catch (e) {} }
 
-  M.penelope3d = { criar, telinha, carregarThree, latir };
+  // grito de "Super Penélope!" quando ela chega, e logo depois um latidinho
+  const grito = new Audio('sons/super-penelope.mp3');
+  grito.preload = 'auto';
+  function gritar() {
+    try { grito.currentTime = 0; grito.volume = M.calmo ? 0.6 : 1; grito.play().catch(() => {}); } catch (e) {}
+    setTimeout(latir, 1400);
+  }
+
+  M.penelope3d = { criar, telinha, carregarThree, latir, gritar };
 })();
