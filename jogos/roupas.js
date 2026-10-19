@@ -1029,6 +1029,10 @@
   // quem já estava usando uma peça especial antes da loja fica com ela
   for (const [cat, esc] of Object.entries(roupa)) if (esc && !GRATIS.has(cat + ':' + esc.id)) compradas.add(cat + ':' + esc.id);
   guardarCompradas();
+  const EXTENSO = ['zero', 'uma', 'duas', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze', 'treze', 'catorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove', 'vinte',
+    'vinte e uma', 'vinte e duas', 'vinte e três', 'vinte e quatro', 'vinte e cinco'];
+  const custaFrase = (v) => `Custa ${EXTENSO[v] || v} moedas.`;
+  const faltaFrase = (n) => (n === 1 ? 'Falta uma moeda.' : `Faltam ${EXTENSO[n] || n} moedas.`);
   let provando = null; // { cat, antes, peca, valor }
   function desfazerProva() {
     if (!provando) return;
@@ -1096,7 +1100,8 @@
           roupa[categoria] = nova;
           vestir(document.getElementById('gato'));
           const falta = valor - saldo();
-          M.falar?.(falta > 0 ? `${peca.nome}! Custa ${valor} moedas. Faltam ${falta} moedas. Termine jogos para ganhar mais!` : `${peca.nome}! Custa ${valor} moedas. Quer comprar?`);
+          // falado em frases inteiras já gravadas (sem montar palavra por palavra)
+          M.falar?.([{ t: `${peca.nome}!` }, { t: custaFrase(valor) }, ...(falta > 0 ? [{ t: faltaFrase(falta) }, { t: 'Termine jogos para ganhar mais!' }] : [{ t: 'Quer comprar?' }])]);
         } else {
           roupa[categoria] = nova;
           aplicar(`${peca.nome}!`);
@@ -1156,6 +1161,7 @@
     'Vamos trocar a minha roupa? Escolha uma parte, um modelo e uma cor!', 'Adorei a minha roupa!', 'Fiquei lindo!', 'Que estiloso!', 'Obrigado pela roupa nova!',
     'Sem nada aqui.', 'Roupa surpresa! Ficou demais!', 'Tirei tudo! Agora escolha uma roupa nova.', 'Comprei! Obrigado! Ficou lindo!',
     'Quer comprar?', 'Termine jogos para ganhar mais!',
+    ...[10, 15, 20, 25].map(custaFrase), ...Array.from({ length: 25 }, (_, i) => faltaFrase(i + 1)),
     ...CORES.map(([, n]) => n + '!'),
     ...ESTAMPAS.map(e => 'Estampa ' + e.nome + '!'),
     ...Object.values(PECAS).flat().map(p => `${p.nome}!`),
