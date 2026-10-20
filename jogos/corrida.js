@@ -7,19 +7,19 @@
   const SEGUNDOS_POR_NIVEL = 32;
 
   const CENARIOS = [
-    { nome: 'Campo', onde: 'no campo', ceu: ['#7cc8f5', '#dff4ff'], morro: '#7ccb68', morro2: '#5fb24f', chao: '#6abf4b', terra: '#9b6b43', obst: ['🪨', '🪵', '🌵'], voa: ['🐝', '🦋'], enfeite: ['🌳', '🌻', '🌷'] },
-    { nome: 'Praia', onde: 'na praia', ceu: ['#5ec4f0', '#fff3cf'], morro: '#4fb3e6', morro2: '#2f98cf', chao: '#f4d58d', terra: '#e0b765', obst: ['🦀', '🪣', '🐚'], voa: ['🐦', '🪁'], enfeite: ['🌴', '⛱️', '🏖️'] },
-    { nome: 'Floresta', onde: 'na floresta', ceu: ['#89d39b', '#e9f9e3'], morro: '#3f8f4f', morro2: '#2e6f3b', chao: '#4f9a3c', terra: '#7a4f2c', obst: ['🍄', '🪵', '🦔'], voa: ['🦉', '🐝'], enfeite: ['🌲', '🌳', '🍄'] },
-    { nome: 'Cidade', onde: 'na cidade', ceu: ['#9fb7ff', '#ffe6f2'], morro: '#8b95c9', morro2: '#6f78ad', chao: '#9aa3ad', terra: '#6b7280', obst: ['🚧', '🗑️', '📦'], voa: ['🕊️', '🎈'], enfeite: ['🏠', '🏪', '🚦'] },
-    { nome: 'Neve', onde: 'na neve', ceu: ['#bfe3ff', '#ffffff'], morro: '#e3f2ff', morro2: '#c8e1f7', chao: '#f4fbff', terra: '#b8d4ea', obst: ['⛄', '🧊', '🎄'], voa: ['❄️', '🐦'], enfeite: ['🌲', '⛄', '🏔️'] },
-    { nome: 'Deserto', onde: 'no deserto', ceu: ['#ffcf8a', '#fff1d6'], morro: '#f0b867', morro2: '#d99a45', chao: '#f2c879', terra: '#c9934a', obst: ['🌵', '🦂', '🪨'], voa: ['🦅', '🐝'], enfeite: ['🌵', '🐪', '🏜️'] },
+    { nome: 'Campo', onde: 'no campo', ceu: ['#7cc8f5', '#dff4ff'], morro: '#7ccb68', morro2: '#5fb24f', chao: '#6abf4b', terra: '#9b6b43', obst: ['🪨', '🪵', '🌵', '🐌', '🌾', '🐸'], voa: ['🐝', '🦋'], enfeite: ['🌳', '🌻', '🌷'] },
+    { nome: 'Praia', onde: 'na praia', ceu: ['#5ec4f0', '#fff3cf'], morro: '#4fb3e6', morro2: '#2f98cf', chao: '#f4d58d', terra: '#e0b765', obst: ['🦀', '🪣', '🐚', '🏰', '🦞', '🪸'], voa: ['🐦', '🪁'], enfeite: ['🌴', '⛱️', '🏖️'] },
+    { nome: 'Floresta', onde: 'na floresta', ceu: ['#89d39b', '#e9f9e3'], morro: '#3f8f4f', morro2: '#2e6f3b', chao: '#4f9a3c', terra: '#7a4f2c', obst: ['🍄', '🪵', '🦔', '🐿️', '🪨', '🐌'], voa: ['🦉', '🐝'], enfeite: ['🌲', '🌳', '🍄'] },
+    { nome: 'Cidade', onde: 'na cidade', ceu: ['#9fb7ff', '#ffe6f2'], morro: '#8b95c9', morro2: '#6f78ad', chao: '#9aa3ad', terra: '#6b7280', obst: ['🚧', '🗑️', '📦', '🛴', '🧯', '🚲'], voa: ['🕊️', '🎈'], enfeite: ['🏠', '🏪', '🚦'] },
+    { nome: 'Neve', onde: 'na neve', ceu: ['#bfe3ff', '#ffffff'], morro: '#e3f2ff', morro2: '#c8e1f7', chao: '#f4fbff', terra: '#b8d4ea', obst: ['⛄', '🧊', '🎄', '🎿', '🐧', '🛷'], voa: ['❄️', '🐦'], enfeite: ['🌲', '⛄', '🏔️'] },
+    { nome: 'Deserto', onde: 'no deserto', ceu: ['#ffcf8a', '#fff1d6'], morro: '#f0b867', morro2: '#d99a45', chao: '#f2c879', terra: '#c9934a', obst: ['🌵', '🦂', '🪨', '🐍', '🏺', '🦎'], voa: ['🦅', '🐝'], enfeite: ['🌵', '🐪', '🏜️'] },
+    { nome: 'Espaço', onde: 'no espaço', ceu: ['#1b1f4b', '#4b3c8f'], morro: '#2f2a63', morro2: '#241f4f', chao: '#a9a9c9', terra: '#77779a', obst: ['☄️', '🪨', '👾', '🛰️', '🤖', '🌑'], voa: ['🛸', '☄️'], enfeite: ['🪐', '🌙', '⭐'], noite: true },
     { nome: 'Fazenda', onde: 'na fazenda', ceu: ['#8fd3ff', '#f2fbff'], morro: '#a5d66b', morro2: '#86bf4f', chao: '#93c95a', terra: '#8a5a35', obst: ['🌾', '🪵', '🐓'], voa: ['🐝', '🐦'], enfeite: ['🐄', '🐖', '🏡', '🌽'] },
     { nome: 'Fundo do mar', onde: 'no fundo do mar', ceu: ['#2a8fd6', '#9be3ff'], morro: '#1f7bb8', morro2: '#16639a', chao: '#f1dca0', terra: '#d4b571', obst: ['🦀', '🐚', '🪸'], voa: ['🐙', '🐡'], enfeite: ['🐠', '🪸', '🐢', '🐬'], bolhas: true },
     { nome: 'Selva', onde: 'na selva', ceu: ['#9fe0a8', '#effbe6'], morro: '#2f8a3e', morro2: '#22702f', chao: '#3d8f32', terra: '#5b3a1f', obst: ['🪨', '🐊', '🪵'], voa: ['🦜', '🐒'], enfeite: ['🌴', '🦒', '🐘', '🦁'] },
     { nome: 'Terra dos doces', onde: 'na terra dos doces', ceu: ['#ffc4e1', '#fff1f8'], morro: '#ff9ccf', morro2: '#f27bb7', chao: '#ffd1e8', terra: '#c98fb0', obst: ['🍩', '🧁', '🍭'], voa: ['🍬', '🎈'], enfeite: ['🍰', '🍦', '🍫', '🍓'] },
     { nome: 'Parque de diversões', onde: 'no parque de diversões', ceu: ['#a7c8ff', '#fff4d6'], morro: '#b8a3e6', morro2: '#9c86d6', chao: '#c9d1da', terra: '#7d8794', obst: ['🎪', '🧸', '📦'], voa: ['🎈', '🪁'], enfeite: ['🎡', '🎢', '🎠', '🍿'] },
     { nome: 'Montanhas', onde: 'nas montanhas', ceu: ['#9cc9f2', '#eef7ff'], morro: '#8a9bab', morro2: '#6f8092', chao: '#7fae5a', terra: '#6d5a48', obst: ['🪨', '🪵', '🐐'], voa: ['🦅', '🐦'], enfeite: ['🏔️', '⛰️', '🌲', '🏕️'] },
-    { nome: 'Espaço', onde: 'no espaço', ceu: ['#1b1f4b', '#4b3c8f'], morro: '#2f2a63', morro2: '#241f4f', chao: '#a9a9c9', terra: '#77779a', obst: ['☄️', '🪨', '👾'], voa: ['🛸', '☄️'], enfeite: ['🪐', '🌙', '⭐'], noite: true },
   ];
 
   const lerDados = () => { try { return Object.assign({ recorde: 0, peixes: 0, nivelMax: 1 }, JSON.parse(M.ler('miguel-corrida') || '{}')); } catch (e) { return { recorde: 0, peixes: 0, nivelMax: 1 }; } };
@@ -116,7 +116,7 @@
             <span>🐟 Peixes: <strong>${d.peixes}</strong></span>
             <span>🚩 Nível: <strong>${d.nivelMax}</strong></span>
           </div>
-          ${d.nivelMax > 1 ? `<button class="botao-pronto" data-nivel="${d.nivelMax}">🚩 Continuar do nível ${d.nivelMax}<small class="corrida-lugar">Cada corrida tem lugares diferentes!</small></button>
+          ${d.nivelMax > 1 ? `<button class="botao-pronto" data-nivel="${d.nivelMax}">🚩 Continuar do nível ${d.nivelMax}<small class="corrida-lugar">${CENARIOS[(d.nivelMax - 1) % CENARIOS.length].nome}</small></button>
           <button class="botao-largo" data-nivel="1">▶ Correr do começo</button>` : `<button class="botao-pronto" data-nivel="1">▶ Correr!</button>`}
           <button class="botao-largo" data-tutorial>❓ Como jogar</button>
           <details class="como-jogar">
@@ -254,23 +254,7 @@
         som('estrela');
       }
 
-      // cada corrida sorteia a ordem dos lugares, a hora do dia e o formato dos morros,
-      // para a criança não decorar o caminho
-      const ordemCenarios = CENARIOS.map((_, i) => i).sort(() => Math.random() - 0.5);
-      const cenariosSorteados = {};
-      const HORAS = {
-        tarde: { ceu: ['#ff9f6e', '#ffe2b8'], sol: '🌅' },
-        noite: { ceu: ['#1d2b5a', '#55639f'], noite: true, lua: true },
-      };
-      const cenario = () => {
-        if (!cenariosSorteados[nivel]) {
-          const base = CENARIOS[ordemCenarios[(nivel - 1) % CENARIOS.length]];
-          const sorte = Math.random();
-          const hora = base.noite || base.bolhas ? {} : sorte < 0.55 ? { sol: '☀️' } : sorte < 0.8 ? HORAS.tarde : HORAS.noite;
-          cenariosSorteados[nivel] = { ...base, ...hora, morroF: 0.7 + Math.random() * 0.7, morroA: 0.6 + Math.random() * 0.9 };
-        }
-        return cenariosSorteados[nivel];
-      };
+      const cenario = () => CENARIOS[(nivel - 1) % CENARIOS.length];
       const velocidadeBase = () => Math.min(640, (250 + (nivel - 1) * 34)) * (M.calmo ? 0.82 : 1);
 
       function aviso(texto, tempo = 1800) {
@@ -325,7 +309,7 @@
       }
       function filaDePeixes(x0, y, n) { for (let i = 0; i < n; i++) adicionar({ tipo: 'peixe', fig: '🐟', x: x0 + i * 42, y, w: 30, h: 30 }); }
       function obstaculo(x, fig) {
-        const tam = 54;
+        const tam = 46 + Math.floor(Math.random() * 16);
         adicionar({ tipo: 'obst', fig: fig || M.sortear(cenario().obst), x, y: CHAO - tam + 6, w: tam, h: tam });
       }
       function gerar() {
@@ -660,8 +644,6 @@
         const g = ctx.createLinearGradient(0, topo, 0, ALTURA);
         g.addColorStop(0, cen.ceu[0]); g.addColorStop(1, cen.ceu[1]);
         ctx.fillStyle = g; ctx.fillRect(-20, topo, W + 40, ALTURA - topo + 80);
-        if (cen.sol) emoji(cen.sol, W - 70, cen.sol === '🌅' ? 120 : 70, 54);
-        if (cen.lua) emoji('🌙', W - 70, 70, 46);
         if (cen.bolhas) { ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 2; for (let i = 0; i < 18; i++) { const bx = ((i * 131 - deslocFundo * 0.1) % (W + 20) + W + 20) % (W + 20), by = ((i * 71 - performance.now() / 20) % 300 + 300) % 300; ctx.beginPath(); ctx.arc(bx, by, 4 + (i % 4) * 2, 0, 7); ctx.stroke(); } }
         if (cen.noite) { ctx.fillStyle = '#fff'; for (let i = 0; i < 40; i++) { const sx = ((i * 97 - deslocFundo * 0.05) % (W + 20) + W + 20) % (W + 20), sy = (i * 53) % 220; ctx.globalAlpha = 0.4 + (i % 5) / 8; ctx.fillRect(sx, sy, 2, 2); } ctx.globalAlpha = 1; }
         else if (!cen.bolhas) {
@@ -677,19 +659,17 @@
           for (let x = 0; x <= W + 10; x += 10) ctx.lineTo(x, CHAO - alt - Math.sin((x + deslocFundo * vel) * freq) * amp - Math.sin((x + deslocFundo * vel) * freq * 2.3) * amp * 0.4);
           ctx.lineTo(W + 10, CHAO); ctx.fill();
         };
-        morros(cen.morro2, 110, 30 * cen.morroA, 0.006 * cen.morroF, 0.15);
+        morros(cen.morro2, 110, 30, 0.006, 0.15);
         // enfeites ficam lá no fundo, entre os morros
         ctx.globalAlpha = 0.9;
         for (const e of enfeites) emoji(e.fig, e.x, CHAO - 62 - e.tam * 0.3, e.tam * 0.75);
         ctx.globalAlpha = 1;
-        morros(cen.morro, 46, 18 * cen.morroA, 0.011 * cen.morroF, 0.3);
+        morros(cen.morro, 46, 18, 0.011, 0.3);
         // chão
         ctx.fillStyle = cen.terra; ctx.fillRect(-20, CHAO, W + 40, ALTURA - CHAO + 80);
         ctx.fillStyle = cen.chao; ctx.fillRect(-20, CHAO, W + 40, 16);
         ctx.fillStyle = 'rgba(0,0,0,.08)';
         for (let x = -((deslocFundo) % 48); x < W + 48; x += 48) ctx.fillRect(x, CHAO + 26, 24, 8);
-        // à noite o cenário fica mais escuro (o Miguel e os prêmios continuam bem claros)
-        if (cen.lua) { ctx.fillStyle = 'rgba(20,30,80,.28)'; ctx.fillRect(-20, topo, W + 40, ALTURA - topo + 80); }
         // coisas
         ctx.globalAlpha = 1;
         for (const o of coisas) {
