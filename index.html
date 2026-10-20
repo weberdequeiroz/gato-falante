@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap">
 <title>Miguel, o Gato Falante</title>
-<link rel="stylesheet" href="jogos/jogos.css?v=202610200129">
+<link rel="stylesheet" href="jogos/jogos.css?v=202610200131">
 <style>
   /* Uma tela só, de cima para baixo: topo com ajuda → aviso do que está acontecendo → Miguel → ações grandes → vozes.
      Cores calmas e sempre iguais, botões grandes com ícone + palavra, um estado de cada vez. */
@@ -1045,7 +1045,7 @@
     // fininha: bem fina e limpa (sem chiado e sem graves)
     esquilo: { tom: 1.25, velocidade: 1.8, ritmo: 1.2, limpa: true },
     // tia Dani: menininha, bem fina e feminina (sobe mais a altura que o "tamanho" da voz)
-    dani:    { tom: 1.55, velocidade: 1.18, ritmo: 1.1, limpa: true, menina: true, alegre: true, tremido: { hz: 3.2, forca: 0.03 }, forte: true, volume: 1.4, frases: ['Hihihi! Oi, eu sou a tia Dani! 🐿️', 'Tia Dani na área! 🐿️'] },
+    dani:    { tom: 1.75, velocidade: 1.2, ritmo: 1.12, limpa: true, menina: true, alegre: true, tremido: { hz: 3.5, forca: 0.035 }, forte: true, volume: 1.4, frases: ['Hihihi! Oi, eu sou a tia Dani! 🐿️', 'Tia Dani na área! 🐿️'] },
     // Esponja: dá a risadinha aguda antes de repetir
     bob:     { velocidade: 1.45, ritmo: 1.22, tom: 1.3, nasal: true, forte: true, risada: true, tremido: { hz: 6, forca: 0.035 }, frases: ['Estou pronto! Estou pronto! 🧽', 'Ahahahaha! 🧽'] },
     // pirata: voz grossa de marujo, um pouco rouca, num porão de navio (claro de entender)
@@ -1085,7 +1085,10 @@
   }
 
   function setEstado(novo) {
+    const anterior = estado;
     estado = novo;
+    // parou de ouvir: fecha o microfone para todos os sons voltarem ao volume normal do alto-falante
+    if (anterior === 'ouvindo' && novo !== 'ouvindo') liberarMicrofone(true);
     gato.classList.toggle('ouvindo', novo === 'ouvindo');
     gato.classList.toggle('falando', novo === 'falando' || novo === 'narrando');
     areaGato.classList.toggle('ouvindo-on', novo === 'ouvindo');
@@ -1158,7 +1161,8 @@
     if (microfone && fluxoMicrofone && fluxoMicrofone.getAudioTracks().some(t => t.readyState === 'live')) return;
     if (ehIOS) sessaoAudio('play-and-record');
     const stream = fluxoMicrofone = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      // sem cancelamento de eco: o Miguel nunca fala enquanto ouve, e assim o celular não entra em "modo ligação"
+      audio: { echoCancellation: false, noiseSuppression: true, autoGainControl: true },
     });
     microfone = ctx.createMediaStreamSource(stream);
     processador = ctx.createScriptProcessor(2048, 1, 1);
@@ -1291,7 +1295,6 @@
     const fim = Math.max(indiceInicioFala + 1, pedacos.length - Math.max(0, sobraFinal));
     const usados = pedacos.slice(indiceInicioFala, fim);
     repetir(usados);
-    liberarMicrofone(true);
   }
 
   // monta a voz transformada num contexto de áudio (o do jogo, ou um "de mentirinha" para gerar amostras)
@@ -2862,7 +2865,7 @@
 
   // ---------- Atualizações ----------
   // o app instalado fica aberto em segundo plano; ao voltar para ele, confere se tem versão nova
-  const VERSAO = '202610200129';
+  const VERSAO = '202610200131';
   const avisoAtualizar = document.getElementById('atualizar');
   let registro = null;
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
@@ -2899,22 +2902,22 @@
   }
 })();
 </script>
-<script src="jogos/roupas.js?v=202610200129" defer></script>
-<script src="jogos/nucleo.js?v=202610200129" defer></script>
-<script src="jogos/aprender.js?v=202610200129" defer></script>
-<script src="jogos/idiomas.js?v=202610200129" defer></script>
-<script src="jogos/musica.js?v=202610200129" defer></script>
-<script src="jogos/colorir.js?v=202610200129" defer></script>
-<script src="jogos/pontos.js?v=202610200129" defer></script>
-<script src="jogos/memoria.js?v=202610200129" defer></script>
-<script src="jogos/bolhas.js?v=202610200129" defer></script>
-<script src="jogos/sons.js?v=202610200129" defer></script>
-<script src="jogos/mercadinho.js?v=202610200129" defer></script>
-<script src="jogos/sombras.js?v=202610200129" defer></script>
-<script src="jogos/diferente.js?v=202610200129" defer></script>
-<script src="jogos/quebracabeca.js?v=202610200129" defer></script>
+<script src="jogos/roupas.js?v=202610200131" defer></script>
+<script src="jogos/nucleo.js?v=202610200131" defer></script>
+<script src="jogos/aprender.js?v=202610200131" defer></script>
+<script src="jogos/idiomas.js?v=202610200131" defer></script>
+<script src="jogos/musica.js?v=202610200131" defer></script>
+<script src="jogos/colorir.js?v=202610200131" defer></script>
+<script src="jogos/pontos.js?v=202610200131" defer></script>
+<script src="jogos/memoria.js?v=202610200131" defer></script>
+<script src="jogos/bolhas.js?v=202610200131" defer></script>
+<script src="jogos/sons.js?v=202610200131" defer></script>
+<script src="jogos/mercadinho.js?v=202610200131" defer></script>
+<script src="jogos/sombras.js?v=202610200131" defer></script>
+<script src="jogos/diferente.js?v=202610200131" defer></script>
+<script src="jogos/quebracabeca.js?v=202610200131" defer></script>
 <script src="jogos/penelope3d.js?v=202610181757" defer></script>
-<script src="jogos/corrida.js?v=202610200129" defer></script>
-<script src="jogos/mundo.js?v=202610200129" defer></script>
+<script src="jogos/corrida.js?v=202610200131" defer></script>
+<script src="jogos/mundo.js?v=202610200131" defer></script>
 </body>
 </html>
