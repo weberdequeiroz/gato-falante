@@ -120,6 +120,7 @@
             <p>🛡️ Passe uma fase <strong>sem se machucar</strong> e ganhe <strong>5 moedas</strong> de bônus!</p>
             <p>🦴 O <strong>osso dourado</strong> chama a cachorrinha <strong>Penélope</strong>: ela late e assopra os obstáculos para longe!</p>
             <p>🦸 Às vezes o presente chama o <strong>Super Miguel</strong>, que voa com você e transforma os obstáculos em peixinhos!</p>
+            <p>🎁 O presente dá um poder: 🛡️ escudo, ⚡ turbo, 🧲 ímã, 🎈 balão, 🌧️ chuva de peixes ou 🐢 tartaruga. É <strong>um poder de cada vez</strong>: quando um acaba, espere um pouquinho que logo aparece outro!</p>
             <p>❤️ Você tem 3 vidas. A cada nível o lugar muda e fica mais rápido.</p>
           </details>
         </div>`;
@@ -199,7 +200,7 @@
       window.addEventListener('resize', aoRedimensionar);
 
       // estado
-      const jogador = { x: 96, y: CHAO - 84, w: 68, h: 84, vy: 0, noChao: true, pulos: 0, invencivel: 0, escudo: false, turbo: 0, ima: 0, esmaga: 0, passo: 0, giro: 0, piscar: 2.5 };
+      const jogador = { x: 96, y: CHAO - 84, w: 68, h: 84, vy: 0, noChao: true, pulos: 0, invencivel: 0, escudo: 0, turbo: 0, ima: 0, balao: 0, chuva: 0, lento: 0, esmaga: 0, passo: 0, giro: 0, piscar: 2.5 };
       let nivel = nivelInicial, tempoNivel = 0, velocidade = 0, distancia = 0, proximoSpawn = 500;
       let pontos = 0, peixes = 0, vidas = 3, rodando = true, pausado = false, acabou = false;
       let machucouNoNivel = false, invictos = 0;
@@ -216,6 +217,11 @@
       let penelope = null, telinhaPenelope = null;
       const ondas = [];
       const penelopeAtiva = () => penelope && !penelope.saindo;
+      // um poder de cada vez: enquanto um está ligado (ou logo depois dele) não aparece outro
+      const DESCANSO_PODER = 7;
+      let descansoPoder = 0;
+      const poderAtivo = () => !!(heroi || penelope || jogador.escudo > 0 || jogador.turbo > 0 || jogador.ima > 0 || jogador.balao > 0 || jogador.chuva > 0 || jogador.lento > 0);
+      const podePoder = () => !poderAtivo() && descansoPoder <= 0;
       M.penelope3d?.carregarThree().then((T) => { if (rodando) telinhaPenelope = M.penelope3d.telinha(T, 256); }).catch(() => {});
       const fotoPenelope = new Image();
       fotoPenelope.src = 'icones/penelope.png';
@@ -226,7 +232,12 @@
         som('poder');
         aviso('🐶 PENÉLOPE! Ela late e assopra os obstáculos para longe! Pegue os ossinhos!', 2800);
       }
-      if (/teste/.test(location.search)) window.__chamarPenelope = () => chamarPenelope(); // só para testes automáticos
+      if (/teste/.test(location.search)) { // só para testes automáticos
+        window.__chamarPenelope = () => chamarPenelope();
+        window.__ganharPoder = (p) => ganharPoder(p);
+        window.__imortal = () => { jogador.invencivel = 1e9; };
+        window.__poder = () => ({ ativo: poderAtivo(), descanso: descansoPoder, pode: podePoder(), y: jogador.y, vidas });
+      }
       // o obstáculo sai voando girando (não vira peixe: some no céu)
       function assoprar(o) {
         if (o.assoprado) return;
@@ -255,7 +266,10 @@
         c.querySelector('#hud-nivel').textContent = `Nível ${nivel} · ${cenario().nome}`;
         c.querySelector('#hud-barra').style.width = Math.min(100, tempoNivel / SEGUNDOS_POR_NIVEL * 100) + '%';
         const poderes = [];
-        if (jogador.escudo) poderes.push('🛡️');
+        if (jogador.escudo > 0) poderes.push('🛡️' + Math.ceil(jogador.escudo));
+        if (jogador.balao > 0) poderes.push('🎈' + Math.ceil(jogador.balao));
+        if (jogador.chuva > 0) poderes.push('🌧️' + Math.ceil(jogador.chuva));
+        if (jogador.lento > 0) poderes.push('🐢' + Math.ceil(jogador.lento));
         if (jogador.turbo > 0) poderes.push('⚡' + Math.ceil(jogador.turbo));
         if (jogador.ima > 0) poderes.push('🧲' + Math.ceil(jogador.ima));
         if (heroiAtivo()) poderes.push('🦸' + Math.ceil(heroi.t));
@@ -319,9 +333,9 @@
         // prêmios especiais de vez em quando
         const sorte = Math.random();
         if (sorte < 0.12) adicionar({ tipo: 'estrela', fig: '⭐', x: x + largura + 90, y: CHAO - 200, w: 40, h: 40 });
-        else if (sorte < 0.2) adicionar({ tipo: 'presente', fig: '🎁', x: x + largura + 90, y: CHAO - 170, w: 44, h: 44 });
+        else if (sorte < 0.2 && podePoder()) adicionar({ tipo: 'presente', fig: '🎁', x: x + largura + 90, y: CHAO - 170, w: 44, h: 44 });
         else if (sorte < 0.235 && vidas < 3) adicionar({ tipo: 'vida', fig: '❤️', x: x + largura + 90, y: CHAO - 210, w: 40, h: 40 });
-        else if (sorte < 0.29 && !penelope && nivel >= 1) adicionar({ tipo: 'osso', fig: '🦴', x: x + largura + 90, y: CHAO - 165, w: 46, h: 46 });
+        else if (sorte < 0.29 && podePoder()) adicionar({ tipo: 'osso', fig: '🦴', x: x + largura + 90, y: CHAO - 165, w: 46, h: 46 });
         const folga = Math.max(velocidade * 0.95, 360 - nivel * 8);
         proximoSpawn = distancia + largura + folga + Math.random() * 260;
       }
@@ -351,13 +365,16 @@
         pontos += 5;
         som('estrela');
       }
-      function ganharPoder() {
-        if (!heroi && (Math.random() < 0.4 || presentesSemHeroi >= 2)) { chamarHeroi(); return; }
+      function ganharPoder(forcado) {
+        if (forcado === 'heroi' || !forcado && (Math.random() < 0.3 || presentesSemHeroi >= 3)) { chamarHeroi(); return; }
         presentesSemHeroi++;
-        const p = M.sortear(['escudo', 'turbo', 'ima']);
+        const p = forcado || M.sortear(['escudo', 'turbo', 'ima', 'balao', 'chuva', 'lento']);
         som('poder');
         miar('feliz');
-        if (p === 'escudo') { jogador.escudo = true; aviso('🛡️ Escudo! Protege de uma batida.'); }
+        if (p === 'escudo') { jogador.escudo = 12; aviso('🛡️ Escudo! Protege de uma batida.'); }
+        if (p === 'balao') { jogador.balao = 6; jogador.giro = 0; aviso('🎈 Balão! O Miguel voa por cima de tudo!'); }
+        if (p === 'chuva') { jogador.chuva = 7; jogador.gotas = 0; aviso('🌧️ Chuva de peixes! Pegue todos!'); }
+        if (p === 'lento') { jogador.lento = 8; aviso('🐢 Tartaruga! Tudo fica devagarinho.'); }
         if (p === 'turbo') { jogador.turbo = 6; aviso('⚡ Turbo! Ninguém te pega!'); }
         if (p === 'ima') { jogador.ima = 9; aviso('🧲 Ímã! Os peixinhos vêm até você!'); }
       }
@@ -367,7 +384,7 @@
         if (heroiAtivo()) { transformar(o); return; }
         if (penelopeAtiva()) { assoprar(o); return; }
         if (jogador.invencivel > 0) return;
-        if (jogador.escudo) { jogador.escudo = false; jogador.invencivel = 1.2; som('escudo'); o.morto = true; brilho(o.x + 25, o.y + 25, '#80deea', 14); return; }
+        if (jogador.escudo > 0) { jogador.escudo = 0; jogador.invencivel = 1.2; som('escudo'); o.morto = true; brilho(o.x + 25, o.y + 25, '#80deea', 14); return; }
         vidas--;
         machucouNoNivel = true;
         som('batida');
@@ -421,7 +438,7 @@
 
       function atualizar(dt) {
         if (acabou) { particulas.forEach(p => { p.x += p.vx * dt; p.y += p.vy * dt; p.vida -= dt; }); return; }
-        const alvo = velocidadeBase() * (jogador.turbo > 0 ? 1.45 : 1);
+        const alvo = velocidadeBase() * (jogador.turbo > 0 ? 1.45 : 1) * (jogador.lento > 0 ? 0.6 : 1);
         velocidade += (alvo - velocidade) * Math.min(1, dt * 2);
         const dx = velocidade * dt;
         distancia += dx;
@@ -448,7 +465,13 @@
           if (nivel > dados.nivelMax) { dados.nivelMax = nivel; guardarDados(dados); }
           brilho(jogador.x + 34, jogador.y + 40, '#ffd54f', 24);
         }
-        for (const p of ['invencivel', 'turbo', 'ima']) if (jogador[p] > 0) jogador[p] = Math.max(0, jogador[p] - dt);
+        for (const p of ['invencivel', 'turbo', 'ima', 'escudo', 'balao', 'chuva', 'lento']) if (jogador[p] > 0) jogador[p] = Math.max(0, jogador[p] - dt);
+        if (poderAtivo()) descansoPoder = DESCANSO_PODER; else descansoPoder = Math.max(0, descansoPoder - dt);
+        // chuva de peixes: caem do céu na frente do Miguel
+        if (jogador.chuva > 0) {
+          jogador.gotas -= dt;
+          if (jogador.gotas <= 0) { jogador.gotas = 0.28; adicionar({ tipo: 'peixe', fig: '🐟', x: jogador.x + 80 + Math.random() * (larguraMundo - jogador.x - 120), y: -Math.max(0, sobraTopo) - 30, w: 30, h: 30, cai: 170 + Math.random() * 90 }); }
+        }
         if (heroi) {
           heroi.anim += dt;
           heroi.tiro = Math.max(0, heroi.tiro - dt * 4);
@@ -501,7 +524,11 @@
 
         // jogador
         const antes = jogador.y + jogador.h;
-        jogador.vy += GRAVIDADE * dt;
+        if (jogador.balao > 0) {
+          // balão: sobe devagar e fica flutuando bem acima dos obstáculos
+          jogador.vy = ((CHAO - jogador.h - 180) - jogador.y) * 2.5;
+          jogador.noChao = false; jogador.pulos = 2;
+        } else jogador.vy += GRAVIDADE * dt;
         jogador.y += jogador.vy * dt;
         let apoio = CHAO;
         for (const o of coisas) {
@@ -540,6 +567,7 @@
           o.morto = true;
           if (o.tipo === 'peixe') { peixes++; pontos += 1; som('peixe'); pontinho(o.x, o.y, '+1', '#fff'); if (peixes % 15 === 0) miar('miau'); }
           else if (o.tipo === 'estrela') { pontos += 10; som('estrela'); brilho(o.x + 20, o.y + 20, '#ffd54f', 16); pontinho(o.x, o.y, '+10', '#ffe082'); }
+          else if ((o.tipo === 'presente' || o.tipo === 'osso') && poderAtivo()) { pontos += 10; som('estrela'); brilho(o.x + 20, o.y + 20, '#ffd54f', 16); pontinho(o.x, o.y, '+10', '#ffe082'); }
           else if (o.tipo === 'presente') { brilho(o.x + 20, o.y + 20, '#f48fb1', 16); ganharPoder(); }
           else if (o.tipo === 'osso') { brilho(o.x + 20, o.y + 20, '#fff59d', 16); chamarPenelope(); }
           else if (o.tipo === 'ossinho') { pontos += 3; som('peixe'); pontinho(o.x, o.y, '🦴 +3', '#fff8e1'); }
@@ -639,6 +667,12 @@
         }
         if (j.escudo) { ctx.strokeStyle = 'rgba(128,222,234,.9)'; ctx.lineWidth = 4; ctx.fillStyle = 'rgba(128,222,234,.18)'; ctx.beginPath(); ctx.arc(j.x + j.w / 2, j.y + j.h / 2, 54, 0, 7); ctx.fill(); ctx.stroke(); }
         if (j.ima > 0) emoji('🧲', j.x + j.w + 6, j.y + 6, 22);
+        if (j.balao > 0) {
+          ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.moveTo(j.x + j.w / 2, j.y + 10); ctx.lineTo(j.x + j.w / 2 + 6, j.y - 50); ctx.stroke();
+          emoji('🎈', j.x + j.w / 2 + 6, j.y - 72, 52);
+        }
+        if (j.lento > 0) emoji('🐢', j.x - 22, j.y + 6, 24);
         if (heroi) desenharHeroi();
         if (penelope) desenharPenelope();
         for (const w of ondas) {
