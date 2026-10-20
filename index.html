@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap">
 <title>Miguel, o Gato Falante</title>
-<link rel="stylesheet" href="jogos/jogos.css?v=202610200113">
+<link rel="stylesheet" href="jogos/jogos.css?v=202610200118">
 <style>
   /* Uma tela só, de cima para baixo: topo com ajuda → aviso do que está acontecendo → Miguel → ações grandes → vozes.
      Cores calmas e sempre iguais, botões grandes com ícone + palavra, um estado de cada vez. */
@@ -1049,7 +1049,7 @@
     // Esponja: dá a risadinha aguda antes de repetir
     bob:     { velocidade: 1.45, ritmo: 1.22, tom: 1.3, nasal: true, forte: true, risada: true, tremido: { hz: 6, forca: 0.035 }, frases: ['Estou pronto! Estou pronto! 🧽', 'Ahahahaha! 🧽'] },
     // pirata: voz grossa de marujo, um pouco rouca, num porão de navio (claro de entender)
-    pirata:  { tom: 0.93, velocidade: 0.88, ritmo: 1.0, limpa: true, pirata: true, forte: true, volume: 1.15, frases: ['Arrr, marujo! 🦜', 'Ahoy! Ao mar! 🦜'] },
+    pirata:  { tom: 0.93, velocidade: 0.88, ritmo: 1.0, limpa: true, pirata: true, forte: true, volume: 0.75, frases: ['Arrr, marujo! 🦜', 'Ahoy! Ao mar! 🦜'] },
     // gatinho novinho: voz de filhote, ronronando por baixo e miando antes e depois
     gatinho: { tom: 1.45, velocidade: 1.35, ritmo: 1.15, limpa: true, gato: true, tremido: { hz: 2.6, forca: 0.035 }, frases: ['Miau! Miau! 😺', 'Miaaau! 🐱', 'Miau, miau! 😸'] },
     // monstro de filme de terror: bem grave, com uma segunda voz mais grave ainda, rosnado e eco de caverna
@@ -1143,10 +1143,10 @@
   }
   ['touchend', 'pointerup', 'click', 'keydown'].forEach(ev => document.addEventListener(ev, destravarAudio, { capture: true, passive: true }));
   let fluxoMicrofone = null;
-  // no iPhone, com o microfone aberto o som sai baixinho pelo alto-falante de ligação;
-  // nos jogos o microfone é fechado e volta a abrir quando a criança tocar no Miguel
-  function liberarMicrofone() {
-    if (!ehIOS || !fluxoMicrofone || estado === 'ouvindo') return;
+  // com o microfone aberto o celular fica em "modo ligação" e o som sai baixinho;
+  // nos jogos (iPhone) e antes de repetir a fala (todos) o microfone é fechado e volta a abrir quando a criança tocar no Miguel
+  function liberarMicrofone(forcar = false) {
+    if ((!ehIOS && !forcar) || !fluxoMicrofone || estado === 'ouvindo') return;
     fluxoMicrofone.getTracks().forEach(t => t.stop());
     try { microfone.disconnect(); processador.disconnect(); } catch (e) {}
     fluxoMicrofone = microfone = processador = null;
@@ -1291,6 +1291,7 @@
     const fim = Math.max(indiceInicioFala + 1, pedacos.length - Math.max(0, sobraFinal));
     const usados = pedacos.slice(indiceInicioFala, fim);
     repetir(usados);
+    liberarMicrofone(true);
   }
 
   // monta a voz transformada num contexto de áudio (o do jogo, ou um "de mentirinha" para gerar amostras)
@@ -1301,10 +1302,23 @@
     let pos = 0, pico = 0;
     for (const p of lista) { dados.set(p, pos); pos += p.length; }
     if (voz.limpa) dados = limparChiado(dados, ac.sampleRate);
-    for (let i = 0; i < dados.length; i++) pico = Math.max(pico, Math.abs(dados[i]));
-    // deixa a voz bem audível (um pouco mais baixa no modo calmo)
-    const ganho = pico > 0 ? Math.min((calmo ? 0.7 : 0.95) / pico, 8) : 1;
-    for (let i = 0; i < dados.length; i++) dados[i] *= ganho;
+    // deixa a voz tão alta quanto a do Miguel: acerta pelo volume médio da fala (não pelo pico, que
+    // pode ser um estalo) e arredonda só os picos que passariam do limite (um pouco mais baixa no modo calmo)
+    const bloco = Math.round(ac.sampleRate * 0.02), energias = [];
+    for (let i = 0; i + bloco <= dados.length; i += bloco) {
+      let s2 = 0;
+      for (let j = i; j < i + bloco; j++) s2 += dados[j] * dados[j];
+      energias.push(s2 / bloco);
+      pico = Math.max(pico, s2 / bloco);
+    }
+    const fala = energias.filter(e => e > pico * 0.01);
+    const media = fala.length ? Math.sqrt(fala.reduce((a, e) => a + e, 0) / fala.length) : 0;
+    const ganho = media > 0 ? Math.min((calmo ? 0.13 : 0.2) / media, 12) : 1;
+    const teto = calmo ? 0.75 : 0.95;
+    for (let i = 0; i < dados.length; i++) {
+      const v = dados[i] * ganho, a = Math.abs(v);
+      dados[i] = a <= teto * 0.7 ? v : Math.sign(v) * (teto * 0.7 + teto * 0.3 * Math.tanh((a - teto * 0.7) / (teto * 0.3)));
+    }
     if (voz.tom) dados = mudarTom(dados, voz.tom, ac.sampleRate);
     if (voz.monstro) {
       // segunda voz, uma oitava mais grave, misturada por baixo: dá o "vozeirão" de monstro
@@ -1402,7 +1416,7 @@
       saida.connect(seca); seca.connect(junta);
       saida.connect(conv); conv.connect(molhada); molhada.connect(junta);
       saida = junta;
-      const volume = ac.createGain(); volume.gain.value = 0.75;
+      const volume = ac.createGain(); volume.gain.value = 0.55;
       ligar(volume);
     }
     if (voz.pirata) {
@@ -2842,7 +2856,7 @@
 
   // ---------- Atualizações ----------
   // o app instalado fica aberto em segundo plano; ao voltar para ele, confere se tem versão nova
-  const VERSAO = '202610200113';
+  const VERSAO = '202610200118';
   const avisoAtualizar = document.getElementById('atualizar');
   let registro = null;
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
@@ -2879,22 +2893,22 @@
   }
 })();
 </script>
-<script src="jogos/roupas.js?v=202610200113" defer></script>
-<script src="jogos/nucleo.js?v=202610200113" defer></script>
-<script src="jogos/aprender.js?v=202610200113" defer></script>
-<script src="jogos/idiomas.js?v=202610200113" defer></script>
-<script src="jogos/musica.js?v=202610200113" defer></script>
-<script src="jogos/colorir.js?v=202610200113" defer></script>
-<script src="jogos/pontos.js?v=202610200113" defer></script>
-<script src="jogos/memoria.js?v=202610200113" defer></script>
-<script src="jogos/bolhas.js?v=202610200113" defer></script>
-<script src="jogos/sons.js?v=202610200113" defer></script>
-<script src="jogos/mercadinho.js?v=202610200113" defer></script>
-<script src="jogos/sombras.js?v=202610200113" defer></script>
-<script src="jogos/diferente.js?v=202610200113" defer></script>
-<script src="jogos/quebracabeca.js?v=202610200113" defer></script>
+<script src="jogos/roupas.js?v=202610200118" defer></script>
+<script src="jogos/nucleo.js?v=202610200118" defer></script>
+<script src="jogos/aprender.js?v=202610200118" defer></script>
+<script src="jogos/idiomas.js?v=202610200118" defer></script>
+<script src="jogos/musica.js?v=202610200118" defer></script>
+<script src="jogos/colorir.js?v=202610200118" defer></script>
+<script src="jogos/pontos.js?v=202610200118" defer></script>
+<script src="jogos/memoria.js?v=202610200118" defer></script>
+<script src="jogos/bolhas.js?v=202610200118" defer></script>
+<script src="jogos/sons.js?v=202610200118" defer></script>
+<script src="jogos/mercadinho.js?v=202610200118" defer></script>
+<script src="jogos/sombras.js?v=202610200118" defer></script>
+<script src="jogos/diferente.js?v=202610200118" defer></script>
+<script src="jogos/quebracabeca.js?v=202610200118" defer></script>
 <script src="jogos/penelope3d.js?v=202610181757" defer></script>
-<script src="jogos/corrida.js?v=202610200113" defer></script>
-<script src="jogos/mundo.js?v=202610200113" defer></script>
+<script src="jogos/corrida.js?v=202610200118" defer></script>
+<script src="jogos/mundo.js?v=202610200118" defer></script>
 </body>
 </html>
