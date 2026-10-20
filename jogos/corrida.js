@@ -378,7 +378,7 @@
         som('poder');
         miar('feliz');
         if (p === 'escudo') { jogador.escudo = 12; aviso('🛡️ Escudo! Protege de uma batida.'); }
-        if (p === 'balao') { jogador.balao = 6; jogador.giro = 0; aviso('🎈 Balão! O Miguel voa por cima de tudo!'); }
+        if (p === 'balao') { jogador.balao = 6; jogador.giro = 0; aviso('🎈 Balão! O Miguel voa e puxa todos os peixinhos e estrelas!'); }
         if (p === 'chuva') { jogador.chuva = 7; jogador.gotas = 0; aviso('🌧️ Chuva de peixes! Pegue todos!'); }
         if (p === 'lento') { jogador.lento = 8; aviso('🐢 Tartaruga! Tudo fica devagarinho.'); }
         if (p === 'turbo') { jogador.turbo = 6; aviso('⚡ Turbo! Ninguém te pega!'); }
@@ -473,10 +473,23 @@
         }
         for (const p of ['invencivel', 'turbo', 'ima', 'escudo', 'balao', 'chuva', 'lento']) if (jogador[p] > 0) jogador[p] = Math.max(0, jogador[p] - dt);
         if (poderAtivo()) descansoPoder = DESCANSO_PODER; else descansoPoder = Math.max(0, descansoPoder - dt);
+        // balão: uma trilha de peixinhos no céu, na altura em que o Miguel está voando
+        if (jogador.balao > 0) {
+          jogador.trilha = (jogador.trilha || 0) - dt;
+          if (jogador.trilha <= 0) { jogador.trilha = 0.22; adicionar({ tipo: 'peixe', fig: '🐟', x: larguraMundo + 20, y: CHAO - jogador.h - 100 + Math.sin(distancia / 90) * 40, w: 30, h: 30 }); }
+        }
         // chuva de peixes: caem do céu na frente do Miguel
         if (jogador.chuva > 0) {
           jogador.gotas -= dt;
-          if (jogador.gotas <= 0) { jogador.gotas = 0.28; adicionar({ tipo: 'peixe', fig: '🐟', x: jogador.x + 80 + Math.random() * (larguraMundo - jogador.x - 120), y: -Math.max(0, sobraTopo) - 30, w: 30, h: 30, cai: 170 + Math.random() * 90 }); }
+          if (jogador.gotas <= 0) {
+            // cada peixe cai na frente do Miguel e para numa altura que dá para pegar (no chão ou com um pulinho),
+            // chegando lá bem quando o Miguel passa
+            jogador.gotas = 0.3;
+            const y0 = -Math.max(0, sobraTopo) - 30, alvo = CHAO - 50 - Math.random() * 110;
+            const x0 = jogador.x + 220 + Math.random() * Math.max(40, larguraMundo - jogador.x - 260);
+            const tempo = (x0 - jogador.x - 20) / Math.max(120, velocidade);
+            adicionar({ tipo: 'peixe', fig: '🐟', x: x0, y: y0, w: 30, h: 30, cai: (alvo - y0) / tempo, para: alvo });
+          }
         }
         if (heroi) {
           heroi.anim += dt;
@@ -523,7 +536,7 @@
         }
         for (const o of coisas) {
           if (o.assoprado) { const a = o.assoprado; o.x += a.vx * dt; o.y += a.vy * dt; a.vy += 900 * dt; a.giro += a.vg * dt; if (o.y < -Math.max(0, sobraTopo) - 200 || o.x > larguraMundo + 200) o.morto = true; }
-          if (o.cai) { o.y = Math.min(CHAO - o.h - 4, o.y + o.cai * dt); }
+          if (o.cai) { o.y = Math.min(o.para ?? CHAO - o.h - 4, o.y + o.cai * dt); }
         }
         for (let i = raios.length - 1; i >= 0; i--) { raios[i].vida -= dt; raios[i].x2 -= velocidade * dt; if (raios[i].vida <= 0) raios.splice(i, 1); }
         if (clarao > 0) clarao = Math.max(0, clarao - dt * 1.4);
@@ -532,7 +545,7 @@
         const antes = jogador.y + jogador.h;
         if (jogador.balao > 0) {
           // balão: sobe devagar e fica flutuando bem acima dos obstáculos
-          jogador.vy = ((CHAO - jogador.h - 180) - jogador.y) * 2.5;
+          jogador.vy = ((CHAO - jogador.h - 130) - jogador.y) * 2.5;
           jogador.noChao = false; jogador.pulos = 2;
         } else jogador.vy += GRAVIDADE * dt;
         jogador.y += jogador.vy * dt;
@@ -562,7 +575,9 @@
           o.x -= dx;
           if (o.voa) { o.fase += dt * 4; o.yv = o.y + Math.sin(o.fase) * 14; }
           if (o.morto) continue;
-          if ((jogador.ima > 0 || heroiAtivo()) && o.tipo === 'peixe' && o.x < jogador.x + 260 && o.x > jogador.x - 20) {
+          const puxa = jogador.balao > 0 ? (o.tipo === 'peixe' || o.tipo === 'estrela' || o.tipo === 'ossinho') && o.x < larguraMundo && o.x > jogador.x - 40
+            : (jogador.ima > 0 || heroiAtivo() || jogador.chuva > 0) && o.tipo === 'peixe' && o.x < jogador.x + (jogador.chuva > 0 ? 140 : 260) && o.x > jogador.x - 20;
+          if (puxa) {
             o.x += (jogador.x + 20 - o.x) * Math.min(1, dt * 6);
             o.y += (jogador.y + 30 - o.y) * Math.min(1, dt * 6);
           }
