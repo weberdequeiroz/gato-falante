@@ -13,6 +13,12 @@
     { nome: 'Cidade', onde: 'na cidade', ceu: ['#9fb7ff', '#ffe6f2'], morro: '#8b95c9', morro2: '#6f78ad', chao: '#9aa3ad', terra: '#6b7280', obst: ['🚧', '🗑️', '📦'], voa: ['🕊️', '🎈'], enfeite: ['🏠', '🏪', '🚦'] },
     { nome: 'Neve', onde: 'na neve', ceu: ['#bfe3ff', '#ffffff'], morro: '#e3f2ff', morro2: '#c8e1f7', chao: '#f4fbff', terra: '#b8d4ea', obst: ['⛄', '🧊', '🎄'], voa: ['❄️', '🐦'], enfeite: ['🌲', '⛄', '🏔️'] },
     { nome: 'Deserto', onde: 'no deserto', ceu: ['#ffcf8a', '#fff1d6'], morro: '#f0b867', morro2: '#d99a45', chao: '#f2c879', terra: '#c9934a', obst: ['🌵', '🦂', '🪨'], voa: ['🦅', '🐝'], enfeite: ['🌵', '🐪', '🏜️'] },
+    { nome: 'Fazenda', onde: 'na fazenda', ceu: ['#8fd3ff', '#f2fbff'], morro: '#a5d66b', morro2: '#86bf4f', chao: '#93c95a', terra: '#8a5a35', obst: ['🌾', '🪵', '🐓'], voa: ['🐝', '🐦'], enfeite: ['🐄', '🐖', '🏡', '🌽'] },
+    { nome: 'Fundo do mar', onde: 'no fundo do mar', ceu: ['#2a8fd6', '#9be3ff'], morro: '#1f7bb8', morro2: '#16639a', chao: '#f1dca0', terra: '#d4b571', obst: ['🦀', '🐚', '🪸'], voa: ['🐙', '🐡'], enfeite: ['🐠', '🪸', '🐢', '🐬'], bolhas: true },
+    { nome: 'Selva', onde: 'na selva', ceu: ['#9fe0a8', '#effbe6'], morro: '#2f8a3e', morro2: '#22702f', chao: '#3d8f32', terra: '#5b3a1f', obst: ['🪨', '🐊', '🪵'], voa: ['🦜', '🐒'], enfeite: ['🌴', '🦒', '🐘', '🦁'] },
+    { nome: 'Terra dos doces', onde: 'na terra dos doces', ceu: ['#ffc4e1', '#fff1f8'], morro: '#ff9ccf', morro2: '#f27bb7', chao: '#ffd1e8', terra: '#c98fb0', obst: ['🍩', '🧁', '🍭'], voa: ['🍬', '🎈'], enfeite: ['🍰', '🍦', '🍫', '🍓'] },
+    { nome: 'Parque de diversões', onde: 'no parque de diversões', ceu: ['#a7c8ff', '#fff4d6'], morro: '#b8a3e6', morro2: '#9c86d6', chao: '#c9d1da', terra: '#7d8794', obst: ['🎪', '🧸', '📦'], voa: ['🎈', '🪁'], enfeite: ['🎡', '🎢', '🎠', '🍿'] },
+    { nome: 'Montanhas', onde: 'nas montanhas', ceu: ['#9cc9f2', '#eef7ff'], morro: '#8a9bab', morro2: '#6f8092', chao: '#7fae5a', terra: '#6d5a48', obst: ['🪨', '🪵', '🐐'], voa: ['🦅', '🐦'], enfeite: ['🏔️', '⛰️', '🌲', '🏕️'] },
     { nome: 'Espaço', onde: 'no espaço', ceu: ['#1b1f4b', '#4b3c8f'], morro: '#2f2a63', morro2: '#241f4f', chao: '#a9a9c9', terra: '#77779a', obst: ['☄️', '🪨', '👾'], voa: ['🛸', '☄️'], enfeite: ['🪐', '🌙', '⭐'], noite: true },
   ];
 
@@ -110,7 +116,7 @@
             <span>🐟 Peixes: <strong>${d.peixes}</strong></span>
             <span>🚩 Nível: <strong>${d.nivelMax}</strong></span>
           </div>
-          ${d.nivelMax > 1 ? `<button class="botao-pronto" data-nivel="${d.nivelMax}">🚩 Continuar do nível ${d.nivelMax}<small class="corrida-lugar">${CENARIOS[(d.nivelMax - 1) % CENARIOS.length].nome}</small></button>
+          ${d.nivelMax > 1 ? `<button class="botao-pronto" data-nivel="${d.nivelMax}">🚩 Continuar do nível ${d.nivelMax}<small class="corrida-lugar">Cada corrida tem lugares diferentes!</small></button>
           <button class="botao-largo" data-nivel="1">▶ Correr do começo</button>` : `<button class="botao-pronto" data-nivel="1">▶ Correr!</button>`}
           <button class="botao-largo" data-tutorial>❓ Como jogar</button>
           <details class="como-jogar">
@@ -248,7 +254,23 @@
         som('estrela');
       }
 
-      const cenario = () => CENARIOS[(nivel - 1) % CENARIOS.length];
+      // cada corrida sorteia a ordem dos lugares, a hora do dia e o formato dos morros,
+      // para a criança não decorar o caminho
+      const ordemCenarios = CENARIOS.map((_, i) => i).sort(() => Math.random() - 0.5);
+      const cenariosSorteados = {};
+      const HORAS = {
+        tarde: { ceu: ['#ff9f6e', '#ffe2b8'], sol: '🌅' },
+        noite: { ceu: ['#1d2b5a', '#55639f'], noite: true, lua: true },
+      };
+      const cenario = () => {
+        if (!cenariosSorteados[nivel]) {
+          const base = CENARIOS[ordemCenarios[(nivel - 1) % CENARIOS.length]];
+          const sorte = Math.random();
+          const hora = base.noite || base.bolhas ? {} : sorte < 0.55 ? { sol: '☀️' } : sorte < 0.8 ? HORAS.tarde : HORAS.noite;
+          cenariosSorteados[nivel] = { ...base, ...hora, morroF: 0.7 + Math.random() * 0.7, morroA: 0.6 + Math.random() * 0.9 };
+        }
+        return cenariosSorteados[nivel];
+      };
       const velocidadeBase = () => Math.min(640, (250 + (nivel - 1) * 34)) * (M.calmo ? 0.82 : 1);
 
       function aviso(texto, tempo = 1800) {
@@ -333,9 +355,13 @@
         // prêmios especiais de vez em quando
         const sorte = Math.random();
         if (sorte < 0.12) adicionar({ tipo: 'estrela', fig: '⭐', x: x + largura + 90, y: CHAO - 200, w: 40, h: 40 });
-        else if (sorte < 0.26 && podePoder()) adicionar({ tipo: 'presente', fig: '🎁', x: x + largura + 90, y: CHAO - 170, w: 44, h: 44 });
-        else if (sorte < 0.295 && vidas < 3) adicionar({ tipo: 'vida', fig: '❤️', x: x + largura + 90, y: CHAO - 210, w: 40, h: 40 });
-        else if (sorte < 0.34 && podePoder()) adicionar({ tipo: 'osso', fig: '🦴', x: x + largura + 90, y: CHAO - 165, w: 46, h: 46 });
+        else if (sorte < 0.3 && podePoder() && !coisas.some(o => o.tipo === 'presente' || o.tipo === 'osso')) {
+          // a Penélope vem pelo osso dourado; os outros poderes vêm no presente
+          const poder = proximoPoder();
+          if (poder === 'penelope') adicionar({ tipo: 'osso', fig: '🦴', x: x + largura + 90, y: CHAO - 165, w: 46, h: 46 });
+          else adicionar({ tipo: 'presente', fig: '🎁', x: x + largura + 90, y: CHAO - 170, w: 44, h: 44, poder });
+        }
+        else if (sorte < 0.34 && vidas < 3) adicionar({ tipo: 'vida', fig: '❤️', x: x + largura + 90, y: CHAO - 210, w: 40, h: 40 });
         const folga = Math.max(velocidade * 0.95, 360 - nivel * 8);
         proximoSpawn = distancia + largura + folga + Math.random() * 260;
       }
@@ -365,15 +391,18 @@
         pontos += 5;
         som('estrela');
       }
-      // saquinho de poderes: sai um de cada antes de repetir (os novos primeiro, para a criança conhecer)
-      let saquinho = ['balao', 'chuva', 'lento'];
+      // saquinho de poderes: sai um de cada antes de repetir; o Super Miguel e a Penélope vêm logo no começo
+      const TODOS_PODERES = ['heroi', 'penelope', 'escudo', 'turbo', 'ima', 'balao', 'chuva', 'lento'];
+      let saquinho = [...['heroi', 'penelope'].sort(() => Math.random() - 0.5), ...['balao', 'chuva', 'lento', 'escudo', 'turbo', 'ima'].sort(() => Math.random() - 0.5)];
+      saquinho.splice(2 + Math.floor(Math.random() * 2), 0, saquinho.shift()); // um dos dois logo, o outro um pouco depois
       function proximoPoder() {
-        if (!saquinho.length) saquinho = ['heroi', 'escudo', 'turbo', 'ima', 'balao', 'chuva', 'lento'].sort(() => Math.random() - 0.5);
+        if (!saquinho.length) saquinho = [...TODOS_PODERES].sort(() => Math.random() - 0.5);
         return saquinho.shift();
       }
       function ganharPoder(forcado) {
         const p = forcado || proximoPoder();
         if (p === 'heroi') { chamarHeroi(); return; }
+        if (p === 'penelope') { chamarPenelope(); return; }
         presentesSemHeroi++;
         som('poder');
         miar('feliz');
@@ -589,12 +618,16 @@
           if (o.tipo === 'peixe') { peixes++; pontos += 1; som('peixe'); pontinho(o.x, o.y, '+1', '#fff'); if (peixes % 15 === 0) miar('miau'); }
           else if (o.tipo === 'estrela') { pontos += 10; som('estrela'); brilho(o.x + 20, o.y + 20, '#ffd54f', 16); pontinho(o.x, o.y, '+10', '#ffe082'); }
           else if ((o.tipo === 'presente' || o.tipo === 'osso') && poderAtivo()) { pontos += 10; som('estrela'); brilho(o.x + 20, o.y + 20, '#ffd54f', 16); pontinho(o.x, o.y, '+10', '#ffe082'); }
-          else if (o.tipo === 'presente') { brilho(o.x + 20, o.y + 20, '#f48fb1', 16); ganharPoder(); }
+          else if (o.tipo === 'presente') { brilho(o.x + 20, o.y + 20, '#f48fb1', 16); ganharPoder(o.poder); }
           else if (o.tipo === 'osso') { brilho(o.x + 20, o.y + 20, '#fff59d', 16); chamarPenelope(); }
           else if (o.tipo === 'ossinho') { pontos += 3; som('peixe'); pontinho(o.x, o.y, '🦴 +3', '#fff8e1'); }
           else if (o.tipo === 'vida') { vidas = Math.min(3, vidas + 1); som('vida'); miar('glub'); pontinho(o.x, o.y, '+❤️', '#ff8a80'); }
         }
-        for (let i = coisas.length - 1; i >= 0; i--) if (coisas[i].x + coisas[i].w < -80 || coisas[i].morto && coisas[i].tipo !== 'obst') coisas.splice(i, 1);
+        for (let i = coisas.length - 1; i >= 0; i--) {
+          const o = coisas[i];
+          if (o.x + o.w < -80 && !o.morto && (o.tipo === 'presente' || o.tipo === 'osso')) saquinho.unshift(o.poder || 'penelope'); // não pegou: volta para o saquinho
+          if (o.x + o.w < -80 || o.morto && o.tipo !== 'obst') coisas.splice(i, 1);
+        }
         for (let i = coisas.length - 1; i >= 0; i--) if (coisas[i].morto && coisas[i].tipo === 'obst') coisas.splice(i, 1);
         // enfeites do cenário (árvores, casas...) passam no meio do caminho
         if (!enfeites.length || enfeites[enfeites.length - 1].x < larguraMundo - 180 - Math.random() * 200) enfeites.push({ x: larguraMundo + 40, fig: M.sortear(cenario().enfeite), tam: 46 + Math.random() * 30 });
@@ -627,8 +660,11 @@
         const g = ctx.createLinearGradient(0, topo, 0, ALTURA);
         g.addColorStop(0, cen.ceu[0]); g.addColorStop(1, cen.ceu[1]);
         ctx.fillStyle = g; ctx.fillRect(-20, topo, W + 40, ALTURA - topo + 80);
+        if (cen.sol) emoji(cen.sol, W - 70, cen.sol === '🌅' ? 120 : 70, 54);
+        if (cen.lua) emoji('🌙', W - 70, 70, 46);
+        if (cen.bolhas) { ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 2; for (let i = 0; i < 18; i++) { const bx = ((i * 131 - deslocFundo * 0.1) % (W + 20) + W + 20) % (W + 20), by = ((i * 71 - performance.now() / 20) % 300 + 300) % 300; ctx.beginPath(); ctx.arc(bx, by, 4 + (i % 4) * 2, 0, 7); ctx.stroke(); } }
         if (cen.noite) { ctx.fillStyle = '#fff'; for (let i = 0; i < 40; i++) { const sx = ((i * 97 - deslocFundo * 0.05) % (W + 20) + W + 20) % (W + 20), sy = (i * 53) % 220; ctx.globalAlpha = 0.4 + (i % 5) / 8; ctx.fillRect(sx, sy, 2, 2); } ctx.globalAlpha = 1; }
-        else {
+        else if (!cen.bolhas) {
           ctx.fillStyle = 'rgba(255,255,255,.85)';
           for (let i = 0; i < 4; i++) {
             const nx = ((i * 230 - deslocFundo * 0.08) % (W + 200) + W + 200) % (W + 200) - 100, ny = 40 + (i % 3) * 30;
@@ -641,17 +677,19 @@
           for (let x = 0; x <= W + 10; x += 10) ctx.lineTo(x, CHAO - alt - Math.sin((x + deslocFundo * vel) * freq) * amp - Math.sin((x + deslocFundo * vel) * freq * 2.3) * amp * 0.4);
           ctx.lineTo(W + 10, CHAO); ctx.fill();
         };
-        morros(cen.morro2, 110, 30, 0.006, 0.15);
+        morros(cen.morro2, 110, 30 * cen.morroA, 0.006 * cen.morroF, 0.15);
         // enfeites ficam lá no fundo, entre os morros
         ctx.globalAlpha = 0.9;
         for (const e of enfeites) emoji(e.fig, e.x, CHAO - 62 - e.tam * 0.3, e.tam * 0.75);
         ctx.globalAlpha = 1;
-        morros(cen.morro, 46, 18, 0.011, 0.3);
+        morros(cen.morro, 46, 18 * cen.morroA, 0.011 * cen.morroF, 0.3);
         // chão
         ctx.fillStyle = cen.terra; ctx.fillRect(-20, CHAO, W + 40, ALTURA - CHAO + 80);
         ctx.fillStyle = cen.chao; ctx.fillRect(-20, CHAO, W + 40, 16);
         ctx.fillStyle = 'rgba(0,0,0,.08)';
         for (let x = -((deslocFundo) % 48); x < W + 48; x += 48) ctx.fillRect(x, CHAO + 26, 24, 8);
+        // à noite o cenário fica mais escuro (o Miguel e os prêmios continuam bem claros)
+        if (cen.lua) { ctx.fillStyle = 'rgba(20,30,80,.28)'; ctx.fillRect(-20, topo, W + 40, ALTURA - topo + 80); }
         // coisas
         ctx.globalAlpha = 1;
         for (const o of coisas) {
