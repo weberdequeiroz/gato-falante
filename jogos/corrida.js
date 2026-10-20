@@ -333,9 +333,9 @@
         // prêmios especiais de vez em quando
         const sorte = Math.random();
         if (sorte < 0.12) adicionar({ tipo: 'estrela', fig: '⭐', x: x + largura + 90, y: CHAO - 200, w: 40, h: 40 });
-        else if (sorte < 0.2 && podePoder()) adicionar({ tipo: 'presente', fig: '🎁', x: x + largura + 90, y: CHAO - 170, w: 44, h: 44 });
-        else if (sorte < 0.235 && vidas < 3) adicionar({ tipo: 'vida', fig: '❤️', x: x + largura + 90, y: CHAO - 210, w: 40, h: 40 });
-        else if (sorte < 0.29 && podePoder()) adicionar({ tipo: 'osso', fig: '🦴', x: x + largura + 90, y: CHAO - 165, w: 46, h: 46 });
+        else if (sorte < 0.26 && podePoder()) adicionar({ tipo: 'presente', fig: '🎁', x: x + largura + 90, y: CHAO - 170, w: 44, h: 44 });
+        else if (sorte < 0.295 && vidas < 3) adicionar({ tipo: 'vida', fig: '❤️', x: x + largura + 90, y: CHAO - 210, w: 40, h: 40 });
+        else if (sorte < 0.34 && podePoder()) adicionar({ tipo: 'osso', fig: '🦴', x: x + largura + 90, y: CHAO - 165, w: 46, h: 46 });
         const folga = Math.max(velocidade * 0.95, 360 - nivel * 8);
         proximoSpawn = distancia + largura + folga + Math.random() * 260;
       }
@@ -365,10 +365,16 @@
         pontos += 5;
         som('estrela');
       }
+      // saquinho de poderes: sai um de cada antes de repetir (os novos primeiro, para a criança conhecer)
+      let saquinho = ['balao', 'chuva', 'lento'];
+      function proximoPoder() {
+        if (!saquinho.length) saquinho = ['heroi', 'escudo', 'turbo', 'ima', 'balao', 'chuva', 'lento'].sort(() => Math.random() - 0.5);
+        return saquinho.shift();
+      }
       function ganharPoder(forcado) {
-        if (forcado === 'heroi' || !forcado && (Math.random() < 0.3 || presentesSemHeroi >= 3)) { chamarHeroi(); return; }
+        const p = forcado || proximoPoder();
+        if (p === 'heroi') { chamarHeroi(); return; }
         presentesSemHeroi++;
-        const p = forcado || M.sortear(['escudo', 'turbo', 'ima', 'balao', 'chuva', 'lento']);
         som('poder');
         miar('feliz');
         if (p === 'escudo') { jogador.escudo = 12; aviso('🛡️ Escudo! Protege de uma batida.'); }
