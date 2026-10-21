@@ -377,12 +377,34 @@
 
   // miados de verdade (nas aventuras, no lugar das falas)
   const MIADOS = { ai: ['gato-ai-1', 'gato-ai-2'], feliz: ['gato-feliz-1', 'gato-feliz-2'], triste: ['gato-triste-1', 'gato-triste-2'], miau: ['gato-miau'], glub: ['gato-glub'] };
+  // sons curtos dos jogos: carregados uma vez só e tocados pelo Web Audio
+  // (criar um <audio> novo a cada miado travava a Corrida e às vezes fechava o jogo no celular)
+  const buffers = {}, carregando = {};
+  M.carregarSom = (nome) => {
+    if (!carregando[nome]) carregando[nome] = fetch('sons/' + nome + '.mp3').then(r => r.arrayBuffer())
+      .then(b => new Promise((ok, erro) => M.obterContexto().decodeAudioData(b, ok, erro)))
+      .then(b => { buffers[nome] = b; })
+      .catch(() => { delete carregando[nome]; });
+    return carregando[nome];
+  };
+  M.tocarSom = (nome, volume = 1) => {
+    const b = buffers[nome];
+    if (!b) { M.carregarSom(nome); return null; }
+    try {
+      const ac = M.obterContexto(), f = ac.createBufferSource(), g = ac.createGain();
+      f.buffer = b; g.gain.value = volume;
+      f.connect(g); g.connect(ac.destination); f.start();
+      f.onended = () => { f.disconnect(); g.disconnect(); };
+      return f;
+    } catch (e) { return null; }
+  };
+  M.precarregarSons = (nomes) => nomes.forEach(M.carregarSom);
+  const todosMiados = Object.values(MIADOS).flat();
   let miado = null;
   M.miar = (tipo) => {
-    if (miado) miado.pause();
-    miado = new Audio('sons/' + M.sortear(MIADOS[tipo]) + '.mp3');
-    miado.volume = M.calmo ? 0.55 : 0.9;
-    miado.play().catch(() => {});
+    if (!buffers[todosMiados[0]]) M.precarregarSons(todosMiados);
+    try { if (miado) miado.stop(); } catch (e) {}
+    miado = M.tocarSom(M.sortear(MIADOS[tipo]), M.calmo ? 0.55 : 0.9);
   };
 
   M.catalogo.push(() => ['Esse é o seu cofrinho! Cada jogo que você termina dá moedas.', 'Seu cofrinho ainda está vazio. Termine um jogo para ganhar moedas!']);

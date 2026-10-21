@@ -108,7 +108,8 @@
   let telinhaPronta = null;
   function telinha(T, tam = 256) {
     if (telinhaPronta) return telinhaPronta;
-    const renderer = new T.WebGLRenderer({ alpha: true, antialias: true });
+    // preserveDrawingBuffer: a imagem fica guardada e a Corrida pode desenhar a Penélope 3D só em quadros alternados
+    const renderer = new T.WebGLRenderer({ alpha: true, antialias: false, preserveDrawingBuffer: true });
     renderer.setSize(tam, tam, false);
     renderer.setClearColor(0x000000, 0);
     const cena = new T.Scene();
@@ -131,6 +132,7 @@
   // carrega o three.js uma vez (o mesmo arquivo do Mundo do Miguel)
   let carregando = null;
   function carregarThree() {
+    M.precarregarSons(['latido-fraquinho', 'super-penelope']);
     if (window.THREE) return Promise.resolve(window.THREE);
     if (!carregando) carregando = new Promise((ok, erro) => {
       const s = document.createElement('script');
@@ -142,14 +144,11 @@
   }
 
   // latidinho bem fraquinho
-  const latido = new Audio('sons/latido-fraquinho.mp3');
-  function latir() { try { const a = latido.cloneNode(); a.volume = M.calmo ? 0.35 : 0.55; a.play().catch(() => {}); } catch (e) {} }
+  function latir() { M.tocarSom('latido-fraquinho', M.calmo ? 0.35 : 0.55); }
 
   // grito de "Super Penélope!" quando ela chega, e logo depois um latidinho
-  const grito = new Audio('sons/super-penelope.mp3');
-  grito.preload = 'auto';
   function gritar() {
-    try { grito.currentTime = 0; grito.volume = M.calmo ? 0.6 : 1; grito.play().catch(() => {}); } catch (e) {}
+    M.tocarSom('super-penelope', M.calmo ? 0.6 : 1);
     setTimeout(latir, 1400);
   }
 

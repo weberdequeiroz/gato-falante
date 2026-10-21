@@ -188,8 +188,7 @@
       }
       const imgHeroi = new Image();
       imgHeroi.src = 'icones/super-miguel.png';
-      const gritoHeroi = new Audio('sons/super-miguel.mp3');
-      gritoHeroi.preload = 'auto';
+      M.precarregarSons(['super-miguel', 'super-penelope', 'latido-fraquinho', 'gato-ai-1', 'gato-ai-2', 'gato-feliz-1', 'gato-feliz-2', 'gato-triste-1', 'gato-triste-2', 'gato-miau', 'gato-glub']);
 
       // a câmera sempre mostra pelo menos 520 unidades de caminho à frente (celular em pé ou deitado)
       let larguraMundo = 640, escala = 1, sobraTopo = 0;
@@ -220,7 +219,7 @@
       const raios = [];
       const heroiAtivo = () => heroi && !heroi.saindo;
       // Penélope: a cachorrinha em 3D corre na frente e dá super latidos que assopram os obstáculos para longe
-      let penelope = null, telinhaPenelope = null;
+      let penelope = null, telinhaPenelope = null, quadroPenelope = false;
       const ondas = [];
       const penelopeAtiva = () => penelope && !penelope.saindo;
       // um poder de cada vez: enquanto um está ligado (ou logo depois dele) não aparece outro
@@ -228,7 +227,7 @@
       let descansoPoder = 0;
       const poderAtivo = () => !!(heroi || penelope || jogador.escudo > 0 || jogador.turbo > 0 || jogador.ima > 0 || jogador.balao > 0 || jogador.chuva > 0 || jogador.lento > 0);
       const podePoder = () => !poderAtivo() && descansoPoder <= 0;
-      M.penelope3d?.carregarThree().then((T) => { if (rodando) telinhaPenelope = M.penelope3d.telinha(T, 256); }).catch(() => {});
+      M.penelope3d?.carregarThree().then((T) => { if (rodando) telinhaPenelope = M.penelope3d.telinha(T, 192); }).catch(() => {});
       const fotoPenelope = new Image();
       fotoPenelope.src = 'icones/penelope.png';
       function chamarPenelope() {
@@ -360,7 +359,7 @@
         presentesSemHeroi = 0;
         clarao = 0.7;
         som('nivel');
-        try { gritoHeroi.currentTime = 0; gritoHeroi.volume = M.calmo ? 0.6 : 1; gritoHeroi.play().catch(() => {}); } catch (e) {}
+        M.tocarSom('super-miguel', M.calmo ? 0.6 : 1);
         aviso('🦸 SUPER MIGUEL! Ele transforma os obstáculos em peixinhos!', 2800);
         M.vibrar && M.vibrar([60, 40, 120]);
       }
@@ -804,7 +803,9 @@
         g.addColorStop(0, 'rgba(255,240,170,.55)'); g.addColorStop(1, 'rgba(255,240,170,0)');
         ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px, base - tam * 0.45, tam * 0.7, 0, 7); ctx.fill();
         if (telinhaPenelope) {
-          telinhaPenelope.desenhar(penelope.anim, { correndo: true });
+          // a Penélope 3D é redesenhada em quadros alternados (pesa menos no celular)
+          quadroPenelope = !quadroPenelope;
+          if (quadroPenelope) telinhaPenelope.desenhar(penelope.anim, { correndo: true });
           ctx.drawImage(telinhaPenelope.canvas, px - tam / 2, base - tam, tam, tam);
         } else if (fotoPenelope.complete && fotoPenelope.naturalWidth) ctx.drawImage(fotoPenelope, px - 40, base - 92 + Math.abs(Math.sin(penelope.anim * 10)) * -6, 80, 92);
         else emoji('🐶', px, base - 40, 60);
