@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel do Miguel</title>
+<style>
+  :root { --fundo: #eef5fb; --cartao: #fff; --tinta: #1f2d3d; --suave: #5b6b7c; --linha: #dbe4ee; --laranja: #ef7d1a; --verde: #2e9d4f; --vermelho: #d64545; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--fundo); color: var(--tinta); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 24px; margin: 4px 0 2px; }
+  h2 { font-size: 18px; margin: 0 0 8px; }
+  .sub { color: var(--suave); margin: 0 0 14px; }
+  .cartao { background: var(--cartao); border-radius: 18px; padding: 16px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(31,45,61,.08); }
+  label { display: block; font-weight: 700; margin: 8px 0 4px; }
+  input, select, textarea { width: 100%; font: inherit; padding: 10px 12px; border: 2px solid var(--linha); border-radius: 12px; background: #fff; color: var(--tinta); }
+  textarea { min-height: 80px; resize: vertical; }
+  button { font: inherit; font-weight: 800; border: 0; border-radius: 12px; padding: 10px 16px; min-height: 44px; cursor: pointer; background: var(--laranja); color: #fff; }
+  button.leve { background: #e8eef5; color: var(--tinta); }
+  button.perigo { background: var(--vermelho); }
+  .linha { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; }
+  .linha > * { flex: 1 1 160px; }
+  .linha > button { flex: 0 0 auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 6px; border-top: 1px solid var(--linha); vertical-align: top; }
+  th { color: var(--suave); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  .vazio { color: var(--suave); font-style: italic; }
+  .aviso { padding: 10px 12px; border-radius: 12px; background: #fff6e5; color: #7a4b00; font-weight: 600; margin: 8px 0; }
+  .ok { background: #e7f6ec; color: #1d6b35; }
+  .erro { background: #fdeaea; color: #8a1f1f; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #e8eef5; font-size: 12px; font-weight: 700; }
+  .tag.erro { background: #fdeaea; }
+  code { background: #e8eef5; padding: 1px 6px; border-radius: 6px; }
+  .rolar { overflow-x: auto; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>🛠️ Painel do Miguel</h1>
+  <p class="sub">Controle dos aparelhos, recados e registros. Os dados ficam no repositório do jogo no GitHub.</p>
+
+  <section class="cartao" id="entrar">
+    <h2>🔑 Entrar</h2>
+    <p class="sub">Use um <b>token do GitHub</b> com permissão de escrita no repositório <code>weberdequeiroz/gato-falante</code>. Ele fica guardado só neste navegador.</p>
+    <details><summary>Como criar o token (uma vez só)</summary>
+      <ol>
+        <li>No GitHub, abra <b>Settings › Developer settings › Personal access tokens › Fine-grained tokens</b> e toque em <b>Generate new token</b>.</li>
+        <li>Em <b>Repository access</b>, escolha <b>Only select repositories</b> e marque <code>gato-falante</code>.</li>
+        <li>Em <b>Permissions › Repository permissions › Contents</b>, escolha <b>Read and write</b>.</li>
+        <li>Gere o token, copie e cole aqui embaixo.</li>
+      </ol>
+    </details>
+    <label for="token">Token</label>
+    <div class="linha"><input id="token" type="password" autocomplete="off" placeholder="github_pat_..."><button id="botao-entrar">Entrar</button></div>
+    <div id="msg-entrar"></div>
+  </section>
+
+  <div id="painel" hidden>
+    <section class="cartao">
+      <div class="linha"><div><h2 style="margin:0">Conectado ✅</h2><span class="sub" id="quem"></span></div><button class="leve" id="sair">Sair</button></div>
+    </section>
+
+    <section class="cartao">
+      <h2>🔒 Bloquear aparelho</h2>
+      <p class="sub">O código aparece no jogo em <b>Ajustes › Este aparelho</b>. O bloqueio vale na próxima vez que o aparelho abrir o jogo com internet.</p>
+      <div class="linha">
+        <div><label for="bl-codigo">Código</label><input id="bl-codigo" maxlength="6" placeholder="ex.: K7M2QX" style="text-transform:uppercase"></div>
+        <div><label for="bl-motivo">Motivo (só para você)</label><input id="bl-motivo" maxlength="80"></div>
+        <button id="bl-adicionar">Bloquear</button>
+      </div>
+      <div class="rolar"><table><thead><tr><th>Código</th><th>Motivo</th><th>Desde</th><th></th></tr></thead><tbody id="lista-bloqueados"></tbody></table></div>
+    </section>
+
+    <section class="cartao">
+      <h2>💌 Mandar recado</h2>
+      <p class="sub">O recado aparece uma vez em cada aparelho, na próxima vez que abrir o jogo com internet.</p>
+      <label for="rc-texto">Mensagem</label>
+      <textarea id="rc-texto" maxlength="300" placeholder="ex.: Tem jogo novo no Miguel! Venha conhecer."></textarea>
+      <div class="linha">
+        <div><label for="rc-para">Para</label><input id="rc-para" maxlength="6" placeholder="todos (ou o código de um aparelho)"></div>
+        <div><label for="rc-dias">Vale por (dias)</label><input id="rc-dias" type="number" min="1" max="365" value="7"></div>
+        <button id="rc-adicionar">Enviar recado</button>
+      </div>
+      <div class="rolar"><table><thead><tr><th>Mensagem</th><th>Para</th><th>Até</th><th></th></tr></thead><tbody id="lista-recados"></tbody></table></div>
+    </section>
+
+    <section class="cartao">
+      <h2>📡 Registros de todos os aparelhos</h2>
+      <p class="sub">O GitHub não consegue receber dados direto dos aparelhos sem expor a sua senha dentro do jogo. Por isso, cada aparelho guarda os próprios registros (até 300) e envia para um <b>coletor</b> quando um estiver configurado.</p>
+      <label for="coletor">Endereço do coletor (opcional)</label>
+      <div class="linha"><input id="coletor" placeholder="https://..."><button id="salvar-coletor" class="leve">Salvar</button></div>
+      <div id="msg-coletor"></div>
+    </section>
+  </div>
+
+  <section class="cartao">
+    <h2>📱 Registros deste aparelho</h2>
+    <p class="sub">Abra este painel no aparelho que quer investigar (por exemplo, o iPad) para ver o uso e os erros guardados nele.</p>
+    <p>Código: <b id="este-codigo">—</b> · Apelido: <b id="este-apelido">—</b></p>
+    <div class="linha"><div id="resumo"></div><button class="leve" id="atualizar-locais">Atualizar</button></div>
+    <div class="rolar"><table><thead><tr><th>Quando</th><th>O quê</th><th>Detalhes</th></tr></thead><tbody id="lista-locais"></tbody></table></div>
+  </section>
+</main>
+
+<script>
+(function () {
+  var REPO = 'weberdequeiroz/gato-falante', ARQ = 'controle.json', API = 'https://api.github.com/repos/' + REPO + '/contents/' + ARQ;
+  var $ = function (id) { return document.getElementById(id); };
+  var ler = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  var guardar = function (k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} };
+  var esc = function (t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var data = function (t) { return t ? new Date(t).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '—'; };
+  var aviso = function (onde, texto, tipo) { $(onde).innerHTML = texto ? '<div class="aviso ' + (tipo || '') + '">' + texto + '</div>' : ''; };
+  var deB64 = function (b) { return decodeURIComponent(escape(atob(b.replace(/\n/g, '')))); };
+  var paraB64 = function (t) { return btoa(unescape(encodeURIComponent(t))); };
+
+  var token = ler('miguel-admin-token'), controle = null, sha = null;
+
+  function api(metodo, corpo) {
+    return fetch(API + (metodo === 'GET' ? '?ref=main&t=' + Date.now() : ''), {
+      method: metodo,
+      headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' },
+      body: corpo ? JSON.stringify(corpo) : undefined,
+      cache: 'no-store',
+    }).then(function (r) {
+      return r.json().then(function (j) { if (!r.ok) throw new Error(j.message || ('erro ' + r.status)); return j; });
+    });
+  }
+  function carregar() {
+    return api('GET').then(function (j) {
+      sha = j.sha;
+      controle = JSON.parse(deB64(j.content));
+      controle.bloqueados = controle.bloqueados || {};
+      controle.recados = controle.recados || [];
+      desenhar();
+    });
+  }
+  // grava no GitHub; se alguém mudou antes, recarrega e tenta de novo uma vez
+  function salvar(mudanca, mensagem) {
+    mudanca(controle);
+    return api('PUT', { message: 'Painel: ' + mensagem, content: paraB64(JSON.stringify(controle, null, 2) + '\n'), sha: sha, branch: 'main' })
+      .then(function (j) { sha = j.content.sha; desenhar(); })
+      .catch(function (e) {
+        if (!/sha|match/i.test(e.message)) throw e;
+        return carregar().then(function () { mudanca(controle); return api('PUT', { message: 'Painel: ' + mensagem, content: paraB64(JSON.stringify(controle, null, 2) + '\n'), sha: sha, branch: 'main' }); })
+          .then(function (j) { sha = j.content.sha; desenhar(); });
+      });
+  }
+
+  function desenhar() {
+    var b = controle.bloqueados, cods = Object.keys(b);
+    $('lista-bloqueados').innerHTML = cods.length ? cods.map(function (c) {
+      return '<tr><td><b>' + esc(c) + '</b></td><td>' + esc(b[c].motivo || '') + '</td><td>' + data(b[c].desde) + '</td><td><button class="leve" data-liberar="' + esc(c) + '">Liberar</button></td></tr>';
+    }).join('') : '<tr><td colspan="4" class="vazio">Nenhum aparelho bloqueado.</td></tr>';
+    var r = controle.recados;
+    $('lista-recados').innerHTML = r.length ? r.map(function (x) {
+      return '<tr><td>' + esc(x.texto) + '</td><td>' + esc(x.para) + '</td><td>' + (x.ate ? data(x.ate) : '—') + '</td><td><button class="leve" data-apagar="' + esc(x.id) + '">Apagar</button></td></tr>';
+    }).join('') : '<tr><td colspan="4" class="vazio">Nenhum recado.</td></tr>';
+    $('coletor').value = controle.coletor || '';
+  }
+
+  function entrar() {
+    aviso('msg-entrar', 'Conectando…');
+    carregar().then(function () {
+      guardar('miguel-admin-token', token);
+      $('entrar').hidden = true; $('painel').hidden = false;
+      $('quem').textContent = 'Repositório ' + REPO;
+      aviso('msg-entrar', '');
+    }).catch(function (e) {
+      aviso('msg-entrar', 'Não consegui entrar: ' + esc(e.message) + '. Confira o token e a permissão "Contents: Read and write".', 'erro');
+    });
+  }
+  $('botao-entrar').addEventListener('click', function () { token = $('token').value.trim(); if (token) entrar(); });
+  $('sair').addEventListener('click', function () { guardar('miguel-admin-token', null); token = null; $('painel').hidden = true; $('entrar').hidden = false; });
+
+  $('bl-adicionar').addEventListener('click', function () {
+    var c = $('bl-codigo').value.trim().toUpperCase(), m = $('bl-motivo').value.trim();
+    if (!/^[A-Z0-9]{6}$/.test(c)) { alert('O código tem 6 letras e números.'); return; }
+    salvar(function (ct) { ct.bloqueados[c] = { motivo: m, desde: new Date().toISOString() }; }, 'bloqueia ' + c)
+      .then(function () { $('bl-codigo').value = ''; $('bl-motivo').value = ''; })
+      .catch(function (e) { alert('Não salvou: ' + e.message); });
+  });
+  $('rc-adicionar').addEventListener('click', function () {
+    var t = $('rc-texto').value.trim(), para = ($('rc-para').value.trim() || 'todos'), dias = +$('rc-dias').value || 7;
+    if (!t) { alert('Escreva a mensagem.'); return; }
+    if (para.toLowerCase() === 'todos') para = 'todos'; else para = para.toUpperCase();
+    var recado = { id: 'r' + Date.now().toString(36), para: para, texto: t, ate: new Date(Date.now() + dias * 864e5).toISOString() };
+    salvar(function (ct) { ct.recados.push(recado); }, 'recado para ' + para)
+      .then(function () { $('rc-texto').value = ''; })
+      .catch(function (e) { alert('Não salvou: ' + e.message); });
+  });
+  document.addEventListener('click', function (e) {
+    var l = e.target.closest('[data-liberar]'), a = e.target.closest('[data-apagar]');
+    if (l) { var c = l.dataset.liberar; salvar(function (ct) { delete ct.bloqueados[c]; }, 'libera ' + c).catch(function (er) { alert('Não salvou: ' + er.message); }); }
+    if (a) { var id = a.dataset.apagar; salvar(function (ct) { ct.recados = ct.recados.filter(function (x) { return x.id !== id; }); }, 'apaga recado').catch(function (er) { alert('Não salvou: ' + er.message); }); }
+  });
+  $('salvar-coletor').addEventListener('click', function () {
+    var u = $('coletor').value.trim();
+    if (u && !/^https:\/\//.test(u)) { aviso('msg-coletor', 'O endereço precisa começar com https://', 'erro'); return; }
+    salvar(function (ct) { ct.coletor = u; }, 'coletor').then(function () { aviso('msg-coletor', 'Salvo.', 'ok'); }).catch(function (e) { aviso('msg-coletor', esc(e.message), 'erro'); });
+  });
+
+  // registros guardados neste aparelho (mesmo endereço do jogo)
+  var NOMES = { abriu: '📲 Abriu o jogo', jogo: '🎮 Jogo', uso: '⏱️ Tempo de uso', erro: '⚠️ Erro' };
+  function locais() {
+    $('este-codigo').textContent = ler('miguel-aparelho') || '— (o jogo ainda não foi aberto aqui)';
+    $('este-apelido').textContent = ler('miguel-apelido') || '—';
+    var lista = [];
+    try { lista = JSON.parse(ler('miguel-registros') || '[]'); } catch (e) {}
+    var seg = 0, erros = 0, jogos = {};
+    lista.forEach(function (x) { if (x.tipo === 'uso') seg += x.dados.segundos || 0; if (x.tipo === 'erro') erros++; if (x.tipo === 'jogo') jogos[x.dados.id] = (jogos[x.dados.id] || 0) + 1; });
+    var top = Object.keys(jogos).sort(function (a, b) { return jogos[b] - jogos[a]; }).slice(0, 3).map(function (k) { return k + ' (' + jogos[k] + ')'; }).join(', ');
+    $('resumo').innerHTML = '<span class="tag">' + lista.length + ' registros</span> <span class="tag">⏱️ ' + Math.round(seg / 60) + ' min</span> <span class="tag ' + (erros ? 'erro' : '') + '">⚠️ ' + erros + ' erros</span>' + (top ? ' <span class="tag">🎮 ' + esc(top) + '</span>' : '');
+    $('lista-locais').innerHTML = lista.length ? lista.slice().reverse().map(function (x) {
+      var d = x.dados || {}, det = x.tipo === 'erro' ? esc(d.msg) + (d.arquivo ? ' <span class="tag">' + esc(d.arquivo) + ':' + d.linha + '</span>' : '')
+        : x.tipo === 'uso' ? Math.round(d.segundos / 60 * 10) / 10 + ' min'
+        : x.tipo === 'jogo' ? esc(d.id)
+        : x.tipo === 'abriu' ? 'versão ' + esc(d.versao) + (d.instalado ? ' · instalado' : ' · navegador') + ' · ' + esc(d.tela) + '<br><small class="sub">' + esc(d.aparelho) + '</small>'
+        : esc(JSON.stringify(d));
+      return '<tr><td>' + data(x.t) + '</td><td>' + (NOMES[x.tipo] || esc(x.tipo)) + '</td><td>' + det + '</td></tr>';
+    }).join('') : '<tr><td colspan="3" class="vazio">Nenhum registro neste aparelho.</td></tr>';
+  }
+  $('atualizar-locais').addEventListener('click', locais);
+  locais();
+  if (token) entrar();
+})();
+</script>
+</body>
+</html>

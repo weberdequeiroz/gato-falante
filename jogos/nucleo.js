@@ -92,6 +92,7 @@
     c.onclick = (e) => {
       if (e.target.closest('[data-surpresa]')) {
         const j = M.sortear(jogos);
+        if (window.MiguelControle) MiguelControle.anotar('jogo', { id: j.id });
         M.falar('Surpresa! Vamos jogar: ' + j.nome + '!');
         j.abrir(nav);
         return;
@@ -99,6 +100,7 @@
       const b = e.target.closest('[data-jogo]');
       if (!b) return;
       const j = jogos.find(x => x.id === b.dataset.jogo);
+      if (window.MiguelControle) MiguelControle.anotar('jogo', { id: j.id });
       M.falar(j.nome + '!');
       j.abrir(nav);
     };

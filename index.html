@@ -8,13 +8,14 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Miguel">
 <link rel="manifest" href="manifest.webmanifest">
+<script src="jogos/controle.js?v=202610312222"></script>
 <link rel="icon" href="icones/icone-192.png">
 <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap">
 <title>Miguel, o Gato Falante</title>
-<link rel="stylesheet" href="jogos/jogos.css?v=202610312154">
+<link rel="stylesheet" href="jogos/jogos.css?v=202610312222">
 <style>
   /* Uma tela só, de cima para baixo: topo com ajuda → aviso do que está acontecendo → Miguel → ações grandes → vozes.
      Cores calmas e sempre iguais, botões grandes com ícone + palavra, um estado de cada vez. */
@@ -589,6 +590,8 @@
   .nota-ajuste { margin: 12px 0 0; font-size: 13px; line-height: 1.4; color: var(--tinta-suave); font-weight: 600; background: var(--amarelo-claro); border-radius: 14px; padding: 10px 12px; }
   .botao-pronto { width: 100%; min-height: 56px; margin-top: 14px; border: 0; border-radius: 18px; background: var(--laranja); color: #fff; font-size: 20px; font-weight: 900; box-shadow: 0 4px 0 #b85a0c; }
   #lembrete { z-index: 60; }
+  .campo-apelido { margin-top: 8px; min-height: 44px; border-radius: 12px; border: 2px solid var(--linha); font: inherit; font-size: 15px; padding: 0 12px; background: #fff; color: var(--tinta); }
+  .nota-privacidade { margin: 12px 0 0; font-size: 12px; line-height: 1.4; color: var(--tinta-suave); font-weight: 600; }
   /* indicar para um amigo */
   .cartao-indicar { text-align: center; }
   .indicar-qr { display: block; width: 200px; height: 200px; margin: 6px auto 4px; border-radius: 14px; border: 3px solid var(--linha); background: #fff; image-rendering: pixelated; }
@@ -985,8 +988,13 @@
       <div><strong>⏰ Lembretes</strong><small>Beber água a cada 1 hora e se mexer a cada 30 minutos de jogo.</small></div>
       <button class="chave" id="aj-lembretes" role="switch" aria-checked="true" aria-label="Lembretes"></button>
     </div>
+    <div class="linha-ajuste coluna">
+      <div><strong>📱 Este aparelho</strong><small>Código: <b id="aj-codigo"></b>. Se quiser, dê um apelido para reconhecer este aparelho.</small></div>
+      <input id="aj-apelido" class="campo-apelido" maxlength="30" placeholder="Apelido (opcional), ex.: Tablet da vovó" autocomplete="off">
+    </div>
     <button class="botao-largo" id="aj-ajuda">❓ Ver a explicação do Miguel de novo</button>
     <button class="botao-largo" id="aj-indicar">💌 Indicar para um amigo</button>
+    <p class="nota-privacidade">🔒 O jogo registra o uso de forma anônima (jogos abertos, tempo e erros) para melhorias. Não guarda nome, voz nem fotos.</p>
     <p class="nota-ajuste">💡 Algumas frases que mudam a cada jogada usam a voz do aparelho. Para elas ficarem mais naturais: no Android, instale a voz "Português (Brasil)" em Configurações › Idioma › Saída de texto para voz. No iPhone, baixe a voz "Luciana (Melhorada)" em Ajustes › Acessibilidade › Conteúdo Falado › Vozes. Depois escolha ela aqui em cima.</p>
     <button class="botao-pronto" id="aj-fechar">Pronto</button>
   </div>
@@ -2912,7 +2920,7 @@
 
   // ---------- Atualizações ----------
   // o app instalado fica aberto em segundo plano; ao voltar para ele, confere se tem versão nova
-  const VERSAO = '202610312154';
+  const VERSAO = '202610312222';
   const avisoAtualizar = document.getElementById('atualizar');
   let registro = null;
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
@@ -2924,7 +2932,7 @@
   async function verificarAtualizacao() {
     try {
       const r = await fetch('versao.json?t=' + Date.now(), { cache: 'no-store' });
-      const { versao } = await r.json();
+      const { versao, silenciosa } = await r.json();
       if (!versao || versao === VERSAO) return;
       if (registro) registro.update().catch(() => {});
       // ainda na abertura: atualiza direto (uma vez só por versão, para nunca ficar recarregando)
@@ -2935,6 +2943,8 @@
         atualizarAgora(versao);
         return;
       }
+      // atualização silenciosa: sem aviso; entra sozinha na próxima vez que o jogo abrir
+      if (silenciosa) return;
       avisoAtualizar.dataset.versao = versao;
       avisoAtualizar.hidden = false;
     } catch (e) {}
@@ -2949,22 +2959,22 @@
   }
 })();
 </script>
-<script src="jogos/roupas.js?v=202610312154" defer></script>
-<script src="jogos/nucleo.js?v=202610312154" defer></script>
-<script src="jogos/aprender.js?v=202610312154" defer></script>
-<script src="jogos/idiomas.js?v=202610312154" defer></script>
-<script src="jogos/musica.js?v=202610312154" defer></script>
-<script src="jogos/colorir.js?v=202610312154" defer></script>
-<script src="jogos/pontos.js?v=202610312154" defer></script>
-<script src="jogos/memoria.js?v=202610312154" defer></script>
-<script src="jogos/bolhas.js?v=202610312154" defer></script>
-<script src="jogos/sons.js?v=202610312154" defer></script>
-<script src="jogos/mercadinho.js?v=202610312154" defer></script>
-<script src="jogos/sombras.js?v=202610312154" defer></script>
-<script src="jogos/diferente.js?v=202610312154" defer></script>
-<script src="jogos/quebracabeca.js?v=202610312154" defer></script>
-<script src="jogos/penelope3d.js?v=202610181757" defer></script>
-<script src="jogos/corrida.js?v=202610312154" defer></script>
-<script src="jogos/mundo.js?v=202610312154" defer></script>
+<script src="jogos/roupas.js?v=202610312222" defer></script>
+<script src="jogos/nucleo.js?v=202610312222" defer></script>
+<script src="jogos/aprender.js?v=202610312222" defer></script>
+<script src="jogos/idiomas.js?v=202610312222" defer></script>
+<script src="jogos/musica.js?v=202610312222" defer></script>
+<script src="jogos/colorir.js?v=202610312222" defer></script>
+<script src="jogos/pontos.js?v=202610312222" defer></script>
+<script src="jogos/memoria.js?v=202610312222" defer></script>
+<script src="jogos/bolhas.js?v=202610312222" defer></script>
+<script src="jogos/sons.js?v=202610312222" defer></script>
+<script src="jogos/mercadinho.js?v=202610312222" defer></script>
+<script src="jogos/sombras.js?v=202610312222" defer></script>
+<script src="jogos/diferente.js?v=202610312222" defer></script>
+<script src="jogos/quebracabeca.js?v=202610312222" defer></script>
+<script src="jogos/penelope3d.js?v=202610312222" defer></script>
+<script src="jogos/corrida.js?v=202610312222" defer></script>
+<script src="jogos/mundo.js?v=202610312222" defer></script>
 </body>
 </html>
