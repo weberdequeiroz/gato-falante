@@ -111,7 +111,7 @@
 .item .numero, .item .letra { font-size: 38px; }
 .item .bola-cor { width: 46px; height: 46px; }
 .item .emoji-grande { font-size: 40px; }
-.item.ativo { border-color: var(--cor); background: color-mix(in srgb, var(--cor) 12%, #fff); }
+.item.ativo { border-color: var(--cor); background: #f4f8fc; background: color-mix(in srgb, var(--cor) 12%, #fff); }
 
 .jogo { display: flex; flex-direction: column; gap: 14px; align-items: stretch; }
 .estrelas { display: flex; justify-content: center; gap: 6px; font-size: 34px; color: #d7dee6; }
@@ -221,6 +221,7 @@
   border: 2px solid var(--linha);
   border-bottom: 8px solid var(--c);
   border-radius: 0 0 12px 12px;
+  background: #fff;
   background: linear-gradient(#fff 60%, color-mix(in srgb, var(--c) 18%, #fff));
   display: flex;
   flex-direction: column;
@@ -247,9 +248,9 @@
   font-size: 9px;
   padding-bottom: 4px;
 }
-.tecla.tocando { transform: translateY(3px); background: color-mix(in srgb, var(--c) 45%, #fff); }
+.tecla.tocando { transform: translateY(3px); background: #eef2f6; background: color-mix(in srgb, var(--c) 45%, #fff); }
 .tecla.preta.tocando { background: #555c6e; }
-.tecla.proxima { background: color-mix(in srgb, var(--c) 55%, #fff); color: #fff; box-shadow: 0 0 0 4px #fff, 0 0 18px 6px var(--c); animation: chama-botao .9s ease-in-out infinite; z-index: 3; }
+.tecla.proxima { background: var(--c); background: color-mix(in srgb, var(--c) 55%, #fff); color: #fff; box-shadow: 0 0 0 4px #fff, 0 0 18px 6px var(--c); animation: chama-botao .9s ease-in-out infinite; z-index: 3; }
 .pads { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
 .pads.cinco { grid-template-columns: repeat(5, 1fr); }
 .pad {
@@ -298,7 +299,7 @@
 .escolher-inst button { flex: none; width: 48px; height: 48px; border: 2px solid var(--linha); border-radius: 14px; background: var(--cartao); font-size: 24px; }
 .escolher-inst button[aria-pressed="true"] { border-color: var(--laranja); background: var(--laranja-claro); }
 .trilha { display: flex; gap: 6px; overflow-x: auto; padding: 6px 2px; scrollbar-width: none; }
-.nota-trilha { flex: none; padding: 6px 10px; border-radius: 999px; background: color-mix(in srgb, var(--c) 18%, #fff); color: var(--c); font-weight: 900; font-size: 14px; border: 2px solid transparent; }
+.nota-trilha { flex: none; padding: 6px 10px; border-radius: 999px; background: #fff; background: color-mix(in srgb, var(--c) 18%, #fff); color: var(--c); font-weight: 900; font-size: 14px; border: 2px solid transparent; }
 .nota-trilha.feita { opacity: .35; }
 .nota-trilha.atual { background: var(--c); color: #fff; transform: scale(1.15); }
 .progresso { height: 10px; border-radius: 999px; background: var(--linha); overflow: hidden; }
@@ -363,6 +364,8 @@
 .ceu-bolhas { position: relative; flex: 1; min-height: 360px; border-radius: 22px; overflow: hidden; background: linear-gradient(#bfe6fb, #e8f7ff); box-shadow: inset 0 0 0 2px var(--linha); touch-action: none; }
 .bolha {
   position: absolute; left: 0; top: 0; border-radius: 50%; border: 0; padding: 0;
+  background: radial-gradient(circle at 32% 28%, rgba(255,255,255,.95) 0 10%, rgba(255,255,255,.2) 22%, transparent 40%),
+              radial-gradient(circle, rgba(255,255,255,.35) 55%, var(--c) 72%, transparent 74%);
   background: radial-gradient(circle at 32% 28%, rgba(255,255,255,.95) 0 10%, rgba(255,255,255,.2) 22%, transparent 40%),
               radial-gradient(circle, color-mix(in srgb, var(--c) 30%, transparent) 55%, color-mix(in srgb, var(--c) 85%, #fff) 72%, transparent 74%);
   box-shadow: inset 0 0 12px rgba(255,255,255,.7);
