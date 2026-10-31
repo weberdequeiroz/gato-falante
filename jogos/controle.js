@@ -51,11 +51,16 @@
     if (!controle || !controle.coletor) return;
     var lista = lerRegistros();
     if (!lista.length) return;
-    var corpo = JSON.stringify({ aparelho: codigo, apelido: ler('miguel-apelido') || '', eventos: lista });
+    // em pacotes de 60 (cada envio pode ter no máximo 64 KB); o que não foi aceito fica para a próxima
+    var enviados = 0;
     try {
-      var ok = navigator.sendBeacon && navigator.sendBeacon(controle.coletor, new Blob([corpo], { type: 'text/plain' }));
-      if (ok) guardar('miguel-registros', '[]');
+      for (var i = 0; i < lista.length; i += 60) {
+        var corpo = JSON.stringify({ aparelho: codigo, apelido: ler('miguel-apelido') || '', eventos: lista.slice(i, i + 60) });
+        if (!(navigator.sendBeacon && navigator.sendBeacon(controle.coletor, new Blob([corpo], { type: 'text/plain' })))) break;
+        enviados = Math.min(lista.length, i + 60);
+      }
     } catch (e) {}
+    if (enviados) guardar('miguel-registros', JSON.stringify(lerRegistros().slice(enviados)));
   }
 
   var tela = null;

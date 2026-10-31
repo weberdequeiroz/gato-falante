@@ -88,11 +88,22 @@
     </section>
 
     <section class="cartao">
-      <h2>📡 Registros de todos os aparelhos</h2>
-      <p class="sub">O GitHub não consegue receber dados direto dos aparelhos sem expor a sua senha dentro do jogo. Por isso, cada aparelho guarda os próprios registros (até 300) e envia para um <b>coletor</b> quando um estiver configurado.</p>
-      <label for="coletor">Endereço do coletor (opcional)</label>
-      <div class="linha"><input id="coletor" placeholder="https://..."><button id="salvar-coletor" class="leve">Salvar</button></div>
+      <h2>📡 Todos os aparelhos</h2>
+      <p class="sub">Os aparelhos mandam os registros para o <b>coletor</b> (uma Planilha Google com o script do coletor). O endereço fica no jogo; a <b>chave de leitura</b> fica só neste navegador.</p>
+      <div class="linha">
+        <div><label for="coletor">Endereço do coletor</label><input id="coletor" placeholder="https://script.google.com/macros/s/.../exec"></div>
+        <button id="salvar-coletor" class="leve">Salvar no jogo</button>
+      </div>
+      <div class="linha">
+        <div><label for="chave">Chave de leitura</label><input id="chave" type="password" autocomplete="off"></div>
+        <button id="ver-todos">Ver aparelhos</button>
+      </div>
       <div id="msg-coletor"></div>
+      <div id="todos" hidden>
+        <div class="rolar"><table><thead><tr><th>Aparelho</th><th>Último uso</th><th>Uso</th><th>Sistema</th><th>Jogos mais abertos</th><th></th></tr></thead><tbody id="lista-todos"></tbody></table></div>
+        <h2 style="margin-top:16px">⚠️ Últimos erros</h2>
+        <div class="rolar"><table><thead><tr><th>Quando</th><th>Aparelho</th><th>Erro</th></tr></thead><tbody id="lista-erros"></tbody></table></div>
+      </div>
     </section>
   </div>
 
@@ -200,7 +211,55 @@
   $('salvar-coletor').addEventListener('click', function () {
     var u = $('coletor').value.trim();
     if (u && !/^https:\/\//.test(u)) { aviso('msg-coletor', 'O endereço precisa começar com https://', 'erro'); return; }
-    salvar(function (ct) { ct.coletor = u; }, 'coletor').then(function () { aviso('msg-coletor', 'Salvo.', 'ok'); }).catch(function (e) { aviso('msg-coletor', esc(e.message), 'erro'); });
+    salvar(function (ct) { ct.coletor = u; }, 'coletor').then(function () { aviso('msg-coletor', 'Salvo. Os aparelhos começam a enviar na próxima vez que abrirem o jogo.', 'ok'); }).catch(function (e) { aviso('msg-coletor', esc(e.message), 'erro'); });
+  });
+
+  // todos os aparelhos, lidos do coletor
+  var sistema = function (ua) {
+    ua = String(ua || '');
+    var m = ua.match(/OS (\d+)[_.](\d+)/); if (/iPad|Macintosh/.test(ua) && m) return '📱 iPad · iPadOS ' + m[1] + '.' + m[2];
+    if (/iPhone/.test(ua) && m) return '📱 iPhone · iOS ' + m[1] + '.' + m[2];
+    m = ua.match(/Android (\d+)/); if (m) return '🤖 Android ' + m[1];
+    if (/Windows/.test(ua)) return '💻 Windows'; if (/Mac/.test(ua)) return '💻 Mac'; return ua.slice(0, 30);
+  };
+  function verTodos() {
+    var url = (controle && controle.coletor) || $('coletor').value.trim(), chave = $('chave').value.trim();
+    if (!url) { aviso('msg-coletor', 'Primeiro salve o endereço do coletor.', 'erro'); return; }
+    if (!chave) { aviso('msg-coletor', 'Digite a chave de leitura.', 'erro'); return; }
+    guardar('miguel-admin-chave', chave);
+    aviso('msg-coletor', 'Buscando…');
+    fetch(url + (url.indexOf('?') < 0 ? '?' : '&') + 'chave=' + encodeURIComponent(chave) + '&t=' + Date.now())
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.erro) throw new Error(d.erro);
+        var bloq = (controle && controle.bloqueados) || {};
+        var lista = (d.aparelhos || []).sort(function (a, b) { return String(b.ultimo).localeCompare(String(a.ultimo)); });
+        aviso('msg-coletor', lista.length + ' aparelho(s).', 'ok');
+        $('todos').hidden = false;
+        $('lista-todos').innerHTML = lista.length ? lista.map(function (a) {
+          var jogos = Object.keys(a.jogos || {}).sort(function (x, y) { return a.jogos[y] - a.jogos[x]; }).slice(0, 3).map(function (k) { return esc(k) + ' (' + a.jogos[k] + ')'; }).join(', ');
+          return '<tr><td><b>' + esc(a.aparelho) + '</b>' + (a.apelido ? '<br>' + esc(a.apelido) : '') + (bloq[a.aparelho] ? '<br><span class="tag erro">bloqueado</span>' : '') + '</td>' +
+            '<td>' + data(a.ultimo) + '</td><td>' + esc(a.minutos) + ' min · ' + esc(a.aberturas) + 'x' + (+a.erros ? '<br><span class="tag erro">⚠️ ' + esc(a.erros) + ' erros</span>' : '') + '</td>' +
+            '<td>' + esc(sistema(a.modelo)) + '<br><small class="sub">versão ' + esc(a.versao) + ' · ' + (a.instalado === 'sim' ? 'instalado' : 'navegador') + '</small></td>' +
+            '<td>' + (jogos || '—') + '</td>' +
+            '<td>' + (bloq[a.aparelho] ? '<button class="leve" data-liberar="' + esc(a.aparelho) + '">Liberar</button>' : '<button class="perigo" data-bloquear="' + esc(a.aparelho) + '">Bloquear</button>') + '</td></tr>';
+        }).join('') : '<tr><td colspan="6" class="vazio">Nenhum aparelho mandou registros ainda.</td></tr>';
+        var erros = d.erros || [];
+        $('lista-erros').innerHTML = erros.length ? erros.map(function (x) {
+          var det = {}; try { det = JSON.parse(x.detalhes); } catch (e) {}
+          return '<tr><td>' + data(x.quando) + '</td><td>' + esc(x.aparelho) + (x.apelido ? ' · ' + esc(x.apelido) : '') + '</td><td>' + esc(det.msg || x.detalhes) + (det.arquivo ? ' <span class="tag">' + esc(det.arquivo) + ':' + det.linha + '</span>' : '') + '</td></tr>';
+        }).join('') : '<tr><td colspan="3" class="vazio">Nenhum erro. 🎉</td></tr>';
+      })
+      .catch(function (e) { aviso('msg-coletor', 'Não consegui ler o coletor: ' + esc(e.message), 'erro'); });
+  }
+  $('ver-todos').addEventListener('click', verTodos);
+  $('chave').value = ler('miguel-admin-chave') || '';
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-bloquear]');
+    if (!b) return;
+    var c = b.dataset.bloquear;
+    if (!confirm('Bloquear o aparelho ' + c + '?')) return;
+    salvar(function (ct) { ct.bloqueados[c] = { motivo: 'pelo painel', desde: new Date().toISOString() }; }, 'bloqueia ' + c).then(verTodos).catch(function (er) { alert('Não salvou: ' + er.message); });
   });
 
   // registros guardados neste aparelho (mesmo endereço do jogo)
