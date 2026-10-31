@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap">
 <title>Miguel, o Gato Falante</title>
-<link rel="stylesheet" href="jogos/jogos.css?v=202610312022">
+<link rel="stylesheet" href="jogos/jogos.css?v=202610312026">
 <style>
   /* Uma tela só, de cima para baixo: topo com ajuda → aviso do que está acontecendo → Miguel → ações grandes → vozes.
      Cores calmas e sempre iguais, botões grandes com ícone + palavra, um estado de cada vez. */
@@ -590,7 +590,6 @@
   .botao-pronto { width: 100%; min-height: 56px; margin-top: 14px; border: 0; border-radius: 18px; background: var(--laranja); color: #fff; font-size: 20px; font-weight: 900; box-shadow: 0 4px 0 #b85a0c; }
   #lembrete { z-index: 60; }
   /* indicar para um amigo */
-  .botao-indicar { display: block; margin: 4px auto 10px; min-height: 46px; padding: 0 22px; border: 2px solid #ffc9de; border-radius: 999px; background: #fff0f6; color: #b0326a; font: inherit; font-size: 16px; font-weight: 900; box-shadow: 0 3px 0 #f3a9c7; }
   .cartao-indicar { text-align: center; }
   .indicar-qr { display: block; width: 200px; height: 200px; margin: 6px auto 4px; border-radius: 14px; border: 3px solid var(--linha); background: #fff; image-rendering: pixelated; }
   .indicar-dica { margin: 0 0 6px; font-size: 13px; font-weight: 700; color: var(--tinta-suave); }
@@ -934,7 +933,6 @@
     </div>
   </section>
 
-  <button id="indicar" class="botao-indicar">💌 Indicar para um amigo</button>
   <footer>DESENVOLVIDO POR VINI &amp; WEBER</footer>
 </div>
 
@@ -2504,7 +2502,6 @@
     telaIndicar.hidden = false;
     falarPartes('Chame os seus amigos para brincar comigo! 😺', { jeito: VOZ_MIGUEL });
   }
-  document.getElementById('indicar').addEventListener('click', abrirIndicar);
   document.getElementById('aj-indicar').addEventListener('click', abrirIndicar);
   document.getElementById('indicar-fechar').addEventListener('click', () => { telaIndicar.hidden = true; calar(); });
   telaIndicar.addEventListener('click', (e) => { if (e.target === telaIndicar) { telaIndicar.hidden = true; calar(); } });
@@ -2915,7 +2912,7 @@
 
   // ---------- Atualizações ----------
   // o app instalado fica aberto em segundo plano; ao voltar para ele, confere se tem versão nova
-  const VERSAO = '202610312022';
+  const VERSAO = '202610312026';
   const avisoAtualizar = document.getElementById('atualizar');
   let registro = null;
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
@@ -2952,22 +2949,22 @@
   }
 })();
 </script>
-<script src="jogos/roupas.js?v=202610312022" defer></script>
-<script src="jogos/nucleo.js?v=202610312022" defer></script>
-<script src="jogos/aprender.js?v=202610312022" defer></script>
-<script src="jogos/idiomas.js?v=202610312022" defer></script>
-<script src="jogos/musica.js?v=202610312022" defer></script>
-<script src="jogos/colorir.js?v=202610312022" defer></script>
-<script src="jogos/pontos.js?v=202610312022" defer></script>
-<script src="jogos/memoria.js?v=202610312022" defer></script>
-<script src="jogos/bolhas.js?v=202610312022" defer></script>
-<script src="jogos/sons.js?v=202610312022" defer></script>
-<script src="jogos/mercadinho.js?v=202610312022" defer></script>
-<script src="jogos/sombras.js?v=202610312022" defer></script>
-<script src="jogos/diferente.js?v=202610312022" defer></script>
-<script src="jogos/quebracabeca.js?v=202610312022" defer></script>
+<script src="jogos/roupas.js?v=202610312026" defer></script>
+<script src="jogos/nucleo.js?v=202610312026" defer></script>
+<script src="jogos/aprender.js?v=202610312026" defer></script>
+<script src="jogos/idiomas.js?v=202610312026" defer></script>
+<script src="jogos/musica.js?v=202610312026" defer></script>
+<script src="jogos/colorir.js?v=202610312026" defer></script>
+<script src="jogos/pontos.js?v=202610312026" defer></script>
+<script src="jogos/memoria.js?v=202610312026" defer></script>
+<script src="jogos/bolhas.js?v=202610312026" defer></script>
+<script src="jogos/sons.js?v=202610312026" defer></script>
+<script src="jogos/mercadinho.js?v=202610312026" defer></script>
+<script src="jogos/sombras.js?v=202610312026" defer></script>
+<script src="jogos/diferente.js?v=202610312026" defer></script>
+<script src="jogos/quebracabeca.js?v=202610312026" defer></script>
 <script src="jogos/penelope3d.js?v=202610181757" defer></script>
-<script src="jogos/corrida.js?v=202610312022" defer></script>
-<script src="jogos/mundo.js?v=202610312022" defer></script>
+<script src="jogos/corrida.js?v=202610312026" defer></script>
+<script src="jogos/mundo.js?v=202610312026" defer></script>
 </body>
 </html>
