@@ -97,10 +97,16 @@
       <div class="linha">
         <div><label for="chave">Chave de leitura</label><input id="chave" type="password" autocomplete="off"></div>
         <button id="ver-todos">Ver aparelhos</button>
+        <button id="testar-coletor" class="leve">🩺 Testar coletor</button>
       </div>
       <div id="msg-coletor"></div>
       <div id="todos" hidden>
-        <div class="rolar"><table><thead><tr><th>Aparelho</th><th>Último uso</th><th>Uso</th><th>Sistema</th><th>Jogos mais abertos</th><th></th></tr></thead><tbody id="lista-todos"></tbody></table></div>
+        <p id="resumo-todos" style="margin:8px 0"></p>
+        <div class="rolar"><table><thead><tr><th>Aparelho</th><th>Agora</th><th>Uso</th><th>Sistema</th><th>Jogos mais abertos</th><th></th></tr></thead><tbody id="lista-todos"></tbody></table></div>
+        <div id="atividade" hidden style="margin-top:16px">
+          <div class="linha"><h2 id="atividade-titulo" style="margin:0"></h2><button class="leve" id="atividade-fechar">Fechar</button></div>
+          <div class="rolar"><table><thead><tr><th>Quando</th><th>O quê</th><th>Detalhes</th></tr></thead><tbody id="lista-atividade"></tbody></table></div>
+        </div>
         <h2 style="margin-top:16px">⚠️ Últimos erros</h2>
         <div class="rolar"><table><thead><tr><th>Quando</th><th>Aparelho</th><th>Erro</th></tr></thead><tbody id="lista-erros"></tbody></table></div>
       </div>
@@ -180,6 +186,7 @@
       $('entrar').hidden = true; $('painel').hidden = false;
       $('quem').textContent = 'Repositório ' + REPO;
       aviso('msg-entrar', '');
+      if (controle.coletor && $('chave').value.trim()) verTodos(true);
     }).catch(function (e) {
       aviso('msg-entrar', 'Não consegui entrar: ' + esc(e.message) + '. Confira o token e a permissão "Contents: Read and write".', 'erro');
     });
@@ -222,44 +229,124 @@
     m = ua.match(/Android (\d+)/); if (m) return '🤖 Android ' + m[1];
     if (/Windows/.test(ua)) return '💻 Windows'; if (/Mac/.test(ua)) return '💻 Mac'; return ua.slice(0, 30);
   };
-  function verTodos() {
+  var NOMES_JOGOS = { corrida: 'Corrida do Miguel', mundo: 'Mundo do Miguel' };
+  var nomeOnde = function (o) { o = String(o || ''); return o.indexOf('jogo:') === 0 ? '🎮 ' + (NOMES_JOGOS[o.slice(5)] || o.slice(5)) : o === 'tela inicial' ? '🏠 tela inicial' : o === 'vestindo o Miguel' ? '👕 vestindo o Miguel' : o ? o : ''; };
+  var haQuanto = function (ms) {
+    var min = Math.round(ms / 60000);
+    if (min < 1) return 'agora há pouco'; if (min < 60) return 'há ' + min + ' min';
+    var h = Math.round(min / 60); if (h < 48) return 'há ' + h + ' h'; return 'há ' + Math.round(h / 24) + ' dias';
+  };
+  var urlColetor = function (extra) {
+    var url = (controle && controle.coletor) || $('coletor').value.trim();
+    return url + (url.indexOf('?') < 0 ? '?' : '&') + 'chave=' + encodeURIComponent($('chave').value.trim()) + (extra || '') + '&t=' + Date.now();
+  };
+  var lerJson = function (r) {
+    return r.text().then(function (t) {
+      try { return JSON.parse(t); } catch (e) { throw new Error('o coletor respondeu ' + r.status + ' e não um JSON: ' + t.slice(0, 120)); }
+    });
+  };
+  var atualizando = null, aparelhoAberto = null;
+  function verTodos(silencioso) {
     var url = (controle && controle.coletor) || $('coletor').value.trim(), chave = $('chave').value.trim();
     if (!url) { aviso('msg-coletor', 'Primeiro salve o endereço do coletor.', 'erro'); return; }
     if (!chave) { aviso('msg-coletor', 'Digite a chave de leitura.', 'erro'); return; }
     guardar('miguel-admin-chave', chave);
-    aviso('msg-coletor', 'Buscando…');
-    fetch(url + (url.indexOf('?') < 0 ? '?' : '&') + 'chave=' + encodeURIComponent(chave) + '&t=' + Date.now())
-      .then(function (r) { return r.json(); })
+    if (!silencioso) aviso('msg-coletor', 'Buscando…');
+    fetch(urlColetor())
+      .then(lerJson)
       .then(function (d) {
-        if (d.erro) throw new Error(d.erro);
+        if (d.erro) throw new Error(d.erro === 'chave errada' ? 'chave errada (confira a chave de leitura)' : d.erro);
+        var agoraSrv = d.agora ? new Date(d.agora).getTime() : Date.now();
         var bloq = (controle && controle.bloqueados) || {};
-        var lista = (d.aparelhos || []).sort(function (a, b) { return String(b.ultimo).localeCompare(String(a.ultimo)); });
-        aviso('msg-coletor', lista.length + ' aparelho(s).', 'ok');
+        var lista = (d.aparelhos || []).filter(function (a) { return a.aparelho !== 'TESTE0'; }).map(function (a) {
+          a.online = a.visto && agoraSrv - new Date(a.visto).getTime() < 3 * 60000;
+          return a;
+        }).sort(function (a, b) { return (b.online - a.online) || String(b.ultimo).localeCompare(String(a.ultimo)); });
+        var on = lista.filter(function (a) { return a.online; }).length;
+        if (!silencioso) aviso('msg-coletor', '');
         $('todos').hidden = false;
+        $('resumo-todos').innerHTML = '<span class="tag" style="background:#e7f6ec">🟢 ' + on + ' online agora</span> <span class="tag">📱 ' + lista.length + ' aparelhos</span> <span class="sub">· atualiza sozinho a cada 30 s</span>';
         $('lista-todos').innerHTML = lista.length ? lista.map(function (a) {
-          var jogos = Object.keys(a.jogos || {}).sort(function (x, y) { return a.jogos[y] - a.jogos[x]; }).slice(0, 3).map(function (k) { return esc(k) + ' (' + a.jogos[k] + ')'; }).join(', ');
+          var jogos = Object.keys(a.jogos || {}).sort(function (x, y) { return a.jogos[y] - a.jogos[x]; }).slice(0, 3).map(function (k) { return esc(NOMES_JOGOS[k] || k) + ' (' + a.jogos[k] + ')'; }).join(', ');
+          var agora = a.online ? '<b style="color:#1d6b35">🟢 Online</b><br>' + esc(nomeOnde(a.agora))
+            : '⚪ ' + (a.ultimo ? 'visto ' + haQuanto(agoraSrv - new Date(a.ultimo).getTime()) : '—') + '<br><small class="sub">' + data(a.ultimo) + '</small>';
           return '<tr><td><b>' + esc(a.aparelho) + '</b>' + (a.apelido ? '<br>' + esc(a.apelido) : '') + (bloq[a.aparelho] ? '<br><span class="tag erro">bloqueado</span>' : '') + '</td>' +
-            '<td>' + data(a.ultimo) + '</td><td>' + esc(a.minutos) + ' min · ' + esc(a.aberturas) + 'x' + (+a.erros ? '<br><span class="tag erro">⚠️ ' + esc(a.erros) + ' erros</span>' : '') + '</td>' +
-            '<td>' + esc(sistema(a.modelo)) + '<br><small class="sub">versão ' + esc(a.versao) + ' · ' + (a.instalado === 'sim' ? 'instalado' : 'navegador') + '</small></td>' +
+            '<td>' + agora + '</td><td>' + esc(a.minutos || 0) + ' min · ' + esc(a.aberturas || 0) + 'x' + (+a.erros ? '<br><span class="tag erro">⚠️ ' + esc(a.erros) + ' erros</span>' : '') + '</td>' +
+            '<td>' + esc(sistema(a.modelo)) + (a.versao ? '<br><small class="sub">versão ' + esc(a.versao) + ' · ' + (a.instalado === 'sim' ? 'instalado' : 'navegador') + '</small>' : '') + '</td>' +
             '<td>' + (jogos || '—') + '</td>' +
-            '<td>' + (bloq[a.aparelho] ? '<button class="leve" data-liberar="' + esc(a.aparelho) + '">Liberar</button>' : '<button class="perigo" data-bloquear="' + esc(a.aparelho) + '">Bloquear</button>') + '</td></tr>';
-        }).join('') : '<tr><td colspan="6" class="vazio">Nenhum aparelho mandou registros ainda.</td></tr>';
+            '<td><button class="leve" data-atividade="' + esc(a.aparelho) + '" data-apelido="' + esc(a.apelido || '') + '">📋 O que fez</button> ' +
+            (bloq[a.aparelho] ? '<button class="leve" data-liberar="' + esc(a.aparelho) + '">Liberar</button>' : '<button class="perigo" data-bloquear="' + esc(a.aparelho) + '">Bloquear</button>') + '</td></tr>';
+        }).join('') : '<tr><td colspan="6" class="vazio">Nenhum aparelho mandou registros ainda. Abra o jogo em um celular com internet e toque em 🩺 Testar coletor se nada aparecer.</td></tr>';
         var erros = d.erros || [];
         $('lista-erros').innerHTML = erros.length ? erros.map(function (x) {
           var det = {}; try { det = JSON.parse(x.detalhes); } catch (e) {}
           return '<tr><td>' + data(x.quando) + '</td><td>' + esc(x.aparelho) + (x.apelido ? ' · ' + esc(x.apelido) : '') + '</td><td>' + esc(det.msg || x.detalhes) + (det.arquivo ? ' <span class="tag">' + esc(det.arquivo) + ':' + det.linha + '</span>' : '') + '</td></tr>';
         }).join('') : '<tr><td colspan="3" class="vazio">Nenhum erro. 🎉</td></tr>';
+        if (aparelhoAberto) verAtividade(aparelhoAberto.codigo, aparelhoAberto.apelido);
+        clearTimeout(atualizando);
+        atualizando = setTimeout(function () { if (document.visibilityState === 'visible') verTodos(true); }, 30000);
       })
-      .catch(function (e) { aviso('msg-coletor', 'Não consegui ler o coletor: ' + esc(e.message), 'erro'); });
+      .catch(function (e) { aviso('msg-coletor', 'Não consegui ler o coletor: ' + esc(e.message) + '. Toque em 🩺 Testar coletor para ver o motivo.', 'erro'); });
   }
-  $('ver-todos').addEventListener('click', verTodos);
+  // linha do tempo de um aparelho
+  var NOMES_TL = { abriu: '📲 Abriu o jogo', jogo: '🎮 Abriu um jogo', uso: '⏱️ Usou', erro: '⚠️ Erro' };
+  function verAtividade(codigo, apelido) {
+    aparelhoAberto = { codigo: codigo, apelido: apelido };
+    $('atividade').hidden = false;
+    $('atividade-titulo').textContent = '📋 ' + codigo + (apelido ? ' · ' + apelido : '');
+    fetch(urlColetor('&aparelho=' + encodeURIComponent(codigo))).then(lerJson).then(function (d) {
+      var l = d.atividades || [];
+      $('lista-atividade').innerHTML = l.length ? l.map(function (x) {
+        var dd = x.dados || {}, det = x.tipo === 'jogo' ? esc(NOMES_JOGOS[dd.id] || dd.id) : x.tipo === 'uso' ? Math.round((dd.segundos || 0) / 6) / 10 + ' min'
+          : x.tipo === 'erro' ? esc(dd.msg) + (dd.arquivo ? ' <span class="tag">' + esc(dd.arquivo) + ':' + dd.linha + '</span>' : '')
+          : x.tipo === 'abriu' ? 'versão ' + esc(dd.versao) + (dd.instalado ? ' · instalado' : ' · navegador') : esc(JSON.stringify(dd));
+        return '<tr><td>' + data(x.quando) + '</td><td>' + (NOMES_TL[x.tipo] || esc(x.tipo)) + '</td><td>' + det + '</td></tr>';
+      }).join('') : '<tr><td colspan="3" class="vazio">Ainda sem registros desse aparelho (eles chegam quando a criança sai do jogo e a cada 3 minutos).</td></tr>';
+    }).catch(function (e) { $('lista-atividade').innerHTML = '<tr><td colspan="3">' + esc(e.message) + '</td></tr>'; });
+  }
+  $('atividade-fechar').addEventListener('click', function () { aparelhoAberto = null; $('atividade').hidden = true; });
+  // diagnóstico: manda um registro de teste e confere se ele volta
+  function testarColetor() {
+    var url = (controle && controle.coletor) || $('coletor').value.trim(), chave = $('chave').value.trim();
+    if (!url) { aviso('msg-coletor', 'Primeiro salve o endereço do coletor.', 'erro'); return; }
+    if (location.protocol === 'https:' && url.indexOf('https://') !== 0) { aviso('msg-coletor', 'O endereço precisa começar com https:// (o celular bloqueia envio para http).', 'erro'); return; }
+    aviso('msg-coletor', '🩺 Testando…');
+    var passo = '1/3 enviando um registro de teste';
+    fetch(url, { method: 'POST', body: JSON.stringify({ aparelho: 'TESTE0', apelido: 'Teste do painel', eventos: [{ t: Date.now(), tipo: 'abriu', dados: { versao: 'teste', aparelho: navigator.userAgent.slice(0, 160) } }] }) })
+      .then(function (r) {
+        return r.text().then(function (t) {
+          if (r.redirected) throw new Error('o endereço redireciona para ' + r.url + ' — use esse endereço final no campo do coletor');
+          if (!r.ok || t.trim() !== 'ok') throw new Error('o coletor respondeu ' + r.status + ': ' + t.slice(0, 150));
+        });
+      })
+      .then(function () {
+        passo = '2/3 lendo com a chave';
+        if (!chave) throw new Error('o envio funcionou ✅, mas falta a chave de leitura');
+        return fetch(urlColetor()).then(lerJson);
+      })
+      .then(function (d) {
+        passo = '3/3 conferindo';
+        if (d.erro) throw new Error(d.erro === 'chave errada' ? 'o envio funcionou ✅, mas a chave de leitura não bate com a do coletor.php' : d.erro);
+        var achou = (d.aparelhos || []).some(function (a) { return a.aparelho === 'TESTE0'; });
+        aviso('msg-coletor', achou ? '✅ Coletor funcionando! O envio e a leitura deram certo.' : 'O envio foi aceito, mas o teste não apareceu na leitura.', achou ? 'ok' : 'erro');
+        verTodos(true);
+      })
+      .catch(function (e) {
+        var msg = /Failed to fetch|Load failed|NetworkError/i.test(e.message) ? 'não consegui falar com o coletor (endereço errado, site fora do ar, sem https ou bloqueio de CORS)' : e.message;
+        aviso('msg-coletor', '❌ Falhou no passo ' + passo + ': ' + esc(msg), 'erro');
+      });
+  }
+  $('testar-coletor').addEventListener('click', testarColetor);
+  $('ver-todos').addEventListener('click', function () { verTodos(); });
   $('chave').value = ler('miguel-admin-chave') || '';
   document.addEventListener('click', function (e) {
+    var at = e.target.closest('[data-atividade]');
+    if (at) { verAtividade(at.dataset.atividade, at.dataset.apelido); return; }
     var b = e.target.closest('[data-bloquear]');
     if (!b) return;
     var c = b.dataset.bloquear;
     if (!confirm('Bloquear o aparelho ' + c + '?')) return;
-    salvar(function (ct) { ct.bloqueados[c] = { motivo: 'pelo painel', desde: new Date().toISOString() }; }, 'bloqueia ' + c).then(verTodos).catch(function (er) { alert('Não salvou: ' + er.message); });
+    salvar(function (ct) { ct.bloqueados[c] = { motivo: 'pelo painel', desde: new Date().toISOString() }; }, 'bloqueia ' + c).then(function () { verTodos(true); }).catch(function (er) { alert('Não salvou: ' + er.message); });
   });
 
   // registros guardados neste aparelho (mesmo endereço do jogo)

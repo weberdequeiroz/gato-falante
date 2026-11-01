@@ -27,6 +27,9 @@ $db->exec('CREATE TABLE IF NOT EXISTS registros (id INTEGER PRIMARY KEY, quando 
 $db->exec('CREATE INDEX IF NOT EXISTS registros_tipo ON registros (tipo, id)');
 $db->exec('CREATE TABLE IF NOT EXISTS aparelhos (aparelho TEXT PRIMARY KEY, apelido TEXT, primeiro INTEGER, ultimo INTEGER, versao TEXT,
   instalado TEXT, tela TEXT, modelo TEXT, minutos REAL DEFAULT 0, aberturas INTEGER DEFAULT 0, erros INTEGER DEFAULT 0, jogos TEXT DEFAULT \'{}\')');
+$db->exec('CREATE INDEX IF NOT EXISTS registros_aparelho ON registros (aparelho, id)');
+// colunas novas (bancos criados pela versão anterior do coletor ganham elas aqui)
+foreach (['visto INTEGER', 'agora TEXT'] as $col) { try { $db->exec("ALTER TABLE aparelhos ADD COLUMN $col"); } catch (Exception $e) {} }
 
 function json_saida($obj) {
   header('Content-Type: application/json; charset=utf-8');
@@ -39,6 +42,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $bruto = file_get_contents('php://input', false, null, 0, 200000);
   $corpo = json_decode($bruto, true);
   $codigo = substr(preg_replace('/[^A-Z0-9]/', '', strtoupper($corpo['aparelho'] ?? '')), 0, 6);
+  // "estou aqui": o aparelho está com o jogo aberto agora
+  if ($codigo && is_array($corpo['ping'] ?? null)) {
+    $agora = (int)(microtime(true) * 1000);
+    $onde = mb_substr((string)($corpo['ping']['onde'] ?? ''), 0, 60);
+    $apelido = mb_substr((string)($corpo['apelido'] ?? ''), 0, 30);
+    $up = $db->prepare("UPDATE aparelhos SET visto = ?, agora = ?, ultimo = MAX(COALESCE(ultimo, 0), ?), apelido = CASE WHEN ? <> '' THEN ? ELSE apelido END WHERE aparelho = ?");
+    $up->execute([$agora, $onde, $agora, $apelido, $apelido, $codigo]);
+    if (!$up->rowCount()) $db->prepare('INSERT INTO aparelhos (aparelho, apelido, primeiro, ultimo, visto, agora) VALUES (?, ?, ?, ?, ?, ?)')->execute([$codigo, $apelido, $agora, $agora, $agora, $onde]);
+    echo 'ok';
+    exit;
+  }
   $eventos = is_array($corpo['eventos'] ?? null) ? array_slice($corpo['eventos'], -300) : [];
   if (!$codigo || !$eventos) { echo 'vazio'; exit; }
   $apelido = mb_substr((string)($corpo['apelido'] ?? ''), 0, 30);
@@ -70,9 +84,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   }
   if ($apelido !== '') $a['apelido'] = $apelido;
   $a['jogos'] = json_encode($jogos, JSON_UNESCAPED_UNICODE);
-  $db->prepare('INSERT OR REPLACE INTO aparelhos (aparelho, apelido, primeiro, ultimo, versao, instalado, tela, modelo, minutos, aberturas, erros, jogos)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')->execute([$a['aparelho'], $a['apelido'], $a['primeiro'], $a['ultimo'], $a['versao'],
-    $a['instalado'], $a['tela'], $a['modelo'], $a['minutos'], $a['aberturas'], $a['erros'], $a['jogos']]);
+  $db->prepare('INSERT OR REPLACE INTO aparelhos (aparelho, apelido, primeiro, ultimo, versao, instalado, tela, modelo, minutos, aberturas, erros, jogos, visto, agora)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')->execute([$a['aparelho'], $a['apelido'], $a['primeiro'], $a['ultimo'], $a['versao'],
+    $a['instalado'], $a['tela'], $a['modelo'], $a['minutos'], $a['aberturas'], $a['erros'], $a['jogos'], $a['visto'] ?? null, $a['agora'] ?? null]);
   $db->exec('DELETE FROM registros WHERE id <= (SELECT MAX(id) FROM registros) - ' . MAX_REGISTROS);
   $db->commit();
   echo 'ok';
@@ -82,9 +96,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // ---------- o painel admin lê (precisa da chave) ----------
 if (!hash_equals(CHAVE, (string)($_GET['chave'] ?? '')) || CHAVE === 'TROQUE-ESTA-CHAVE') json_saida(['erro' => 'chave errada']);
 $iso = function ($ms) { return $ms ? gmdate('Y-m-d\TH:i:s\Z', (int)($ms / 1000)) : null; };
+// o que um aparelho fez (os últimos 150 registros)
+if (!empty($_GET['aparelho'])) {
+  $sel = $db->prepare('SELECT quando, tipo, dados FROM registros WHERE aparelho = ? ORDER BY id DESC LIMIT 150');
+  $sel->execute([substr(strtoupper((string)$_GET['aparelho']), 0, 6)]);
+  $lista = [];
+  foreach ($sel as $r) $lista[] = ['quando' => $iso($r['quando']), 'tipo' => $r['tipo'], 'dados' => json_decode($r['dados'], true)];
+  json_saida(['atividades' => $lista, 'agora' => $iso((int)(microtime(true) * 1000))]);
+}
 $aparelhos = [];
 foreach ($db->query('SELECT * FROM aparelhos ORDER BY ultimo DESC') as $a) {
   $a['primeiro'] = $iso($a['primeiro']);
+  $a['visto'] = $iso($a['visto'] ?? null);
   $a['ultimo'] = $iso($a['ultimo']);
   $a['jogos'] = json_decode($a['jogos'] ?: '{}', true) ?: new stdClass();
   $a['minutos'] = (float)$a['minutos']; $a['aberturas'] = (int)$a['aberturas']; $a['erros'] = (int)$a['erros'];
@@ -94,4 +117,4 @@ $erros = [];
 foreach ($db->query("SELECT quando, aparelho, apelido, dados FROM registros WHERE tipo = 'erro' ORDER BY id DESC LIMIT 100") as $r) {
   $erros[] = ['quando' => $iso($r['quando']), 'aparelho' => $r['aparelho'], 'apelido' => $r['apelido'], 'detalhes' => $r['dados']];
 }
-json_saida(['aparelhos' => $aparelhos, 'erros' => $erros]);
+json_saida(['aparelhos' => $aparelhos, 'erros' => $erros, 'agora' => $iso((int)(microtime(true) * 1000))]);

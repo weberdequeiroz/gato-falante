@@ -17,7 +17,9 @@
   // registros: ficam guardados no aparelho (no máximo 300) até serem enviados ao coletor, se houver um
   var MAX = 300;
   var lerRegistros = function () { try { return JSON.parse(ler('miguel-registros') || '[]'); } catch (e) { return []; } };
+  var ultimoJogo = '';
   function anotar(tipo, dados) {
+    if (tipo === 'jogo' && dados) ultimoJogo = dados.id || '';
     var lista = lerRegistros();
     lista.push({ t: Date.now(), tipo: tipo, dados: dados || {} });
     if (lista.length > MAX) lista = lista.slice(lista.length - MAX);
@@ -40,7 +42,7 @@
     inicio = Date.now();
   }
   document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'hidden') { fecharSessao(); enviar(); } else inicio = Date.now();
+    if (document.visibilityState === 'hidden') { fecharSessao(); enviar(); } else { inicio = Date.now(); avisarPresenca(); }
   });
 
   var controle = null;
@@ -62,6 +64,27 @@
     } catch (e) {}
     if (enviados) guardar('miguel-registros', JSON.stringify(lerRegistros().slice(enviados)));
   }
+
+  // "estou aqui": a cada minuto, com o jogo aberto na tela, avisa o coletor onde a criança está
+  // (assim o painel mostra quem está online agora e o que está fazendo)
+  function ondeEsta() {
+    var jogos = document.getElementById('jogos');
+    if (jogos && !jogos.hidden) return ultimoJogo ? 'jogo:' + ultimoJogo : 'menu dos jogos';
+    var roupas = document.getElementById('guarda-roupa');
+    if (roupas && !roupas.hidden) return 'vestindo o Miguel';
+    var ajustes = document.getElementById('ajustes');
+    if (ajustes && !ajustes.hidden) return 'ajustes';
+    return 'tela inicial';
+  }
+  function avisarPresenca() {
+    if (!controle || !controle.coletor || document.visibilityState !== 'visible') return;
+    try {
+      var corpo = JSON.stringify({ aparelho: codigo, apelido: ler('miguel-apelido') || '', ping: { onde: ondeEsta() } });
+      if (navigator.sendBeacon) navigator.sendBeacon(controle.coletor, new Blob([corpo], { type: 'text/plain' }));
+    } catch (e) {}
+  }
+  setInterval(function () { avisarPresenca(); }, 60 * 1000);
+  setInterval(function () { if (document.visibilityState === 'visible') enviar(); }, 3 * 60 * 1000);
 
   var tela = null;
   function mostrarTela(html) {
@@ -114,6 +137,7 @@
         guardar('miguel-controle', JSON.stringify(c));
         aplicar();
         enviar();
+        avisarPresenca();
       })
       .catch(function () {});
   }
