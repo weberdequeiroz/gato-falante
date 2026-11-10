@@ -60,7 +60,8 @@
 
   <div id="painel" hidden>
     <section class="cartao">
-      <div class="linha"><div><h2 style="margin:0">Conectado ✅</h2><span class="sub" id="quem"></span></div><button class="leve" id="sair">Sair</button></div>
+      <div class="linha"><div><h2 style="margin:0">Conectado ✅</h2><span class="sub" id="quem"></span></div><button class="leve" id="copiar-token">📋 Copiar token</button><button class="leve" id="sair">Sair</button></div>
+      <div id="msg-token"></div>
     </section>
 
     <section class="cartao">
@@ -195,6 +196,13 @@
     });
   }
   $('botao-entrar').addEventListener('click', function () { token = $('token').value.trim(); if (token) entrar(); });
+  // para levar o token para outro aparelho (ex.: do celular para o PC)
+  $('copiar-token').addEventListener('click', function () {
+    var ok = function () { aviso('msg-token', '✅ Token copiado! Cole no painel do outro aparelho. Não mande por chat nem e-mail.', 'ok'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(token).then(ok).catch(mostrarToken);
+    else mostrarToken();
+    function mostrarToken() { aviso('msg-token', 'Copie o token abaixo:<br><input readonly value="' + esc(token) + '" onclick="this.select()" style="margin-top:6px">', ''); }
+  });
   $('sair').addEventListener('click', function () { guardar('miguel-admin-token', null); token = null; $('painel').hidden = true; $('entrar').hidden = false; });
 
   $('bl-adicionar').addEventListener('click', function () {
