@@ -88,13 +88,17 @@
       </div>`;
   }
 
+  // sem resposta: diz "sem internet" só quando o aparelho está mesmo desconectado
   function mostrarSemInternet(tela, info) {
+    const offline = navigator.onLine === false;
+    const guardado = info.pontos != null ? `Seu resultado (${cfg.resultado(info.pontos)}) ficou guardado e entra no ranking ${offline ? 'quando tiver internet' : 'assim que ele voltar'}.` : '';
     tela.innerHTML = `
       <div class="rk-cartao rk-entra">
         <div class="rk-faixa">${cfg.titulo}</div>
-        <div class="rk-bicho-grande">📶</div>
-        <h2 class="rk-titulo">Sem internet agora</h2>
-        <p class="rk-sub">${info.pontos != null ? `Seu resultado (${cfg.resultado(info.pontos)}) ficou guardado e entra no ranking quando tiver internet.` : 'O ranking aparece quando tiver internet.'}</p>
+        <div class="rk-bicho-grande">${offline ? '📶' : '🛠️'}</div>
+        <h2 class="rk-titulo">${offline ? 'Sem internet agora' : 'O ranking não respondeu'}</h2>
+        <p class="rk-sub">${guardado || (offline ? 'O ranking aparece quando tiver internet.' : 'Tente de novo daqui a pouquinho.')}</p>
+        <button class="botao-largo rk-tentar">🔄 Tentar de novo</button>
         <button class="botao-pronto rk-continuar">▶ Continuar</button>
       </div>`;
   }
@@ -136,12 +140,15 @@
       tela.addEventListener('click', (e) => {
         e.stopPropagation();
         if (e.target.closest('.rk-continuar')) { fechar(); return; }
+        if (e.target.closest('.rk-tentar')) { carregar(); return; }
         const a = e.target.closest('[data-aba]');
         if (a && dados) { aba = a.dataset.aba; desenhar(conteudo, dados, info, aba); return; }
         if (e.target.closest('.rk-trocar')) {
           pedirNome(conteudo).then(j => enviar(url, jogo, pontos, nivel, j)).then(d => { dados = d; desenhar(conteudo, dados, info, aba); }).catch(() => mostrarSemInternet(conteudo, info));
         }
       });
+      let guardouPendente = false;
+      function carregar() {
       const jogador = lerJogador();
       (jogador || pontos == null ? Promise.resolve(jogador) : pedirNome(conteudo))
         .then((j) => {
@@ -157,9 +164,11 @@
           if (d[aba] && d[aba].eu && d[aba].eu.pos <= 3) M.miar('feliz');
         })
         .catch(() => {
-          const p = lerPendentes(); if (pontos != null) p.push({ jogo, pontos, nivel }); M.guardar('miguel-ranking-pendente', JSON.stringify(p.slice(-10)));
+          if (pontos != null && !guardouPendente) { guardouPendente = true; const p = lerPendentes(); p.push({ jogo, pontos, nivel }); M.guardar('miguel-ranking-pendente', JSON.stringify(p.slice(-10))); }
           mostrarSemInternet(conteudo, info);
         });
+      }
+      carregar();
     });
   }
 

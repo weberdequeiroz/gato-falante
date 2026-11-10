@@ -350,8 +350,14 @@
         passo = '3/3 conferindo';
         if (d.erro) throw new Error(d.erro === 'chave errada' ? 'o envio funcionou ✅, mas a chave de leitura não bate com a do coletor.php' : d.erro);
         var achou = (d.aparelhos || []).some(function (a) { return a.aparelho === 'TESTE0'; });
-        aviso('msg-coletor', achou ? '✅ Coletor funcionando! O envio e a leitura deram certo.' : 'O envio foi aceito, mas o teste não apareceu na leitura.', achou ? 'ok' : 'erro');
-        verTodos(true);
+        if (!achou) { aviso('msg-coletor', 'O envio foi aceito, mas o teste não apareceu na leitura.', 'erro'); return; }
+        // o ranking só existe no coletor.php novo
+        return fetch(url + (url.indexOf('?') < 0 ? '?' : '&') + 'ranking=corrida&t=' + Date.now()).then(lerJson).then(function (rk) {
+          if (!rk || !rk.geral) throw new Error('sem ranking');
+          aviso('msg-coletor', '✅ Coletor funcionando! O envio, a leitura e o ranking deram certo.', 'ok');
+        }).catch(function () {
+          aviso('msg-coletor', '⚠️ O envio e a leitura funcionam, mas o <b>ranking não</b>: o coletor.php na Hostinger é a versão antiga. Substitua pelo arquivo novo.', 'erro');
+        }).then(function () { verTodos(true); });
       })
       .catch(function (e) {
         var msg = /Failed to fetch|Load failed|NetworkError/i.test(e.message) ? 'não consegui falar com o coletor (endereço errado, site fora do ar, sem https ou bloqueio de CORS)' : e.message;
