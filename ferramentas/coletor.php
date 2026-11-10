@@ -37,11 +37,81 @@ function json_saida($obj) {
   exit;
 }
 
+// ---------- ranking dos jogos (o melhor resultado de cada aparelho, no geral e na semana) ----------
+$db->exec('CREATE TABLE IF NOT EXISTS ranking (aparelho TEXT, jogo TEXT, periodo TEXT, nome TEXT, avatar TEXT, pontos INTEGER, nivel INTEGER, quando INTEGER,
+  PRIMARY KEY (aparelho, jogo, periodo))');
+$db->exec('CREATE INDEX IF NOT EXISTS ranking_lista ON ranking (jogo, periodo, pontos DESC)');
+function semana() { return 'semana-' . gmdate('o-W'); }
+function nome_limpo($t) {
+  $t = preg_replace('/[^\p{L}\p{N} ]/u', '', (string)$t);
+  $t = trim(preg_replace('/\s+/', ' ', $t));
+  $t = mb_substr($t, 0, 14);
+  // palavras feias viram um nome neutro
+  $feias = ['merda', 'bosta', 'porra', 'caralho', 'puta', 'viado', 'buceta', 'cu ', 'fdp', 'pqp', 'idiota', 'burro', 'otario', 'otário', 'cacete'];
+  $baixo = ' ' . mb_strtolower($t) . ' ';
+  foreach ($feias as $f) if (mb_strpos($baixo, $f) !== false) return 'Corredor';
+  return $t !== '' ? $t : 'Corredor';
+}
+function ranking_de($db, $jogo, $codigo) {
+  $saida = [];
+  foreach (['geral' => 'geral', 'semana' => semana()] as $chave => $periodo) {
+    $sel = $db->prepare('SELECT aparelho, nome, avatar, pontos, nivel FROM ranking WHERE jogo = ? AND periodo = ? ORDER BY pontos DESC, quando ASC LIMIT 10');
+    $sel->execute([$jogo, $periodo]);
+    $lista = [];
+    $pos = 0;
+    foreach ($sel as $r) { $pos++; $lista[] = ['pos' => $pos, 'nome' => $r['nome'], 'avatar' => $r['avatar'], 'pontos' => (int)$r['pontos'], 'nivel' => (int)$r['nivel'], 'eu' => $r['aparelho'] === $codigo]; }
+    $eu = null;
+    if ($codigo) {
+      $m = $db->prepare('SELECT nome, avatar, pontos, nivel, quando FROM ranking WHERE aparelho = ? AND jogo = ? AND periodo = ?');
+      $m->execute([$codigo, $jogo, $periodo]);
+      if ($r = $m->fetch()) {
+        $acima = $db->prepare('SELECT COUNT(*) FROM ranking WHERE jogo = ? AND periodo = ? AND (pontos > ? OR (pontos = ? AND quando < ?))');
+        $acima->execute([$jogo, $periodo, $r['pontos'], $r['pontos'], $r['quando']]);
+        $p = (int)$acima->fetchColumn() + 1;
+        // quem está logo acima (para a criança saber quem pode passar)
+        $alvo = null;
+        if ($p > 1) {
+          $a = $db->prepare('SELECT nome, avatar, pontos FROM ranking WHERE jogo = ? AND periodo = ? AND (pontos > ? OR (pontos = ? AND quando < ?)) ORDER BY pontos ASC, quando DESC LIMIT 1');
+          $a->execute([$jogo, $periodo, $r['pontos'], $r['pontos'], $r['quando']]);
+          if ($x = $a->fetch()) $alvo = ['nome' => $x['nome'], 'avatar' => $x['avatar'], 'faltam' => (int)$x['pontos'] - (int)$r['pontos'] + 1];
+        }
+        $eu = ['pos' => $p, 'nome' => $r['nome'], 'avatar' => $r['avatar'], 'pontos' => (int)$r['pontos'], 'nivel' => (int)$r['nivel'], 'alvo' => $alvo];
+      }
+    }
+    $t = $db->prepare('SELECT COUNT(*) FROM ranking WHERE jogo = ? AND periodo = ?');
+    $t->execute([$jogo, $periodo]);
+    $saida[$chave] = ['top' => $lista, 'eu' => $eu, 'jogadores' => (int)$t->fetchColumn()];
+  }
+  return $saida;
+}
+
 // ---------- os aparelhos mandam os registros ----------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $bruto = file_get_contents('php://input', false, null, 0, 200000);
   $corpo = json_decode($bruto, true);
   $codigo = substr(preg_replace('/[^A-Z0-9]/', '', strtoupper($corpo['aparelho'] ?? '')), 0, 6);
+  // resultado de uma partida para o ranking: guarda se for o melhor do aparelho e devolve o ranking
+  if ($codigo && is_array($corpo['ranking'] ?? null)) {
+    $r = $corpo['ranking'];
+    $jogo = substr(preg_replace('/[^a-z0-9]/', '', (string)($r['jogo'] ?? '')), 0, 20);
+    $pontos = max(0, min(500000, (int)($r['pontos'] ?? 0)));
+    $nivel = max(1, min(999, (int)($r['nivel'] ?? 1)));
+    $nome = nome_limpo($r['nome'] ?? '');
+    $avatar = mb_substr((string)($r['avatar'] ?? '🐱'), 0, 4);
+    if (!$jogo) json_saida(['erro' => 'jogo']);
+    $agora = (int)(microtime(true) * 1000);
+    $db->beginTransaction();
+    foreach (['geral', semana()] as $periodo) {
+      $m = $db->prepare('SELECT pontos FROM ranking WHERE aparelho = ? AND jogo = ? AND periodo = ?');
+      $m->execute([$codigo, $jogo, $periodo]);
+      $antes = $m->fetchColumn();
+      if ($antes === false) $db->prepare('INSERT INTO ranking VALUES (?, ?, ?, ?, ?, ?, ?, ?)')->execute([$codigo, $jogo, $periodo, $nome, $avatar, $pontos, $nivel, $agora]);
+      elseif ($pontos > (int)$antes) $db->prepare('UPDATE ranking SET nome = ?, avatar = ?, pontos = ?, nivel = ?, quando = ? WHERE aparelho = ? AND jogo = ? AND periodo = ?')->execute([$nome, $avatar, $pontos, $nivel, $agora, $codigo, $jogo, $periodo]);
+      else $db->prepare('UPDATE ranking SET nome = ?, avatar = ? WHERE aparelho = ? AND jogo = ? AND periodo = ?')->execute([$nome, $avatar, $codigo, $jogo, $periodo]);
+    }
+    $db->commit();
+    json_saida(ranking_de($db, $jogo, $codigo));
+  }
   // "estou aqui": o aparelho está com o jogo aberto agora
   if ($codigo && is_array($corpo['ping'] ?? null)) {
     $agora = (int)(microtime(true) * 1000);
@@ -93,9 +163,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   exit;
 }
 
+// ---------- ranking (aberto: só nomes de jogador, avatares e pontos) ----------
+if (!empty($_GET['ranking'])) {
+  $jogo = substr(preg_replace('/[^a-z0-9]/', '', (string)$_GET['ranking']), 0, 20);
+  $codigo = substr(preg_replace('/[^A-Z0-9]/', '', strtoupper((string)($_GET['aparelho'] ?? ''))), 0, 6);
+  json_saida(ranking_de($db, $jogo, $codigo));
+}
+
 // ---------- o painel admin lê (precisa da chave) ----------
 if (!hash_equals(CHAVE, (string)($_GET['chave'] ?? '')) || CHAVE === 'TROQUE-ESTA-CHAVE') json_saida(['erro' => 'chave errada']);
 $iso = function ($ms) { return $ms ? gmdate('Y-m-d\TH:i:s\Z', (int)($ms / 1000)) : null; };
+// tirar um aparelho do ranking (nome feio, trapaça...)
+if (!empty($_GET['tirar_ranking'])) {
+  $db->prepare('DELETE FROM ranking WHERE aparelho = ?')->execute([substr(strtoupper((string)$_GET['tirar_ranking']), 0, 6)]);
+  json_saida(['ok' => true]);
+}
+// o ranking com os códigos dos aparelhos (só para o painel)
+if (!empty($_GET['ranking_admin'])) {
+  $sel = $db->prepare('SELECT aparelho, nome, avatar, pontos, nivel, quando FROM ranking WHERE jogo = ? AND periodo = ? ORDER BY pontos DESC LIMIT 50');
+  $sel->execute([substr((string)$_GET['ranking_admin'], 0, 20), 'geral']);
+  json_saida(['ranking' => $sel->fetchAll()]);
+}
 // o que um aparelho fez (os últimos 150 registros)
 if (!empty($_GET['aparelho'])) {
   $sel = $db->prepare('SELECT quando, tipo, dados FROM registros WHERE aparelho = ? ORDER BY id DESC LIMIT 150');

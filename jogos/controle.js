@@ -163,5 +163,5 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar); else iniciar();
 
-  window.MiguelControle = { codigo: codigo, anotar: anotar, registros: lerRegistros };
+  window.MiguelControle = { codigo: codigo, anotar: anotar, registros: lerRegistros, coletor: function () { return (controle && controle.coletor) || ''; } };
 })();

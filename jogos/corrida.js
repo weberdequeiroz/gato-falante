@@ -118,6 +118,7 @@
           </div>
           ${d.nivelMax > 1 ? `<button class="botao-pronto" data-nivel="${d.nivelMax}">🚩 Continuar do nível ${d.nivelMax}<small class="corrida-lugar">${CENARIOS[(d.nivelMax - 1) % CENARIOS.length].nome}</small></button>
           <button class="botao-largo" data-nivel="1">▶ Correr do começo</button>` : `<button class="botao-pronto" data-nivel="1">▶ Correr!</button>`}
+          <button class="botao-largo" data-ranking>🏆 Ranking dos corredores</button>
           <button class="botao-largo" data-tutorial>❓ Como jogar</button>
           <details class="como-jogar">
             <summary><strong>📖 Ler as regras</strong></summary>
@@ -133,6 +134,7 @@
       M.falar('Corrida do Miguel! Toque na tela para pular. Pegue os peixinhos e desvie dos obstáculos!');
       c.onclick = (e) => {
         if (e.target.closest('[data-tutorial]')) { M.jogos.tutorial(TUTORIAL()); return; }
+        if (e.target.closest('[data-ranking]')) { if (M.ranking) M.ranking.mostrar({ jogo: 'corrida', pontos: null, dentro: document.body, fixo: true }); return; }
         const b = e.target.closest('[data-nivel]');
         if (!b) return;
         // na primeira vez, o Miguel mostra como jogar antes de começar
@@ -426,7 +428,9 @@
         dados.nivelMax = Math.max(dados.nivelMax, nivel);
         guardarDados(dados);
         if (nivel >= 3) M.jogos.ganharTrofeu('corrida');
-        setTimeout(() => {
+        // primeiro o ranking de todos os jogadores; depois o cartão de fim da corrida
+        const mostrarRanking = () => (M.ranking ? M.ranking.mostrar({ jogo: 'corrida', pontos: Math.floor(pontos), nivel, novoRecorde, dentro: c.querySelector('.corrida') }) : Promise.resolve());
+        setTimeout(() => mostrarRanking().then(() => {
           c.querySelector('.corrida').insertAdjacentHTML('beforeend', `
             <div class="corrida-pausa">
               <div class="cartao-camada fim-corrida">
@@ -442,7 +446,7 @@
               </div>
             </div>`);
           miar(novoRecorde ? 'feliz' : 'miau');
-        }, 700);
+        }), 700);
       }
 
       // ---------- laço principal ----------
