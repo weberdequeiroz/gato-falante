@@ -81,6 +81,7 @@
           </div>
           <button class="botao-pronto" data-fase="${d.fase}">▶ ${d.fase > 1 ? `Continuar na fase ${d.fase}` : 'Começar a aventura'}</button>
           ${d.fase > 1 ? '<button class="botao-largo" data-fase="1">🔁 Começar da fase 1 (sem perder estrelas)</button>' : ''}
+          <button class="botao-largo" data-ranking>🏆 Ranking dos aventureiros</button>
           <button class="botao-largo" data-tutorial>❓ Como jogar</button>
           <details class="como-jogar">
             <summary><strong>📖 Ler as regras</strong></summary>
@@ -95,6 +96,7 @@
       M.falar(d.fase > 1 ? (d.fase <= 60 ? `Mundo do Miguel! Você parou na fase ${d.fase}. Vamos continuar?` : 'Mundo do Miguel! Vamos continuar a aventura?') : 'Mundo do Miguel! Ande, pule e chegue nas bandeiras. As fases não acabam nunca!');
       c.onclick = (e) => {
         if (e.target.closest('[data-tutorial]')) { M.jogos.tutorial(TUTORIAL()); return; }
+        if (e.target.closest('[data-ranking]')) { if (M.ranking) M.ranking.mostrar({ jogo: 'mundo', pontos: null, dentro: document.body, fixo: true }); return; }
         const b = e.target.closest('[data-fase]');
         if (!b) return;
         // na primeira vez, o Miguel mostra como jogar enquanto o mundo carrega
@@ -142,6 +144,7 @@
         </div>`;
       const tela = c.querySelector('canvas');
       const dados = lerDados();
+      const recordeAoEntrar = dados.recorde;
       let fase = faseInicial;
 
       // ---------- three.js ----------
@@ -831,10 +834,22 @@
         else if (acao === 'como-jogar') M.jogos.tutorial(TUTORIAL());
         else if (acao === 'voltar-bandeira') { irParaBandeira(); c.querySelector('[data-acao="continuar"]').click(); }
         else if (acao === 'musica') { musicaLigada = !musicaLigada; M.guardar('miguel-mundo-musica', musicaLigada ? '1' : '0'); musicaLigada ? ligarMusica() : desligarMusica(); b.style.opacity = musicaLigada ? 1 : 0.45; }
-        else if (acao === 'sair') nav.voltar();
+        else if (acao === 'sair') sairComRanking();
       };
       const aoSumir = () => { if (document.hidden && !pausado) c.querySelector('[data-acao="pausa"]').click(); };
-      nav.interceptarVoltar(() => { if (!pausado) { c.querySelector('[data-acao="pausa"]').click(); return true; } return false; });
+      // ao sair, mostra o ranking dos aventureiros (com a fase mais longe) e depois volta
+      let saindo = false;
+      function sairComRanking() {
+        if (saindo) return;
+        saindo = true;
+        const pronto = M.ranking ? M.ranking.mostrar({ jogo: 'mundo', pontos: dados.recorde, nivel: dados.recorde, novoRecorde: dados.recorde > recordeAoEntrar, dentro: document.body, fixo: true }) : Promise.resolve();
+        pronto.then(() => nav.voltar());
+      }
+      nav.interceptarVoltar(() => {
+        if (!pausado) { c.querySelector('[data-acao="pausa"]').click(); return true; }
+        if (!saindo) { sairComRanking(); return true; }
+        return false;
+      });
       document.addEventListener('visibilitychange', aoSumir);
       return () => {
         rodando = false;

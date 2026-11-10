@@ -107,9 +107,9 @@
           <div class="linha"><h2 id="atividade-titulo" style="margin:0"></h2><button class="leve" id="atividade-fechar">Fechar</button></div>
           <div class="rolar"><table><thead><tr><th>Quando</th><th>O quê</th><th>Detalhes</th></tr></thead><tbody id="lista-atividade"></tbody></table></div>
         </div>
-        <h2 style="margin-top:16px">🏆 Ranking da Corrida (todos os tempos)</h2>
+        <h2 style="margin-top:16px">🏆 Rankings (todos os tempos)</h2>
         <p class="sub">Para tirar alguém do ranking (nome feio, trapaça), toque em Tirar. Se jogar de novo, ele volta com o novo resultado.</p>
-        <div class="rolar"><table><thead><tr><th>#</th><th>Jogador</th><th>Aparelho</th><th>Pontos</th><th></th></tr></thead><tbody id="lista-ranking"></tbody></table></div>
+        <div class="rolar"><table><thead><tr><th>#</th><th>Jogador</th><th>Aparelho</th><th>Resultado</th><th></th></tr></thead><tbody id="lista-ranking"></tbody></table></div>
         <h2 style="margin-top:16px">⚠️ Últimos erros</h2>
         <div class="rolar"><table><thead><tr><th>Quando</th><th>Aparelho</th><th>Erro</th></tr></thead><tbody id="lista-erros"></tbody></table></div>
       </div>
@@ -309,17 +309,21 @@
     }).catch(function (e) { $('lista-atividade').innerHTML = '<tr><td colspan="3">' + esc(e.message) + '</td></tr>'; });
   }
   function verRanking() {
-    fetch(urlColetor('&ranking_admin=corrida')).then(lerJson).then(function (d) {
-      var l = d.ranking || [];
-      $('lista-ranking').innerHTML = l.length ? l.map(function (r, i) {
-        return '<tr><td>' + (i + 1) + 'º</td><td>' + esc(r.avatar) + ' <b>' + esc(r.nome) + '</b></td><td>' + esc(r.aparelho) + '</td><td>' + esc(r.pontos) + ' <small class="sub">nível ' + esc(r.nivel) + '</small></td>' +
-          '<td><button class="leve" data-tirar="' + esc(r.aparelho) + '" data-nome="' + esc(r.nome) + '">Tirar</button></td></tr>';
-      }).join('') : '<tr><td colspan="5" class="vazio">Ninguém no ranking ainda.</td></tr>';
-    }).catch(function () {});
+    var jogos = [['corrida', '🏃 Corrida do Miguel', function (r) { return esc(r.pontos) + ' pontos <small class="sub">nível ' + esc(r.nivel) + '</small>'; }],
+                 ['mundo', '🌍 Mundo do Miguel', function (r) { return 'fase ' + esc(r.pontos); }]];
+    Promise.all(jogos.map(function (j) { return fetch(urlColetor('&ranking_admin=' + j[0])).then(lerJson).catch(function () { return {}; }); })).then(function (res) {
+      $('lista-ranking').innerHTML = jogos.map(function (j, k) {
+        var l = (res[k] && res[k].ranking) || [];
+        return '<tr><td colspan="5"><b>' + j[1] + '</b></td></tr>' + (l.length ? l.map(function (r, i) {
+          return '<tr><td>' + (i + 1) + 'º</td><td>' + esc(r.avatar) + ' <b>' + esc(r.nome) + '</b></td><td>' + esc(r.aparelho) + '</td><td>' + j[2](r) + '</td>' +
+            '<td><button class="leve" data-tirar="' + esc(r.aparelho) + '" data-nome="' + esc(r.nome) + '">Tirar</button></td></tr>';
+        }).join('') : '<tr><td colspan="5" class="vazio">Ninguém ainda.</td></tr>');
+      }).join('');
+    });
   }
   document.addEventListener('click', function (e) {
     var b = e.target.closest('[data-tirar]');
-    if (!b || !confirm('Tirar ' + b.dataset.nome + ' do ranking?')) return;
+    if (!b || !confirm('Tirar ' + b.dataset.nome + ' dos rankings?')) return;
     fetch(urlColetor('&tirar_ranking=' + encodeURIComponent(b.dataset.tirar))).then(lerJson).then(verRanking).catch(function (er) { alert(er.message); });
   });
   $('atividade-fechar').addEventListener('click', function () { aparelhoAberto = null; $('atividade').hidden = true; });

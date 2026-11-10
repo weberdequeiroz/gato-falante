@@ -14,7 +14,7 @@
       const atual = lerJogador() || { nome: (M.ler('miguel-apelido') || '').slice(0, 14), avatar: M.sortear(AVATARES) };
       tela.innerHTML = `
         <div class="rk-cartao rk-entra">
-          <div class="rk-faixa">🏆 Ranking dos corredores</div>
+          <div class="rk-faixa">${cfg.titulo}</div>
           <h2 class="rk-titulo">Como você quer aparecer?</h2>
           <p class="rk-sub">Escolha um bichinho e um nome de jogador (pode ser um apelido).</p>
           <div class="rk-avatares">${AVATARES.map(a => `<button class="rk-avatar${a === atual.avatar ? ' escolhido' : ''}" data-avatar="${a}" aria-label="Bichinho ${a}">${a}</button>`).join('')}</div>
@@ -40,6 +40,12 @@
     });
   }
 
+  // cada jogo conta de um jeito: a Corrida em pontos, o Mundo pela fase mais longe
+  const JOGOS = {
+    corrida: { titulo: '🏆 Ranking dos corredores', valor: (n) => String(n), falta: (n) => n + (n === 1 ? ' ponto' : ' pontos'), resultado: (n) => '<b>' + n + '</b> pontos' },
+    mundo: { titulo: '🏆 Ranking dos aventureiros', valor: (n) => 'Fase ' + n, falta: (n) => n + (n === 1 ? ' fase' : ' fases'), resultado: (n) => 'fase <b>' + n + '</b>' },
+  };
+  let cfg = JOGOS.corrida;
   const MEDALHAS = ['🥇', '🥈', '🥉'];
   function desenhar(tela, dados, info, aba) {
     const r = dados[aba] || { top: [], eu: null, jogadores: 0 };
@@ -49,10 +55,10 @@
     const naLista = top.some(x => x.eu);
     let recado = '';
     if (eu && eu.pos === 1) recado = `👑 Você é o <b>campeão</b>${aba === 'semana' ? ' da semana' : ''}! Ninguém te alcança!`;
-    else if (eu && eu.alvo) recado = `🎯 Faltam <b>${eu.alvo.faltam}</b> pontos para passar ${esc(eu.alvo.avatar)} <b>${esc(eu.alvo.nome)}</b>!`;
+    else if (eu && eu.alvo) recado = `🎯 Faltam <b>${cfg.falta(eu.alvo.faltam)}</b> para passar ${esc(eu.alvo.avatar)} <b>${esc(eu.alvo.nome)}</b>!`;
     tela.innerHTML = `
       <div class="rk-cartao rk-entra">
-        <div class="rk-faixa">🏆 Ranking dos corredores</div>
+        <div class="rk-faixa">${cfg.titulo}</div>
         ${info.novoRecorde ? '<div class="rk-recorde">✨ Novo recorde seu! ✨</div>' : ''}
         <div class="rk-abas" role="tablist">
           <button class="rk-aba${aba === 'semana' ? ' ativa' : ''}" data-aba="semana" role="tab">📅 Esta semana</button>
@@ -67,17 +73,17 @@
               ${lugar === 1 ? '<div class="rk-coroa">👑</div>' : ''}
               <div class="rk-bicho">${esc(p.avatar)}</div>
               <div class="rk-nome-p">${esc(p.nome)}${p.eu ? ' <small>(você)</small>' : ''}</div>
-              <div class="rk-pts">${p.pontos}</div>
+              <div class="rk-pts">${cfg.valor(p.pontos)}</div>
               <div class="rk-bloco"><span>${MEDALHAS[lugar - 1]}</span></div>
             </div>`;
           }).join('')}
         </div>
         <ol class="rk-lista">
-          ${top.slice(3).map((p, i) => `<li class="${p.eu ? 'eu' : ''}" style="animation-delay:${0.7 + i * 0.06}s"><span class="rk-pos">${p.pos}º</span><span class="rk-av">${esc(p.avatar)}</span><span class="rk-n">${esc(p.nome)}${p.eu ? ' <small>(você)</small>' : ''}</span><span class="rk-pt">${p.pontos}</span></li>`).join('')}
-          ${eu && !naLista ? `<li class="rk-sep">⋯</li><li class="eu"><span class="rk-pos">${eu.pos}º</span><span class="rk-av">${esc(eu.avatar)}</span><span class="rk-n">${esc(eu.nome)} <small>(você)</small></span><span class="rk-pt">${eu.pontos}</span></li>` : ''}
+          ${top.slice(3).map((p, i) => `<li class="${p.eu ? 'eu' : ''}" style="animation-delay:${0.7 + i * 0.06}s"><span class="rk-pos">${p.pos}º</span><span class="rk-av">${esc(p.avatar)}</span><span class="rk-n">${esc(p.nome)}${p.eu ? ' <small>(você)</small>' : ''}</span><span class="rk-pt">${cfg.valor(p.pontos)}</span></li>`).join('')}
+          ${eu && !naLista ? `<li class="rk-sep">⋯</li><li class="eu"><span class="rk-pos">${eu.pos}º</span><span class="rk-av">${esc(eu.avatar)}</span><span class="rk-n">${esc(eu.nome)} <small>(você)</small></span><span class="rk-pt">${cfg.valor(eu.pontos)}</span></li>` : ''}
         </ol>` : '<p class="rk-vazio">Ninguém jogou ainda esta semana. Seja o primeiro! 🚀</p>'}
         ${recado ? `<p class="rk-recado">${recado}</p>` : ''}
-        <p class="rk-rodape">${r.jogadores} ${r.jogadores === 1 ? 'jogador' : 'jogadores'}${info.pontos != null ? ` · seu resultado agora: <b>${info.pontos}</b> pontos` : ''} · <button class="rk-trocar">✏️ trocar nome</button></p>
+        <p class="rk-rodape">${r.jogadores} ${r.jogadores === 1 ? 'jogador' : 'jogadores'}${info.pontos != null ? ` · seu resultado agora: ${cfg.resultado(info.pontos)}` : ''} · <button class="rk-trocar">✏️ trocar nome</button></p>
         <button class="botao-pronto rk-continuar">▶ Continuar</button>
       </div>`;
   }
@@ -85,10 +91,10 @@
   function mostrarSemInternet(tela, info) {
     tela.innerHTML = `
       <div class="rk-cartao rk-entra">
-        <div class="rk-faixa">🏆 Ranking dos corredores</div>
+        <div class="rk-faixa">${cfg.titulo}</div>
         <div class="rk-bicho-grande">📶</div>
         <h2 class="rk-titulo">Sem internet agora</h2>
-        <p class="rk-sub">${info.pontos != null ? `Seus <b>${info.pontos}</b> pontos ficaram guardados e entram no ranking quando tiver internet.` : 'O ranking aparece quando tiver internet.'}</p>
+        <p class="rk-sub">${info.pontos != null ? `Seu resultado (${cfg.resultado(info.pontos)}) ficou guardado e entra no ranking quando tiver internet.` : 'O ranking aparece quando tiver internet.'}</p>
         <button class="botao-pronto rk-continuar">▶ Continuar</button>
       </div>`;
   }
@@ -113,6 +119,7 @@
   // mostra o ranking por cima do jogo; resolve quando a criança toca em Continuar
   function mostrar({ jogo, pontos, nivel, novoRecorde, dentro, fixo }) {
     return new Promise((fim) => {
+      cfg = JOGOS[jogo] || JOGOS.corrida;
       const url = coletor();
       if (!url) { fim(); return; } // sem coletor configurado, não há ranking
       const tela = document.createElement('div');
