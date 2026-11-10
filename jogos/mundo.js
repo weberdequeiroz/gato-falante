@@ -90,7 +90,7 @@
             <p>👉 Arraste o dedo no lado direito da tela para <strong>girar a câmera</strong>.</p>
             <p>🚩 Chegue nas <strong>bandeiras</strong>: o jogo salva sozinho. As fases não acabam nunca!</p>
             <p>🦴 Pegue o <strong>osso dourado</strong>: a cachorrinha <strong>Penélope</strong> vem ajudar com pulo duplo, ímã de estrelas e te salva se cair!</p>
-            <p>🔥 Cuidado com o chão vermelho e com as barras que giram. Se cair, você volta para a última bandeira.</p>
+            <p>❤️ Você tem <strong>3 vidas</strong>. Cair, pisar no chão vermelho 🔥 ou levar a barra que gira tira uma vida. Cada bandeira nova devolve uma vida!</p>
           </details>
         </div>`;
       M.falar(d.fase > 1 ? (d.fase <= 60 ? `Mundo do Miguel! Você parou na fase ${d.fase}. Vamos continuar?` : 'Mundo do Miguel! Vamos continuar a aventura?') : 'Mundo do Miguel! Ande, pule e chegue nas bandeiras. As fases não acabam nunca!');
@@ -125,6 +125,7 @@
           <div class="corrida-hud">
             <span class="hud-caixa">🚩 Fase <strong id="m-fase"></strong></span>
             <span class="hud-caixa">⭐ <strong id="m-estrelas"></strong></span>
+            <span class="hud-caixa" id="m-vidas"></span>
             <span class="hud-caixa" id="m-poder" hidden></span>
             <span style="margin-left:auto"></span>
             <button class="hud-botao" data-acao="musica" aria-label="Música">🎵</button>
@@ -141,10 +142,20 @@
               <button class="botao-largo" data-acao="voltar-bandeira">🚩 Voltar para a bandeira</button>
               <button class="botao-largo" data-acao="sair">🏠 Sair do mundo</button></div>
           </div>
+          <div class="corrida-pausa" id="fim-aventura" hidden>
+            <div class="cartao-camada fim-corrida"><h2>💔 Fim da aventura!</h2>
+              <p>Acabaram as vidas. Você chegou até a fase <strong id="m-fim-fase"></strong>!</p>
+              <p class="sub">Seu jogo continua salvo na bandeira da fase <strong id="m-fim-salvo"></strong>.</p>
+              <button class="botao-pronto" data-acao="tentar-de-novo">🔁 Tentar de novo (3 ❤️)</button>
+              <button class="botao-largo" data-acao="sair-fim">🏠 Sair do mundo</button></div>
+          </div>
         </div>`;
       const tela = c.querySelector('canvas');
       const dados = lerDados();
       const recordeAoEntrar = dados.recorde;
+      // vidas: cair, pisar na lava ou levar a barra tira uma; cada bandeira nova devolve uma
+      const VIDAS = 3;
+      let vidas = VIDAS;
       let fase = faseInicial;
 
       // ---------- three.js ----------
@@ -539,7 +550,10 @@
         a.animate([{ transform: 'translate(-50%, -50%) scale(.6)', opacity: 0 }, { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 }], { duration: 300, easing: 'ease-out' });
         clearTimeout(avisoTimer); avisoTimer = setTimeout(() => { a.hidden = true; }, tempo);
       }
-      const hud = () => { c.querySelector('#m-fase').textContent = fase; c.querySelector('#m-estrelas').textContent = dados.estrelas; };
+      const hud = () => {
+        c.querySelector('#m-fase').textContent = fase; c.querySelector('#m-estrelas').textContent = dados.estrelas;
+        c.querySelector('#m-vidas').textContent = '❤️'.repeat(vidas) + '🤍'.repeat(Math.max(0, VIDAS - vidas));
+      };
 
       // ---------- Penélope: a cachorrinha maltês que ajuda o Miguel ----------
       const latir = () => M.penelope3d.latir();
@@ -570,7 +584,7 @@
         M.penelope3d.gritar();
         aviso('🐶 Penélope chegou! Pulo duplo, ímã de estrelas e ela te salva se cair!', 3200);
       }
-      if (/teste/.test(location.search)) window.__chamarPenelope = chamarPenelope; // só para testes automáticos
+      if (/teste/.test(location.search)) { window.__chamarPenelope = chamarPenelope; window.__morrer = () => morreu('lava'); } // só para testes automáticos
       function brilho(x, y, z, cor) {
         const m = new T.Mesh(new T.SphereGeometry(0.09, 6, 4), new T.MeshBasicMaterial({ color: cor, transparent: true }));
         m.position.set(x, y, z); cena.add(m);
@@ -625,6 +639,7 @@
         aviso(`🚩 Fase ${n}! Jogo salvo ✓`, 2200);
         M.miar('feliz');
         M.jogos.ganharMoedas(2);
+        if (vidas < VIDAS) { vidas++; aviso(`🚩 Fase ${n}! Jogo salvo ✓ e ganhou uma vida ❤️`, 2200); }
         if (n % 5 === 0) { M.jogos.ganharTrofeu('mundo'); aviso(`🏆 Fase ${n}! Você ganhou um troféu!`, 2600); }
         hud();
       }
@@ -641,8 +656,23 @@
         som(motivo === 'lava' ? 'cair' : 'voltar');
         M.miar('ai');
         M.vibrar && M.vibrar(motivo === 'lava' ? [80, 50, 80, 50, 120] : [150, 60, 80]);
-        aviso(motivo === 'lava' ? '🔥 Ui! Chão quente! Volte para a bandeira.' : motivo === 'giro' ? '💫 A barra te pegou! Tente de novo.' : '🌀 Caiu! Tente de novo.', 1600);
+        vidas = Math.max(0, vidas - 1);
+        hud();
         irParaBandeira();
+        if (vidas <= 0) { fimDaAventura(); return; }
+        const resto = vidas === 1 ? ' Só mais 1 vida! ❤️' : ` Restam ${vidas} vidas.`;
+        aviso((motivo === 'lava' ? '🔥 Ui! Chão quente!' : motivo === 'giro' ? '💫 A barra te pegou!' : '🌀 Caiu!') + resto, 1800);
+      }
+      // sem vidas: para o jogo, mostra o ranking dos aventureiros e o cartão de fim
+      function fimDaAventura() {
+        pausado = true;
+        saindo = true; // o Voltar daqui sai direto (o ranking já apareceu)
+        desligarMusica();
+        M.miar('triste');
+        c.querySelector('#m-fim-fase').textContent = dados.recorde;
+        c.querySelector('#m-fim-salvo').textContent = dados.fase;
+        const ranking = M.ranking ? M.ranking.mostrar({ jogo: 'mundo', pontos: dados.recorde, nivel: dados.recorde, novoRecorde: dados.recorde > recordeAoEntrar, dentro: document.body, fixo: true }) : Promise.resolve();
+        ranking.then(() => { c.querySelector('#fim-aventura').hidden = false; });
       }
 
       // ---------- física ----------
@@ -835,6 +865,8 @@
         else if (acao === 'voltar-bandeira') { irParaBandeira(); c.querySelector('[data-acao="continuar"]').click(); }
         else if (acao === 'musica') { musicaLigada = !musicaLigada; M.guardar('miguel-mundo-musica', musicaLigada ? '1' : '0'); musicaLigada ? ligarMusica() : desligarMusica(); b.style.opacity = musicaLigada ? 1 : 0.45; }
         else if (acao === 'sair') sairComRanking();
+        else if (acao === 'tentar-de-novo') { saindo = false; vidas = VIDAS; hud(); irParaBandeira(); c.querySelector('#fim-aventura').hidden = true; pausado = false; ultimo = performance.now(); ligarMusica(); }
+        else if (acao === 'sair-fim') { saindo = true; nav.voltar(); }
       };
       const aoSumir = () => { if (document.hidden && !pausado) c.querySelector('[data-acao="pausa"]').click(); };
       // ao sair, mostra o ranking dos aventureiros (com a fase mais longe) e depois volta
