@@ -8,14 +8,14 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Miguel">
 <link rel="manifest" href="manifest.webmanifest">
-<script src="jogos/controle.js?v=202611101059"></script>
+<script src="jogos/controle.js?v=202611101121"></script>
 <link rel="icon" href="icones/icone-192.png">
 <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap">
 <title>Miguel, o Gato Falante</title>
-<link rel="stylesheet" href="jogos/jogos.css?v=202611101059">
+<link rel="stylesheet" href="jogos/jogos.css?v=202611101121">
 <style>
   /* Uma tela só, de cima para baixo: topo com ajuda → aviso do que está acontecendo → Miguel → ações grandes → vozes.
      Cores calmas e sempre iguais, botões grandes com ícone + palavra, um estado de cada vez. */
@@ -596,6 +596,8 @@
   .indicar-qr { display: block; width: 200px; height: 200px; margin: 6px auto 4px; border-radius: 14px; border: 3px solid var(--linha); background: #fff; image-rendering: pixelated; }
   .indicar-dica { margin: 0 0 6px; font-size: 13px; font-weight: 700; color: var(--tinta-suave); }
   .indicar-zap { display: flex; align-items: center; justify-content: center; text-decoration: none; background: #25a244; box-shadow: 0 4px 0 #1a7a32; }
+  .progresso-codigo { margin: 10px 0 0; font-size: 40px; font-weight: 900; letter-spacing: .18em; color: var(--laranja); background: #fff6ea; border-radius: 16px; padding: 8px; }
+  .progresso-entrada { text-align: center; font-size: 26px; font-weight: 900; letter-spacing: .15em; text-transform: uppercase; }
   .indicar-link { margin: 8px 0 0; font-size: 13px; font-weight: 700; color: var(--tinta-suave); word-break: break-all; }
   .cartao-lembrete { text-align: center; }
   .lembrete-simbolo { font-size: 96px; line-height: 1.1; animation: chama-botao 1.4s ease-in-out infinite; animation-iteration-count: 2; }
@@ -993,6 +995,7 @@
     </div>
     <button class="botao-largo" id="aj-ajuda">❓ Ver a explicação do Miguel de novo</button>
     <button class="botao-largo" id="aj-indicar">💌 Indicar para um amigo</button>
+    <button class="botao-largo" id="aj-progresso">🔄 Levar o progresso para outro aparelho</button>
     <p class="nota-ajuste">💡 Algumas frases que mudam a cada jogada usam a voz do aparelho. Para elas ficarem mais naturais: no Android, instale a voz "Português (Brasil)" em Configurações › Idioma › Saída de texto para voz. No iPhone, baixe a voz "Luciana (Melhorada)" em Ajustes › Acessibilidade › Conteúdo Falado › Vozes. Depois escolha ela aqui em cima.</p>
     <button class="botao-pronto" id="aj-fechar">Pronto</button>
   </div>
@@ -1009,6 +1012,25 @@
     <button class="botao-largo" id="indicar-copiar">🔗 Copiar o endereço</button>
     <p class="indicar-link" id="indicar-link"></p>
     <button class="botao-largo" id="indicar-fechar">Fechar</button>
+  </div>
+</div>
+
+<div id="tela-progresso" class="camada" role="dialog" aria-labelledby="progresso-titulo" hidden>
+  <div class="cartao-camada cartao-indicar">
+    <h2 id="progresso-titulo">🔄 Levar o progresso</h2>
+    <p class="sub">Moedas, roupas, níveis, fases, recordes, troféus e ajustes passam para o outro aparelho.</p>
+    <div class="linha-ajuste coluna">
+      <div><strong>📤 Neste aparelho (o que já tem o progresso)</strong><small>Gere um código e digite no outro aparelho. Vale por 24 horas e serve uma vez só.</small></div>
+      <button class="botao-pronto" id="progresso-gerar">Gerar código</button>
+      <p class="progresso-codigo" id="progresso-codigo" hidden></p>
+    </div>
+    <div class="linha-ajuste coluna">
+      <div><strong>📥 No aparelho novo</strong><small>Digite o código gerado no outro aparelho. O progresso deste aparelho será trocado pelo de lá.</small></div>
+      <input id="progresso-entrada" class="campo-apelido progresso-entrada" maxlength="6" placeholder="Código (6 letras)" autocomplete="off" autocapitalize="characters">
+      <button class="botao-largo" id="progresso-receber">Trazer o progresso</button>
+    </div>
+    <p class="indicar-link" id="progresso-msg"></p>
+    <button class="botao-largo" id="progresso-fechar">Fechar</button>
   </div>
 </div>
 
@@ -2511,6 +2533,49 @@
   document.getElementById('aj-indicar').addEventListener('click', abrirIndicar);
   document.getElementById('indicar-fechar').addEventListener('click', () => { telaIndicar.hidden = true; calar(); });
   telaIndicar.addEventListener('click', (e) => { if (e.target === telaIndicar) { telaIndicar.hidden = true; calar(); } });
+
+  // ---------- Levar o progresso para outro aparelho (código de 6 letras, pelo coletor) ----------
+  const telaProgresso = document.getElementById('tela-progresso');
+  const msgProgresso = document.getElementById('progresso-msg');
+  // fica de fora o que é só deste aparelho (registros, avisos já vistos, voz do aparelho...)
+  const NAO_LEVAR = /^miguel-(registros|controle|recados-vistos|ranking-pendente|admin-|visitou-|voz-aparelho)/;
+  const enderecoColetor = () => (window.MiguelControle && MiguelControle.coletor()) || '';
+  document.getElementById('aj-progresso').addEventListener('click', () => {
+    telaAjustes.hidden = true;
+    telaProgresso.hidden = false;
+    msgProgresso.textContent = enderecoColetor() ? '' : '⚠️ Precisa de internet para levar o progresso.';
+  });
+  document.getElementById('progresso-fechar').addEventListener('click', () => { telaProgresso.hidden = true; });
+  document.getElementById('progresso-gerar').addEventListener('click', (e) => {
+    const botao = e.currentTarget, url = enderecoColetor();
+    if (!url) { msgProgresso.textContent = '⚠️ Sem conexão com o servidor agora. Tente de novo com internet.'; return; }
+    const dados = {};
+    try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k.indexOf('miguel-') === 0 && !NAO_LEVAR.test(k)) dados[k] = localStorage.getItem(k); } } catch (err) {}
+    botao.disabled = true; botao.textContent = 'Gerando…';
+    fetch(url, { method: 'POST', body: JSON.stringify({ transferir: dados }) }).then(r => r.json()).then((d) => {
+      if (!d.codigo) throw new Error();
+      const caixa = document.getElementById('progresso-codigo');
+      caixa.textContent = d.codigo; caixa.hidden = false;
+      msgProgresso.textContent = '✅ Agora, no outro aparelho, abra Ajustes › Levar o progresso e digite este código.';
+    }).catch(() => { msgProgresso.textContent = '⚠️ Não consegui gerar o código. Confira a internet e tente de novo.'; })
+      .then(() => { botao.disabled = false; botao.textContent = 'Gerar outro código'; });
+  });
+  document.getElementById('progresso-receber').addEventListener('click', () => {
+    const cod = document.getElementById('progresso-entrada').value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const url = enderecoColetor();
+    if (cod.length !== 6) { msgProgresso.textContent = '⚠️ O código tem 6 letras e números.'; return; }
+    if (!url) { msgProgresso.textContent = '⚠️ Sem conexão com o servidor agora. Tente de novo com internet.'; return; }
+    if (!confirm('O progresso deste aparelho será trocado pelo do outro aparelho. Continuar?')) return;
+    msgProgresso.textContent = 'Trazendo…';
+    fetch(url + (url.indexOf('?') < 0 ? '?' : '&') + 'receber=' + cod + '&t=' + Date.now()).then(r => r.json()).then((d) => {
+      if (!d.dados) { msgProgresso.textContent = '⚠️ ' + (d.erro === 'código não encontrado ou vencido' ? 'Código não encontrado ou vencido. Gere um novo no outro aparelho.' : 'Não deu certo. Tente de novo.'); return; }
+      try {
+        Object.keys(d.dados).forEach((k) => { if (k.indexOf('miguel-') === 0 && !NAO_LEVAR.test(k)) localStorage.setItem(k, d.dados[k]); });
+      } catch (err) { msgProgresso.textContent = '⚠️ Não consegui guardar o progresso neste aparelho.'; return; }
+      msgProgresso.textContent = '✅ Pronto! O progresso chegou. Abrindo o jogo de novo…';
+      setTimeout(() => location.reload(), 1500);
+    }).catch(() => { msgProgresso.textContent = '⚠️ Não consegui buscar o progresso. Confira a internet e tente de novo.'; });
+  });
   document.getElementById('aj-ajuda').addEventListener('click', () => {
     telaAjustes.hidden = true;
     // aqui abre o passeio completo, de uma vez
@@ -2714,7 +2779,7 @@
   let ultimoToque = Date.now(), ronronando = false, ronronsSeguidos = 0;
   ['pointerdown', 'keydown'].forEach(ev => document.addEventListener(ev, () => { ultimoToque = Date.now(); ronronsSeguidos = 0; }, { capture: true, passive: true }));
   const telaPrincipalLivre = () => aberturaFechada && estado === 'parado' && document.visibilityState === 'visible' &&
-    document.getElementById('jogos').hidden && telaAjustes.hidden && telaLembrete.hidden && telaIndicar.hidden;
+    document.getElementById('jogos').hidden && telaAjustes.hidden && telaLembrete.hidden && telaIndicar.hidden && telaProgresso.hidden;
   function ronronar() {
     if (calmo) return;
     if (ronronsSeguidos >= 2) return;
@@ -2918,7 +2983,7 @@
 
   // ---------- Atualizações ----------
   // o app instalado fica aberto em segundo plano; ao voltar para ele, confere se tem versão nova
-  const VERSAO = '202611101059';
+  const VERSAO = '202611101121';
   const avisoAtualizar = document.getElementById('atualizar');
   let registro = null;
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
@@ -2957,23 +3022,23 @@
   }
 })();
 </script>
-<script src="jogos/roupas.js?v=202611101059" defer></script>
-<script src="jogos/nucleo.js?v=202611101059" defer></script>
-<script src="jogos/aprender.js?v=202611101059" defer></script>
-<script src="jogos/idiomas.js?v=202611101059" defer></script>
-<script src="jogos/musica.js?v=202611101059" defer></script>
-<script src="jogos/colorir.js?v=202611101059" defer></script>
-<script src="jogos/pontos.js?v=202611101059" defer></script>
-<script src="jogos/memoria.js?v=202611101059" defer></script>
-<script src="jogos/bolhas.js?v=202611101059" defer></script>
-<script src="jogos/sons.js?v=202611101059" defer></script>
-<script src="jogos/mercadinho.js?v=202611101059" defer></script>
-<script src="jogos/sombras.js?v=202611101059" defer></script>
-<script src="jogos/diferente.js?v=202611101059" defer></script>
-<script src="jogos/quebracabeca.js?v=202611101059" defer></script>
-<script src="jogos/penelope3d.js?v=202611101059" defer></script>
-<script src="jogos/ranking.js?v=202611101059" defer></script>
-<script src="jogos/corrida.js?v=202611101059" defer></script>
-<script src="jogos/mundo.js?v=202611101059" defer></script>
+<script src="jogos/roupas.js?v=202611101121" defer></script>
+<script src="jogos/nucleo.js?v=202611101121" defer></script>
+<script src="jogos/aprender.js?v=202611101121" defer></script>
+<script src="jogos/idiomas.js?v=202611101121" defer></script>
+<script src="jogos/musica.js?v=202611101121" defer></script>
+<script src="jogos/colorir.js?v=202611101121" defer></script>
+<script src="jogos/pontos.js?v=202611101121" defer></script>
+<script src="jogos/memoria.js?v=202611101121" defer></script>
+<script src="jogos/bolhas.js?v=202611101121" defer></script>
+<script src="jogos/sons.js?v=202611101121" defer></script>
+<script src="jogos/mercadinho.js?v=202611101121" defer></script>
+<script src="jogos/sombras.js?v=202611101121" defer></script>
+<script src="jogos/diferente.js?v=202611101121" defer></script>
+<script src="jogos/quebracabeca.js?v=202611101121" defer></script>
+<script src="jogos/penelope3d.js?v=202611101121" defer></script>
+<script src="jogos/ranking.js?v=202611101121" defer></script>
+<script src="jogos/corrida.js?v=202611101121" defer></script>
+<script src="jogos/mundo.js?v=202611101121" defer></script>
 </body>
 </html>

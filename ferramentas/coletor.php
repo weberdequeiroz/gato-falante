@@ -85,10 +85,34 @@ function ranking_de($db, $jogo, $codigo) {
   return $saida;
 }
 
+// ---------- levar o progresso para outro aparelho (código de 6 letras, vale 24 horas, usa uma vez) ----------
+$db->exec('CREATE TABLE IF NOT EXISTS transferencias (codigo TEXT PRIMARY KEY, dados TEXT, criado INTEGER)');
+$db->exec('DELETE FROM transferencias WHERE criado < ' . (time() - 86400));
+if (!empty($_GET['receber'])) {
+  $cod = substr(preg_replace('/[^A-Z0-9]/', '', strtoupper((string)$_GET['receber'])), 0, 6);
+  $sel = $db->prepare('SELECT dados FROM transferencias WHERE codigo = ?');
+  $sel->execute([$cod]);
+  $dados = $sel->fetchColumn();
+  if ($dados === false) json_saida(['erro' => 'código não encontrado ou vencido']);
+  $db->prepare('DELETE FROM transferencias WHERE codigo = ?')->execute([$cod]);
+  json_saida(['dados' => json_decode($dados, true)]);
+}
+
 // ---------- os aparelhos mandam os registros ----------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $bruto = file_get_contents('php://input', false, null, 0, 200000);
+  $bruto = file_get_contents('php://input', false, null, 0, 400000);
   $corpo = json_decode($bruto, true);
+  if (is_array($corpo['transferir'] ?? null)) {
+    $letras = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    do {
+      $cod = '';
+      for ($i = 0; $i < 6; $i++) $cod .= $letras[random_int(0, strlen($letras) - 1)];
+      $existe = $db->prepare('SELECT 1 FROM transferencias WHERE codigo = ?');
+      $existe->execute([$cod]);
+    } while ($existe->fetchColumn());
+    $db->prepare('INSERT INTO transferencias VALUES (?, ?, ?)')->execute([$cod, json_encode($corpo['transferir'], JSON_UNESCAPED_UNICODE), time()]);
+    json_saida(['codigo' => $cod]);
+  }
   $codigo = substr(preg_replace('/[^A-Z0-9]/', '', strtoupper($corpo['aparelho'] ?? '')), 0, 6);
   // resultado de uma partida para o ranking: guarda se for o melhor do aparelho e devolve o ranking
   if ($codigo && is_array($corpo['ranking'] ?? null)) {
