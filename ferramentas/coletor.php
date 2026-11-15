@@ -1,14 +1,15 @@
 <?php
-// Coletor do Miguel para hospedagem com PHP (ex.: Hostinger).
-// Recebe os registros dos aparelhos (POST) e entrega o resumo ao painel admin (GET com a chave).
+// Coletor do Miguel para hospedagem com PHP e MySQL (ex.: Hostinger).
+// Recebe os registros dos aparelhos (POST), guarda o ranking e a troca de progresso
+// e entrega o resumo ao painel admin (GET com a chave).
 // Como instalar:
-//  1. No Gerenciador de Arquivos da Hostinger, crie a pasta public_html/miguel-coletor.
-//  2. Envie este arquivo para lá (com o nome coletor.php) e troque a CHAVE abaixo por uma senha só sua.
+//  1. Crie um banco MySQL no hPanel (Bancos de dados) e anote o nome, o usuário e a senha.
+//  2. Na pasta public_html/miguel-coletor, envie este arquivo (coletor.php) e crie o config.php:
+//       <?php return ['banco' => 'u123_miguel', 'usuario' => 'u123_miguel', 'senha' => '...', 'chave' => 'sua-chave'];
 //  3. O endereço fica assim: https://SEU-DOMINIO/miguel-coletor/coletor.php
 //     Cole no painel admin, em "Endereço do coletor", e a mesma chave em "Chave de leitura".
-// Os dados ficam num banco SQLite na mesma pasta (o arquivo .htaccess criado aqui bloqueia o download dele).
+// As senhas ficam só no config.php do servidor (nunca no GitHub). O .htaccess criado aqui bloqueia o acesso a ele.
 
-const CHAVE = 'TROQUE-ESTA-CHAVE';
 const MAX_REGISTROS = 50000;
 
 header('Access-Control-Allow-Origin: *');
@@ -17,19 +18,23 @@ header('Access-Control-Allow-Headers: Content-Type');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') exit;
 
 $pasta = __DIR__;
-if (!file_exists("$pasta/.htaccess")) {
-  file_put_contents("$pasta/.htaccess", "<FilesMatch \"\\.(sqlite|db)$\">\n  <IfModule mod_authz_core.c>\n    Require all denied\n  </IfModule>\n  <IfModule !mod_authz_core.c>\n    Order allow,deny\n    Deny from all\n  </IfModule>\n</FilesMatch>\nOptions -Indexes\n");
-}
-$db = new PDO("sqlite:$pasta/miguel.sqlite");
-$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-$db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-$db->exec('CREATE TABLE IF NOT EXISTS registros (id INTEGER PRIMARY KEY, quando INTEGER, aparelho TEXT, apelido TEXT, tipo TEXT, dados TEXT)');
-$db->exec('CREATE INDEX IF NOT EXISTS registros_tipo ON registros (tipo, id)');
-$db->exec('CREATE TABLE IF NOT EXISTS aparelhos (aparelho TEXT PRIMARY KEY, apelido TEXT, primeiro INTEGER, ultimo INTEGER, versao TEXT,
-  instalado TEXT, tela TEXT, modelo TEXT, minutos REAL DEFAULT 0, aberturas INTEGER DEFAULT 0, erros INTEGER DEFAULT 0, jogos TEXT DEFAULT \'{}\')');
-$db->exec('CREATE INDEX IF NOT EXISTS registros_aparelho ON registros (aparelho, id)');
-// colunas novas (bancos criados pela versão anterior do coletor ganham elas aqui)
-foreach (['visto INTEGER', 'agora TEXT'] as $col) { try { $db->exec("ALTER TABLE aparelhos ADD COLUMN $col"); } catch (Exception $e) {} }
+$protecao = "<FilesMatch \"^(config\\.php|.*\\.(sqlite|db|migrado))$\">\n  <IfModule mod_authz_core.c>\n    Require all denied\n  </IfModule>\n  <IfModule !mod_authz_core.c>\n    Order allow,deny\n    Deny from all\n  </IfModule>\n</FilesMatch>\nOptions -Indexes\n";
+if (!file_exists("$pasta/.htaccess") || strpos(file_get_contents("$pasta/.htaccess"), 'config') === false) file_put_contents("$pasta/.htaccess", $protecao);
+
+$cfg = file_exists("$pasta/config.php") ? include "$pasta/config.php" : null;
+if (!is_array($cfg)) { http_response_code(500); exit('falta o config.php'); }
+define('CHAVE', (string)($cfg['chave'] ?? ''));
+$db = new PDO('mysql:host=' . ($cfg['host'] ?? 'localhost') . ';dbname=' . $cfg['banco'] . ';charset=utf8mb4', $cfg['usuario'], $cfg['senha'], [
+  PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+  PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+  PDO::MYSQL_ATTR_FOUND_ROWS => true,
+]);
+// as tabelas são criadas na primeira vez
+$db->exec("CREATE TABLE IF NOT EXISTS registros (id BIGINT AUTO_INCREMENT PRIMARY KEY, quando BIGINT, aparelho VARCHAR(6), apelido VARCHAR(30), tipo VARCHAR(20), dados TEXT,
+  KEY registros_tipo (tipo, id), KEY registros_aparelho (aparelho, id)) DEFAULT CHARSET=utf8mb4");
+$db->exec("CREATE TABLE IF NOT EXISTS aparelhos (aparelho VARCHAR(6) PRIMARY KEY, apelido VARCHAR(30) DEFAULT '', primeiro BIGINT NULL, ultimo BIGINT NULL,
+  versao VARCHAR(40) DEFAULT '', instalado VARCHAR(5) DEFAULT '', tela VARCHAR(20) DEFAULT '', modelo VARCHAR(160) DEFAULT '', minutos DOUBLE DEFAULT 0,
+  aberturas INT DEFAULT 0, erros INT DEFAULT 0, jogos TEXT, visto BIGINT NULL, agora VARCHAR(60) NULL) DEFAULT CHARSET=utf8mb4");
 
 function json_saida($obj) {
   header('Content-Type: application/json; charset=utf-8');
@@ -38,9 +43,8 @@ function json_saida($obj) {
 }
 
 // ---------- ranking dos jogos (o melhor resultado de cada aparelho, no geral e na semana) ----------
-$db->exec('CREATE TABLE IF NOT EXISTS ranking (aparelho TEXT, jogo TEXT, periodo TEXT, nome TEXT, avatar TEXT, pontos INTEGER, nivel INTEGER, quando INTEGER,
-  PRIMARY KEY (aparelho, jogo, periodo))');
-$db->exec('CREATE INDEX IF NOT EXISTS ranking_lista ON ranking (jogo, periodo, pontos DESC)');
+$db->exec("CREATE TABLE IF NOT EXISTS ranking (aparelho VARCHAR(6), jogo VARCHAR(20), periodo VARCHAR(20), nome VARCHAR(30), avatar VARCHAR(16), pontos INT, nivel INT, quando BIGINT,
+  PRIMARY KEY (aparelho, jogo, periodo), KEY ranking_lista (jogo, periodo, pontos)) DEFAULT CHARSET=utf8mb4");
 function semana() { return 'semana-' . gmdate('o-W'); }
 function nome_limpo($t) {
   $t = preg_replace('/[^\p{L}\p{N} ]/u', '', (string)$t);
@@ -86,7 +90,7 @@ function ranking_de($db, $jogo, $codigo) {
 }
 
 // ---------- levar o progresso para outro aparelho (código de 6 letras, vale 24 horas, usa uma vez) ----------
-$db->exec('CREATE TABLE IF NOT EXISTS transferencias (codigo TEXT PRIMARY KEY, dados TEXT, criado INTEGER)');
+$db->exec("CREATE TABLE IF NOT EXISTS transferencias (codigo CHAR(6) PRIMARY KEY, dados MEDIUMTEXT, criado INT) DEFAULT CHARSET=utf8mb4");
 $db->exec('DELETE FROM transferencias WHERE criado < ' . (time() - 86400));
 if (!empty($_GET['receber'])) {
   $cod = substr(preg_replace('/[^A-Z0-9]/', '', strtoupper((string)$_GET['receber'])), 0, 6);
@@ -141,7 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $agora = (int)(microtime(true) * 1000);
     $onde = mb_substr((string)($corpo['ping']['onde'] ?? ''), 0, 60);
     $apelido = mb_substr((string)($corpo['apelido'] ?? ''), 0, 30);
-    $up = $db->prepare("UPDATE aparelhos SET visto = ?, agora = ?, ultimo = MAX(COALESCE(ultimo, 0), ?), apelido = CASE WHEN ? <> '' THEN ? ELSE apelido END WHERE aparelho = ?");
+    $up = $db->prepare("UPDATE aparelhos SET visto = ?, agora = ?, ultimo = GREATEST(COALESCE(ultimo, 0), ?), apelido = CASE WHEN ? <> '' THEN ? ELSE apelido END WHERE aparelho = ?");
     $up->execute([$agora, $onde, $agora, $apelido, $apelido, $codigo]);
     if (!$up->rowCount()) $db->prepare('INSERT INTO aparelhos (aparelho, apelido, primeiro, ultimo, visto, agora) VALUES (?, ?, ?, ?, ?, ?)')->execute([$codigo, $apelido, $agora, $agora, $agora, $onde]);
     echo 'ok';
@@ -178,10 +182,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   }
   if ($apelido !== '') $a['apelido'] = $apelido;
   $a['jogos'] = json_encode($jogos, JSON_UNESCAPED_UNICODE);
-  $db->prepare('INSERT OR REPLACE INTO aparelhos (aparelho, apelido, primeiro, ultimo, versao, instalado, tela, modelo, minutos, aberturas, erros, jogos, visto, agora)
+  $db->prepare('REPLACE INTO aparelhos (aparelho, apelido, primeiro, ultimo, versao, instalado, tela, modelo, minutos, aberturas, erros, jogos, visto, agora)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')->execute([$a['aparelho'], $a['apelido'], $a['primeiro'], $a['ultimo'], $a['versao'],
     $a['instalado'], $a['tela'], $a['modelo'], $a['minutos'], $a['aberturas'], $a['erros'], $a['jogos'], $a['visto'] ?? null, $a['agora'] ?? null]);
-  $db->exec('DELETE FROM registros WHERE id <= (SELECT MAX(id) FROM registros) - ' . MAX_REGISTROS);
+  $maior = (int)$db->query('SELECT MAX(id) FROM registros')->fetchColumn();
+  if ($maior > MAX_REGISTROS) $db->exec('DELETE FROM registros WHERE id <= ' . ($maior - MAX_REGISTROS));
   $db->commit();
   echo 'ok';
   exit;
@@ -195,7 +200,7 @@ if (!empty($_GET['ranking'])) {
 }
 
 // ---------- o painel admin lê (precisa da chave) ----------
-if (!hash_equals(CHAVE, (string)($_GET['chave'] ?? '')) || CHAVE === 'TROQUE-ESTA-CHAVE') json_saida(['erro' => 'chave errada']);
+if (strlen(CHAVE) < 12 || !hash_equals(CHAVE, (string)($_GET['chave'] ?? ''))) json_saida(['erro' => 'chave errada']);
 $iso = function ($ms) { return $ms ? gmdate('Y-m-d\TH:i:s\Z', (int)($ms / 1000)) : null; };
 // tirar um aparelho do ranking (nome feio, trapaça...)
 if (!empty($_GET['tirar_ranking'])) {

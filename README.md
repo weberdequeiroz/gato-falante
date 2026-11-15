@@ -34,7 +34,7 @@ Desenvolvido por Vini & Weber.
 
 - **Painel:** `admin.html` (https://weberdequeiroz.github.io/gato-falante/admin.html). Entra com um token do GitHub (fine-grained, só o repositório `gato-falante`, permissão *Contents: Read and write*), guardado só no navegador.
 - **`controle.json`**: aparelhos bloqueados, recados e o endereço do coletor. O painel grava esse arquivo pelo GitHub; o jogo lê ao abrir.
-- **Coletor:** `ferramentas/coletor.php`, hospedado na Hostinger em `public_html/miguel-coletor/` (wdqbrasil.com.br). Recebe os registros dos aparelhos (uso, jogos, erros, quem está online) e guarda o ranking num SQLite (`miguel.sqlite`, protegido pelo `.htaccess` que o coletor cria). No repositório a `CHAVE` fica como `TROQUE-ESTA-CHAVE`: a chave de verdade existe só no arquivo da Hostinger e no navegador do painel.
+- **Coletor:** `ferramentas/coletor.php`, hospedado na Hostinger em `public_html/miguel-coletor/` (wdqbrasil.com.br). Recebe os registros dos aparelhos (uso, jogos, erros, quem está online), guarda o ranking e a troca de progresso no **MySQL** da Hostinger (banco `u469964283_miguel`, aparece em hPanel › Bancos de dados). A senha do banco e a chave de leitura ficam só no `config.php` do servidor (nunca no GitHub); o `.htaccess` que o coletor cria bloqueia o acesso a ele. O banco antigo ficou de backup como `miguel.sqlite.migrado` (`ferramentas/migrar-sqlite-mysql.php` fez a cópia, uma vez só).
 - `jogos/controle.js` cuida do código do aparelho, dos registros, do bloqueio e dos recados; `jogos/ranking.js` mostra o ranking.
 
 ## Publicar uma versão nova
@@ -42,7 +42,7 @@ Desenvolvido por Vini & Weber.
 1. `./atualizar-versao.sh` (com `SILENCIOSA=1` antes, a atualização entra sem o aviso de novidades).
 2. Aumentar o número do `CACHE` em `sw.js` (`miguel-vNN`).
 3. Commit e push na `main` (GitHub Pages publica sozinho).
-4. Se o `ferramentas/coletor.php` mudou, enviar de novo para a Hostinger, trocando a `CHAVE`.
+4. Se o `ferramentas/coletor.php` mudou, enviar de novo para a Hostinger (o `config.php` de lá não muda).
 
 ## Voz do Miguel
 
